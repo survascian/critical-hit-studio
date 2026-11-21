@@ -1764,10 +1764,10 @@ function initCloudSync() {
       const img = new Image();
       img.onload = () => {
         try {
-          const w = 140, h = Math.max(80, Math.min(200, Math.round((img.naturalHeight / (img.naturalWidth || 1)) * w)));
+          const w = 110, h = Math.max(70, Math.min(165, Math.round((img.naturalHeight / (img.naturalWidth || 1)) * w)));
           const c = document.createElement('canvas'); c.width = w; c.height = h;
           c.getContext('2d').drawImage(img, 0, 0, w, h);
-          resolve(c.toDataURL('image/jpeg', 0.72));
+          resolve(c.toDataURL('image/jpeg', 0.68));
         } catch (e) { resolve(''); }
       };
       img.onerror = () => resolve('');
@@ -1775,20 +1775,23 @@ function initCloudSync() {
     });
   }
   async function ensureMobileThumbs() {
-    let added = false;
+    let added = 0, ready = 0, withCover = 0;
     let totalBytes = JSON.stringify(state).length;
     for (const g of state.games) {
-      if (totalBytes > 700000) break; // keep well under Firestore 1MB doc limit
-      if (g.coverRemote || g.coverId || g.coverThumb) continue;
+      if (g.cover || g.coverRemote || g.coverId || g.coverThumb) withCover++;
+      if (g.coverRemote || g.coverId || g.coverThumb) { ready++; continue; }
       if (!g.cover || !g.cover.startsWith('/media/')) continue;
+      if (totalBytes > 750000) continue; // keep safely under Firestore 1MB doc limit
       const thumb = await makeThumb(g.cover);
-      if (thumb && thumb.length < 20000) {
+      if (thumb && thumb.length < 30000) {
         g.coverThumb = thumb;
+        g.updatedAt = Date.now();
         totalBytes += thumb.length;
-        added = true;
+        added++; ready++;
       }
     }
     if (added) { skipCloudPush = true; save(true); }
+    return { added, ready, withCover };
   }
 
   async function syncNow(showToast) {
@@ -1797,10 +1800,10 @@ function initCloudSync() {
     try {
       const rem = await CHL_CLOUD.pullOnce();
       if (rem) applyMerged(rem, false);
-      await ensureMobileThumbs();
+      const t = await ensureMobileThumbs();
       await CHL_CLOUD.pushState(state);
-      setCloudMsg('Synced at ' + new Date().toLocaleTimeString());
-      if (showToast) toast('Cloud sync complete');
+      setCloudMsg(`Synced at ${new Date().toLocaleTimeString()} · ${t.ready}/${t.withCover} posters ready for mobile`);
+      if (showToast) toast(`Cloud sync complete (${t.ready}/${t.withCover} posters)`);
     } catch (e) { setCloudMsg('Sync failed: ' + e.message, true); }
   }
 

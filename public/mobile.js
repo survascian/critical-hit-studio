@@ -45,6 +45,7 @@ function coverUrlOf(g) {
 }
 function setCoverEl(el, g) {
   const url = safeUrl(coverUrlOf(g));
+  const thumb = g && g.coverThumb && /^data:image\//.test(g.coverThumb) ? g.coverThumb : '';
   const fallback = (g && g.name ? g.name : '?').charAt(0).toUpperCase();
   el.innerHTML = '';
   if (url) {
@@ -52,7 +53,10 @@ function setCoverEl(el, g) {
     img.src = url;
     img.alt = '';
     img.loading = 'lazy';
-    img.onerror = () => { el.textContent = fallback; };
+    img.onerror = () => {
+      if (thumb && img.src !== thumb) { img.src = thumb; }
+      else { el.textContent = fallback; }
+    };
     el.appendChild(img);
   } else {
     el.textContent = fallback;
@@ -1029,9 +1033,10 @@ function initMobileCloud() {
 
   try {
     const [doc, st] = await Promise.all([api('/api/planner'), api('/api/settings')]);
+    if (!doc || typeof doc !== 'object' || !Array.isArray(doc.games)) throw new Error('Not local server');
     hasLocalApi = true;
-    if (doc && Array.isArray(doc.games)) state = Object.assign(state, doc);
-    if (st) {
+    state = Object.assign(state, doc);
+    if (st && typeof st === 'object') {
       appSettings = Object.assign(appSettings, st);
       if (st.accentColor) document.documentElement.style.setProperty('--accent', st.accentColor);
       if (st.youtubeChannel && (st.youtubeChannel.handle || st.youtubeChannel.title)) {

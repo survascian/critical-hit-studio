@@ -460,3 +460,12 @@ body.simple-board .qbar-left { display: none; }
 .card.simple-card { align-items: center; }
 .card.simple-card .chips { display: none; }
 .card.simple-card .card-main { display: flex; flex-direction: column; justify-content: center; }
+
+/* Settings -> Changelog */
+.changelog-box { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.cl-entry { padding: 12px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); }
+.cl-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.cl-ver { font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.09); color: #fff; letter-spacing: 0.05em; }
+.cl-entry:first-child .cl-ver { background: var(--red, #e60000); }
+.cl-title { font-weight: 700; font-size: 15px; }
+.cl-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; color: #c4cad8; font-size: 14px; line-height: 1.4; }

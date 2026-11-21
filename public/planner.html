@@ -27,6 +27,7 @@
   <script src="/awards.js"></script>
   <script src="/plan.js"></script>
   <script src="/cloud.js"></script>
+  <script src="/changelog.js"></script>
   <script src="/planner.js" defer></script>
 </head>
 <body>
@@ -268,6 +269,7 @@
           <button type="button" class="set-tab" data-stab="youtube" role="tab">YouTube</button>
           <button type="button" class="set-tab" data-stab="connections" role="tab">IGDB &amp; Art</button>
           <button type="button" class="set-tab" data-stab="data" role="tab">Data &amp; Backup</button>
+          <button type="button" class="set-tab" data-stab="changelog" role="tab">Changelog</button>
         </nav>
         <div class="set-pane" id="settingsPane">
 
@@ -446,6 +448,15 @@
               <h4>Quick setup</h4>
               <p class="muted small">Want to walk through the initial setup again?</p>
               <div class="row"><button id="reopenWizardBtn" class="btn" type="button">Open Quick Setup wizard</button></div>
+            </section>
+          </div>
+
+          <!-- CHANGELOG -->
+          <div class="set-panel hidden" data-spanel="changelog">
+            <section class="set-sec">
+              <h4>What's New in Critical Hit Studio</h4>
+              <p class="muted small">Full release history from v1.3.0 to v{{VERSION}}.</p>
+              <div id="changelogBox" class="changelog-box"></div>
             </section>
           </div>
 

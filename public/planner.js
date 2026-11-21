@@ -1738,8 +1738,20 @@ document.addEventListener('keydown', (e) => {
   await loadSettings();
   try { if (loaded && state.games.length === 0 && !localStorage.getItem('chl_wiz_done')) openWizard(); } catch (e) {}
   api('/api/info').then((i) => { $('verLine').textContent = 'Critical Hit Studio v' + i.version + '.'; }).catch(() => {});
+  renderChangelog();
   initCloudSync();
 })();
+
+function renderChangelog() {
+  const box = $('changelogBox');
+  if (!box || !Array.isArray(window.CHL_CHANGELOG)) return;
+  box.innerHTML = window.CHL_CHANGELOG.map((rel) =>
+    `<div class="cl-entry">
+      <div class="cl-head"><span class="cl-ver">v${esc(rel.version)}</span><span class="cl-title">${esc(rel.title)}</span></div>
+      <ul class="cl-list">${(rel.items || []).map((it) => `<li>${esc(it)}</li>`).join('')}</ul>
+    </div>`
+  ).join('');
+}
 
 // ------------------------------------------------------------------ Cloud Sync (Firebase)
 function initCloudSync() {

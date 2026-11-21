@@ -160,6 +160,7 @@ function startServer(opts) {
     try {
       // ----- pages -----
       if (p === '/' || p === '/planner') return serveFile(res, path.join(publicDir, 'planner.html'), noStore);
+      if (p === '/mobile') return serveFile(res, path.join(publicDir, 'mobile.html'), noStore);
       if (p === '/hitlist') return serveFile(res, path.join(publicDir, 'hitlist.html'), noStore);
 
       if (p === '/api/info') return sendJson(res, 200, { version: require('../package.json').version });

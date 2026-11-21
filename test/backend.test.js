@@ -38,6 +38,8 @@ const fake = require('./fake-igdb');
   ok('planner HTML injects theme, accent, channel & hitlist hide', plannerHtml.includes('data-theme="isac"') && plannerHtml.includes('#ff7700') && plannerHtml.includes('@Survascian') && plannerHtml.includes('studio.youtube.com/channel/UC1234567890123456789012'));
   const hitlistHtml = await (await fetch(base + '/hitlist')).text();
   ok('hitlist HTML injects data-theme and keeps data-page="hitlist"', hitlistHtml.includes('data-theme="isac"') && hitlistHtml.includes('data-page="hitlist"'));
+  const mobileHtml = await (await fetch(base + '/mobile')).text();
+  ok('mobile HTML serves and injects accent & version', mobileHtml.includes('#ff7700') && mobileHtml.includes('/mobile.js') && !mobileHtml.includes('{{VERSION}}'));
   // reset back to defaults for cleanliness
   await put('/api/settings', { theme: 'default', accentColor: '#e60000', showHitList: true, useScores: false, clearYoutubeChannel: true });
   r = await j('/api/settings');

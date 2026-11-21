@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" style="--accent:{{ACCENT}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0c10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Critical Hit Studio — Mobile</title>
+<link rel="icon" type="image/png" href="/icon-72.png">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+
+<header class="mbar">
+  <div class="mbar-brand">
+    <img src="/icon-72.png" alt="Cr" class="mbar-icon">
+    <div class="mbar-titles">
+      <div class="mbar-name">CRITICAL HIT STUDIO</div>
+      <div class="mbar-sub">v{{VERSION}}<span id="mChannel" class="mbar-ch"></span></div>
+    </div>
+  </div>
+  <div id="mSaveStatus" class="msave">Saved</div>
+</header>
+
+<main class="mmain">
+
+  <!-- ==================== BOARD VIEW ==================== -->
+  <section id="viewBoard" class="mview">
+    <div id="stagePills" class="stage-pills" role="tablist" aria-label="Stages"></div>
+
+    <div class="board-controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="mSearch" type="search" placeholder="Search games, studios, series…" autocomplete="off">
+      </div>
+      <div id="formatPills" class="fmt-pills"></div>
+    </div>
+
+    <div id="boardHint" class="board-hint">Hold any game or tap <strong>⇄</strong> to move stages</div>
+    <div id="gameList" class="game-list"></div>
+  </section>
+
+  <!-- ==================== CALENDAR VIEW ==================== -->
+  <section id="viewCalendar" class="mview hidden">
+    <div class="cal-head">
+      <button type="button" id="calPrev" class="icon-btn" aria-label="Previous month">‹</button>
+      <div id="calMonthLabel" class="cal-month"></div>
+      <button type="button" id="calNext" class="icon-btn" aria-label="Next month">›</button>
+    </div>
+    <div class="cal-dow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+    <div id="calGrid" class="cal-grid"></div>
+    <div class="cal-agenda-head">
+      <span id="calAgendaTitle">Scheduled this month</span>
+      <button type="button" id="calClearDay" class="link-btn hidden">Show all month</button>
+    </div>
+    <div id="calAgenda" class="cal-agenda"></div>
+  </section>
+
+  <!-- ==================== JOURNAL VIEW ==================== -->
+  <section id="viewJournal" class="mview hidden">
+    <div class="board-controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="jSearch" type="search" placeholder="Search studio notes…" autocomplete="off">
+      </div>
+    </div>
+    <div id="journalList" class="journal-list"></div>
+  </section>
+
+  <!-- ==================== STATS VIEW ==================== -->
+  <section id="viewStats" class="mview hidden">
+    <div id="statsContent" class="stats-wrap"></div>
+  </section>
+
+</main>
+
+<!-- Floating Add Button -->
+<button type="button" id="fabAdd" class="fab" aria-label="Add game">
+  <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+</button>
+
+<!-- Bottom Navigation -->
+<nav class="bnav" aria-label="Primary">
+  <button type="button" class="bnav-btn active" data-tab="board">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="4" width="5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="17" y="4" width="4" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span>Board</span>
+  </button>
+  <button type="button" class="bnav-btn" data-tab="calendar">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Calendar</span>
+  </button>
+  <button type="button" class="bnav-btn" data-tab="journal">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h7M8 13h7M8 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Journal</span>
+  </button>
+  <button type="button" class="bnav-btn" data-tab="stats">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 20V11M10 20V5M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Stats</span>
+  </button>
+</nav>
+
+<!-- ==================== 8-ICON + CENTER X STAGE MOVE OVERLAY ==================== -->
+<div id="moveOverlay" class="move-overlay hidden" role="dialog" aria-modal="true" aria-label="Move game to stage">
+  <div class="move-card-float">
+    <div id="moveGameCover" class="move-cover"></div>
+    <div class="move-meta">
+      <div id="moveGameName" class="move-title"></div>
+      <div id="moveGameHint" class="move-sub">Slide or tap a stage</div>
+    </div>
+  </div>
+  <div id="moveGrid" class="move-grid"></div>
+</div>
+
+<!-- ==================== GAME EDITOR SHEET ==================== -->
+<div id="gameSheet" class="sheet hidden" role="dialog" aria-modal="true">
+  <div class="sheet-bar">
+    <button type="button" class="icon-btn" data-close-sheet="gameSheet" aria-label="Back">‹</button>
+    <div id="gsHeaderTitle" class="sheet-title">Game</div>
+    <button type="button" id="gsJournalBtn" class="chip-btn" title="Create journal entry">Journal It</button>
+    <button type="button" id="gsMoveBtn" class="stage-pill-btn"></button>
+  </div>
+  <div class="sheet-body">
+    <div class="sheet-hero">
+      <div id="gsCover" class="gs-cover"></div>
+      <div class="gs-hero-fields">
+        <label class="mfield"><span>Title</span><input id="gsName" type="text" placeholder="Game title"></label>
+        <div class="mgrid2">
+          <label class="mfield"><span>Format</span><select id="gsFormat"></select></label>
+          <label class="mfield"><span>Target Date</span><input id="gsDue" type="date"></label>
+        </div>
+        <div class="mgrid2">
+          <label class="mfield"><span>Timing</span>
+            <select id="gsTimely">
+              <option value="0">Evergreen</option>
+              <option value="1">Timely</option>
+            </select>
+          </label>
+          <label class="mfield"><span>Hours Played</span><input id="gsHours" type="number" min="0" step="0.5" placeholder="0"></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links (Google Docs & YouTube only — PC paths gracefully noted) -->
+    <div class="mcard">
+      <div class="mcard-title">Links</div>
+      <div class="link-row">
+        <input id="gsScript" type="url" placeholder="Google Docs script link…">
+        <a id="gsScriptOpen" class="open-btn disabled" target="_blank" rel="noopener">Open ↗</a>
+      </div>
+      <div id="gsScriptNote" class="field-note hidden"></div>
+      <div class="link-row">
+        <input id="gsVideo" type="url" placeholder="YouTube video link…">
+        <a id="gsVideoOpen" class="open-btn disabled" target="_blank" rel="noopener">Open ↗</a>
+      </div>
+    </div>
+
+    <!-- Stage Checklist -->
+    <div class="mcard">
+      <div class="mcard-head">
+        <div id="gsCheckTitle" class="mcard-title">Stage Checklist</div>
+        <span id="gsCheckProg" class="mcard-badge"></span>
+      </div>
+      <div id="gsChecks" class="check-list"></div>
+      <div class="check-add">
+        <input id="gsCheckNew" type="text" placeholder="Add checklist item…">
+        <button type="button" id="gsCheckAddBtn" class="btn-sm">Add</button>
+      </div>
+    </div>
+
+    <!-- Scratchpad & Ideas -->
+    <div class="mcard">
+      <div class="mcard-title">Scratchpad &amp; Ideas</div>
+      <label class="mfield"><span>Scratchpad</span><textarea id="gsNotes" rows="4" placeholder="Quick thoughts, funny moments, rough ideas…"></textarea></label>
+      <label class="mfield"><span>Your take</span><input id="gsAngle" type="text" placeholder="Core angle or thesis…"></label>
+      <label class="mfield"><span>Cold open</span><input id="gsHook" type="text" placeholder="First 15 seconds hook…"></label>
+    </div>
+
+    <!-- Packaging -->
+    <details class="mcard mdetails">
+      <summary class="mcard-title">Packaging (Titles &amp; Thumbnail)</summary>
+      <div class="mcard-inner">
+        <div class="title-cands">
+          <div class="tc-row"><input type="radio" name="gsChosen" value="0" aria-label="Pick title 1"><input id="gsTitle0" type="text" placeholder="Title idea 1"></div>
+          <div class="tc-row"><input type="radio" name="gsChosen" value="1" aria-label="Pick title 2"><input id="gsTitle1" type="text" placeholder="Title idea 2"></div>
+          <div class="tc-row"><input type="radio" name="gsChosen" value="2" aria-label="Pick title 3"><input id="gsTitle2" type="text" placeholder="Title idea 3"></div>
+        </div>
+        <label class="mfield"><span>Thumbnail idea</span><textarea id="gsThumb" rows="2" placeholder="Visual concept, text on thumb…"></textarea></label>
+      </div>
+    </details>
+
+    <!-- Game Details (Collapsible) -->
+    <details class="mcard mdetails">
+      <summary class="mcard-title">Game Details</summary>
+      <div class="mcard-inner">
+        <div class="mgrid2">
+          <label class="mfield"><span>Studio</span><input id="gsStudio" type="text" placeholder="Developer"></label>
+          <label class="mfield"><span>Release Date</span><input id="gsRelease" type="date"></label>
+        </div>
+        <label class="mfield"><span>Played On</span><select id="gsPlayedOn"></select></label>
+        <div class="mgrid2">
+          <label class="mfield"><span>Series / Franchise</span><input id="gsSeries" type="text" placeholder="e.g. Resident Evil"></label>
+          <label class="mfield"><span>Ownership</span><select id="gsOwnership"></select></label>
+        </div>
+        <div class="mgrid2">
+          <label class="mfield"><span>Public Hype (0–5)</span><input id="gsHype" type="number" min="0" max="5" step="1" placeholder="0"></label>
+          <label id="gsScoreWrap" class="mfield hidden"><span>Your Score (/10)</span><input id="gsScore" type="number" min="0" max="10" step="0.1" placeholder="—"></label>
+        </div>
+        <label class="mfield"><span>Genres (comma-separated)</span><input id="gsGenres" type="text" placeholder="RPG, Action"></label>
+      </div>
+    </details>
+
+    <div class="danger-row">
+      <button type="button" id="gsDeleteBtn" class="btn-danger">Delete Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ADD GAME SHEET ==================== -->
+<div id="addSheet" class="sheet hidden" role="dialog" aria-modal="true">
+  <div class="sheet-bar">
+    <button type="button" class="icon-btn" data-close-sheet="addSheet" aria-label="Close">✕</button>
+    <div class="sheet-title">Add Game</div>
+  </div>
+  <div class="sheet-body">
+    <div id="igdbSearchBlock" class="mcard">
+      <div class="mcard-title">Search IGDB</div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="addIgdbInput" type="search" placeholder="Type a game title…" autocomplete="off">
+      </div>
+      <div id="addIgdbStatus" class="field-note"></div>
+      <div id="addIgdbResults" class="igdb-results"></div>
+    </div>
+
+    <div class="mcard">
+      <div class="mcard-title">Quick Manual Add</div>
+      <label class="mfield"><span>Game Title</span><input id="addManualName" type="text" placeholder="e.g. Hollow Knight: Silksong"></label>
+      <div class="mgrid2">
+        <label class="mfield"><span>Stage</span><select id="addManualStage"></select></label>
+        <label class="mfield"><span>Format</span><select id="addManualFormat"></select></label>
+      </div>
+      <label class="mfield"><span>Target Date (optional)</span><input id="addManualDue" type="date"></label>
+      <button type="button" id="addManualBtn" class="btn-primary">Add to Planner</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JOURNAL NOTE SHEET ==================== -->
+<div id="journalSheet" class="sheet hidden" role="dialog" aria-modal="true">
+  <div class="sheet-bar">
+    <button type="button" class="icon-btn" data-close-sheet="journalSheet" aria-label="Back">‹</button>
+    <div class="sheet-title">Studio Note</div>
+    <button type="button" id="jsDeleteBtn" class="chip-btn danger">Delete</button>
+  </div>
+  <div class="sheet-body">
+    <div class="mcard">
+      <label class="mfield"><span>Title</span><input id="jsTitle" type="text" placeholder="Note title…"></label>
+      <label class="mfield"><span>Date</span><input id="jsDate" type="date"></label>
+      <label class="mfield"><span>Linked Game</span><select id="jsGame"></select></label>
+      <label class="mfield"><span>Notes</span><textarea id="jsText" rows="12" placeholder="Write your thoughts…"></textarea></label>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="mToast" class="mtoast hidden">
+  <span id="mToastMsg"></span>
+  <button type="button" id="mToastAction" class="mtoast-btn hidden"></button>
+</div>
+
+<script src="/platforms.js"></script>
+<script src="/genres.js"></script>
+<script src="/plan.js"></script>
+<script src="/awards.js"></script>
+<script src="/mobile.js"></script>
+</body>
+</html>

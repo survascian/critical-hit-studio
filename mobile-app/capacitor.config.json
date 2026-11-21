@@ -1,0 +1,11 @@
+{
+  "appId": "com.criticalhit.studio",
+  "appName": "Critical Hit Studio",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0b0c10"
+  }
+}

@@ -1,5 +1,8 @@
 node_modules/
 dist/
+mobile-app/node_modules/
+mobile-app/www/
+mobile-app/android/
 *.log
 .env
 .env.*

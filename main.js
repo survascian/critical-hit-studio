@@ -9,7 +9,18 @@ const { startServer } = require('./server/server');
 const PORT = parseInt(process.env.CHL_PORT, 10) || 8787;
 let win = null, srv = null;
 
-function inApp(url, port) { return url.startsWith(`http://127.0.0.1:${port}`) || url.startsWith(`http://localhost:${port}`); }
+function inApp(url, port) {
+  try {
+    const o = new URL(url).origin;
+    return o === `http://127.0.0.1:${port}` || o === `http://localhost:${port}`;
+  } catch (e) { return false; }
+}
+function openSafeExternal(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol === 'https:' || u.protocol === 'http:') shell.openExternal(u.href);
+  } catch (e) { /* ignore invalid or disallowed schemes */ }
+}
 
 function createWindow(port) {
   app.setAppUserModelId('com.criticalhit.studio');   // Windows: taskbar shows Critical Hit Studio with its icon
@@ -20,12 +31,12 @@ function createWindow(port) {
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true, preload: path.join(__dirname, 'preload.js'), autoplayPolicy: 'no-user-gesture-required' }
   });
   win.loadURL(`http://127.0.0.1:${port}/`);
-  // Our own pages open in-app (e.g. the Hit List preview window); anything else opens in the normal browser
+  // Our own pages open in-app (e.g. the Hit List preview window); http(s) links open in the normal browser
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (inApp(url, port)) return { action: 'allow' };
-    shell.openExternal(url); return { action: 'deny' };
+    openSafeExternal(url); return { action: 'deny' };
   });
-  win.webContents.on('will-navigate', (e, url) => { if (!inApp(url, port)) { e.preventDefault(); shell.openExternal(url); } });
+  win.webContents.on('will-navigate', (e, url) => { if (!inApp(url, port)) { e.preventDefault(); openSafeExternal(url); } });
   win.on('closed', () => { win = null; });
 }
 

@@ -99,7 +99,10 @@ function startServer(opts) {
     }
     const origin = req.headers.origin;
     if (origin && req.method !== 'GET' && req.method !== 'HEAD') {
-      try { const o = new URL(origin); if (!lan && o.hostname !== '127.0.0.1' && o.hostname !== 'localhost') return false; } catch (e) { return false; }
+      try {
+        const o = new URL(origin);
+        if (!lan && o.origin !== `http://127.0.0.1:${port}` && o.origin !== `http://localhost:${port}`) return false;
+      } catch (e) { return false; }
     }
     return true;
   }

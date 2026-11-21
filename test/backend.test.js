@@ -85,6 +85,8 @@ const fake = require('./fake-igdb');
   ok('foreign Host header (DNS rebinding) rejected', evil === 403, String(evil));
   rr = await fetch(base + '/api/planner', { method: 'PUT', headers: { Origin: 'https://evil.example.com', 'Content-Type': 'application/json' }, body: '{"games":[]}' });
   ok('cross-site write rejected', rr.status === 403, String(rr.status));
+  rr = await fetch(base + '/api/planner', { method: 'PUT', headers: { Origin: 'http://localhost:3000', 'Content-Type': 'application/json' }, body: '{"games":[]}' });
+  ok('other localhost port write rejected', rr.status === 403, String(rr.status));
   rr = await fetch(base + '/media/..%2Fsettings.json');
   ok('path traversal blocked', rr.status === 400 || rr.status === 404, String(rr.status));
   rr = await fetch(base + '/api/img/..%2F..%2Fx', { method: 'PUT', body: 'x' });

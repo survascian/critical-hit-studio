@@ -43,6 +43,21 @@ function coverUrlOf(g) {
   if (g.coverThumb && /^data:image\//.test(g.coverThumb)) return g.coverThumb;
   return hasLocalApi ? (g.cover || '') : '';
 }
+function setCoverEl(el, g) {
+  const url = safeUrl(coverUrlOf(g));
+  const fallback = (g && g.name ? g.name : '?').charAt(0).toUpperCase();
+  el.innerHTML = '';
+  if (url) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = () => { el.textContent = fallback; };
+    el.appendChild(img);
+  } else {
+    el.textContent = fallback;
+  }
+}
 const todayIso = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 const stageObj = (id) => STAGES.find((s) => s.id === id) || STAGES[0];
 const studioOf = (g) => (g.developers || []).join(', ');
@@ -194,10 +209,7 @@ let moveState = null; // { gameId, mode: 'drag' | 'tap', hoverStage: string | nu
 function openMoveOverlay(gameId, mode, fromSheet) {
   const g = findGame(gameId); if (!g) return;
   moveState = { gameId, mode, hoverStage: null, fromSheet: !!fromSheet };
-  const cov = $('moveGameCover');
-  const covUrl = coverUrlOf(g);
-  cov.style.backgroundImage = cssUrl(covUrl);
-  cov.textContent = covUrl ? '' : (g.name || '?').charAt(0).toUpperCase();
+  setCoverEl($('moveGameCover'), g);
   $('moveGameName').textContent = g.name || 'Untitled';
   $('moveGameHint').textContent = mode === 'drag' ? 'Slide onto a stage and release (✕ to cancel)' : 'Tap a stage to move (✕ to cancel)';
 
@@ -419,9 +431,8 @@ function makeGameCard(g) {
   }
   if (g.video && g.video.views != null) chips.push(`<span class="mchip video">▶ ${compact(g.video.views)}</span>`);
 
-  const covUrl = coverUrlOf(g);
   el.innerHTML = `
-    <div class="gcard-cover" style="background-image:${cssUrl(covUrl)}">${covUrl ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div>
+    <div class="gcard-cover"></div>
     <div class="gcard-body">
       <div class="gcard-title">${esc(g.name || 'Untitled')}</div>
       <div class="gcard-sub">${esc(studioOf(g) || g.stage)}</div>
@@ -429,6 +440,7 @@ function makeGameCard(g) {
     </div>
     <button type="button" class="gcard-move-btn" aria-label="Move stage" title="Move stage">⇄</button>
   `;
+  setCoverEl(el.querySelector('.gcard-cover'), g);
   bindCardInteractions(el, g);
   return el;
 }
@@ -475,10 +487,7 @@ function populateGameSheet(g) {
   mv.textContent = g.stage + ' ⇄';
   mv.style.setProperty('--sc', st.color);
 
-  const cov = $('gsCover');
-  const covUrl = coverUrlOf(g);
-  cov.style.backgroundImage = cssUrl(covUrl);
-  cov.textContent = covUrl ? '' : (g.name || '?').charAt(0).toUpperCase();
+  setCoverEl($('gsCover'), g);
 
   $('gsName').value = g.name || '';
   fillSelect($('gsFormat'), formatsOf().map((f) => ({ value: f.id, label: f.label })), g.format || '', '— None —');
@@ -934,6 +943,12 @@ function initMobileCloud() {
 
   $('mCloudBtn').onclick = () => $('cloudSheet').classList.remove('hidden');
 
+  function posterStats() {
+    const total = (state.games || []).length;
+    const withArt = (state.games || []).filter((g) => !!safeUrl(coverUrlOf(g))).length;
+    return `${total} games · ${withArt} posters`;
+  }
+
   function applyRemote(remoteDoc, fromLive) {
     if (!remoteDoc) return;
     state = CHL_CLOUD.mergeStates(state, remoteDoc);
@@ -943,6 +958,7 @@ function initMobileCloud() {
     if (hasLocalApi) { skipCloudPush = true; save(true); }
     renderAll();
     if (openGameId) { const g = findGame(openGameId); if (g) populateGameSheet(g); }
+    setMsg(`Synced at ${new Date().toLocaleTimeString()} · ${posterStats()}`);
     if (fromLive) toast('Synced from PC', null, 2200);
   }
 
@@ -953,7 +969,7 @@ function initMobileCloud() {
       const rem = await CHL_CLOUD.pullOnce();
       if (rem) applyRemote(rem, false);
       await CHL_CLOUD.pushState(state);
-      setMsg('Synced at ' + new Date().toLocaleTimeString());
+      setMsg(`Synced at ${new Date().toLocaleTimeString()} · ${posterStats()}`);
       if (showToast) toast('Cloud sync complete');
     } catch (e) { setMsg('Sync failed: ' + e.message); }
   }

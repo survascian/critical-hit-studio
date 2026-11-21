@@ -30,9 +30,14 @@
       const loc = map.get(rem.id);
       if (!loc) { map.set(rem.id, Object.assign({}, rem)); return; }
       const winner = tsOf(rem) >= tsOf(loc) ? Object.assign({}, loc, rem) : Object.assign({}, rem, loc);
-      // Preserve PC-only fields if remote side left them blank
-      if (preserveLocalKeys && tsOf(rem) >= tsOf(loc)) {
-        preserveLocalKeys.forEach((k) => { if ((winner[k] == null || winner[k] === '') && loc[k]) winner[k] = loc[k]; });
+      // Preserve non-empty media / PC-only fields from either side so a device without art never wipes it
+      if (preserveLocalKeys) {
+        preserveLocalKeys.forEach((k) => {
+          if (winner[k] == null || winner[k] === '') {
+            if (loc[k]) winner[k] = loc[k];
+            else if (rem[k]) winner[k] = rem[k];
+          }
+        });
       }
       map.set(rem.id, winner);
     });

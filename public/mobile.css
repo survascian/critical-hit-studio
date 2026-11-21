@@ -143,10 +143,13 @@ body {
   border-color: var(--stage, var(--accent));
 }
 .gcard-cover {
-  width: 52px; height: 70px; border-radius: 7px; flex-shrink: 0;
-  background-color: var(--panel2); background-size: cover; background-position: center;
+  width: 52px; height: 70px; border-radius: 7px; flex-shrink: 0; overflow: hidden;
+  background-color: var(--panel2);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 20px; color: var(--muted);
+}
+.gcard-cover img, .move-cover img, .gs-cover img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .gcard-body { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
 .gcard-title {
@@ -208,8 +211,8 @@ body {
 }
 @keyframes floatUp { from { transform: translateY(12px) scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
 .move-cover {
-  width: 38px; height: 50px; border-radius: 6px; flex-shrink: 0;
-  background: var(--panel); background-size: cover; background-position: center;
+  width: 38px; height: 50px; border-radius: 6px; flex-shrink: 0; overflow: hidden;
+  background: var(--panel);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Orbitron', sans-serif; font-weight: 800; color: var(--muted);
 }
@@ -334,8 +337,8 @@ body {
 
 .sheet-hero { display: flex; gap: 12px; align-items: flex-start; }
 .gs-cover {
-  width: 78px; height: 106px; border-radius: 10px; flex-shrink: 0;
-  background: var(--panel2); background-size: cover; background-position: center;
+  width: 78px; height: 106px; border-radius: 10px; flex-shrink: 0; overflow: hidden;
+  background: var(--panel2);
   border: 1px solid var(--line2);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 26px; color: var(--muted);

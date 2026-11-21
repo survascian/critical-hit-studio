@@ -70,15 +70,6 @@ Open a game in the Planner and paste the script's Google Docs link into **Script
 On Windows, in this folder: `npm install` (first time only), then `npm run dist`. The installer and a portable .exe appear in `dist/`.
 The installer creates Desktop and Start-menu shortcuts. Uninstalling keeps your data in `%APPDATA%\Critical Hit Studio\`.
 
-## New in 1.3
-- **Genre order:** IGDB lists gameplay genres (Shooter, Adventure) apart from themes (Horror, Survival). The app now puts a defining theme first (Horror, or Survival Horror when both are listed) and sorts gameplay genres from specific to generic, so RPG and Fighting lead and Adventure and Indie come last. In a game's drawer, tap a chip under **Genre** to make it the headline, or type your own. Genres you set by hand are never overwritten. Old games need **Settings → Re-sync all games from IGDB** once to pick up themes. The rules live in `public/genres.js`.
-- **Your score, target date and tags** on every game. Target dates show on the card and the **Calendar** view. Tags/series are searchable in the filter box.
-- **Stage checklists:** each stage has a to-do list that games get when they enter it. Edit the defaults in Settings. The card shows `TASKS 2/4`.
-- **Published video:** paste the YouTube link to show views on the card. Views, likes and comments need a free YouTube Data API key (Settings → YouTube stats).
-- **Stats view:** pipeline, time in stages, average score by platform and genre, hours, video views.
-- **Undo:** deleting a game shows an Undo button for 10 seconds.
-- **Published prompt:** moving a game to Published offers to send it to the Critical Hit List.
-
 ## New in 1.8.0
 
 - **Video format** replaces Tags / Series. Pick Critical Hit List, Critical Bite, Supercut or Funny Moments in a game's editor. The **video plan changes with the format**: Hit List gets Your take, Spoiler line and Where it lands; Bite gets a one-line take; Supercut gets Throughline, Target length and Hours of footage; Funny Moments gets Who was there and The setup. Each format loads its own starter outline when the outline is empty. Games whose old tags mentioned a format were converted automatically.
@@ -139,3 +130,12 @@ Nothing here needs new keys or accounts. Everything is saved with the game in pl
 - **Calendar drag and drop:** drag a game onto a day to set its target date, onto another day to move it, or onto "No target date yet" to clear it.
 - **Board cards (Settings):** switch individual pieces on or off: studio, cover, platform, year, genre, hype, time to beat, hours, score, target date, tasks, video views, tags, script and launch buttons, "On Hit List". "Title only" hides everything at once.
 - **SteamGridDB art:** add your key in Settings, then in a game's drawer pick a **poster**, a **banner** (used for the Critical Hit List) and a **logo**. Tick "Show the logo instead of the title on the board" to use the logo on the card. The send-to-Hit-List dialog also has **Change banner**. Art you pick is kept when you refresh from IGDB; **Reset art** goes back to IGDB's.
+
+## New in 1.3
+- **Genre order:** IGDB lists gameplay genres (Shooter, Adventure) apart from themes (Horror, Survival). The app now puts a defining theme first (Horror, or Survival Horror when both are listed) and sorts gameplay genres from specific to generic, so RPG and Fighting lead and Adventure and Indie come last. In a game's drawer, tap a chip under **Genre** to make it the headline, or type your own. Genres you set by hand are never overwritten. Old games need **Settings → Re-sync all games from IGDB** once to pick up themes. The rules live in `public/genres.js`.
+- **Your score, target date and tags** on every game. Target dates show on the card and the **Calendar** view. Tags/series are searchable in the filter box.
+- **Stage checklists:** each stage has a to-do list that games get when they enter it. Edit the defaults in Settings. The card shows `TASKS 2/4`.
+- **Published video:** paste the YouTube link to show views on the card. Views, likes and comments need a free YouTube Data API key (Settings → YouTube stats).
+- **Stats view:** pipeline, time in stages, average score by platform and genre, hours, video views.
+- **Undo:** deleting a game shows an Undo button for 10 seconds.
+- **Published prompt:** moving a game to Published offers to send it to the Critical Hit List.

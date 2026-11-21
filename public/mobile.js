@@ -31,14 +31,16 @@ const PL = CHL_PLAN;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const safeUrl = (u) => (/^(\/media\/|https?:\/\/)/.test(u || '') ? u : '');
+const safeUrl = (u) => (/^(\/media\/|https?:\/\/|data:image\/(jpeg|png|webp);base64,)/.test(u || '') ? u : '');
 const cssUrl = (u) => (safeUrl(u) ? `url('${safeUrl(u).replace(/['"<>\s]/g, (c) => encodeURIComponent(c))}')` : 'none');
 let hasLocalApi = false;
 function coverUrlOf(g) {
   if (!g) return '';
   if (g.cover && /^https?:\/\//.test(g.cover)) return g.cover;
   if (hasLocalApi && g.cover && g.cover.startsWith('/media/')) return g.cover;
+  if (g.coverRemote && /^https?:\/\//.test(g.coverRemote)) return g.coverRemote;
   if (g.coverId) return `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.coverId}.jpg`;
+  if (g.coverThumb && /^data:image\//.test(g.coverThumb)) return g.coverThumb;
   return hasLocalApi ? (g.cover || '') : '';
 }
 const todayIso = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };

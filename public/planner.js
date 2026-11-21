@@ -500,6 +500,8 @@ function gameFromIgdb(d, existing) {
     igdbId: g.igdbId, slug: g.slug, summary: g.summary, developers: g.developers, publishers: g.publishers, platforms: g.platforms,
     releaseDate: g.releaseDate, igdbHypes: g.hypes, follows: g.follows, rating: g.rating,
     cover: ex.coverCustom ? ex.cover : (g.cover || ex.cover || ''), banner: ex.bannerCustom ? ex.banner : (g.banner || ex.banner || ''),   // art you picked yourself is kept
+    coverId: g.coverId || ex.coverId || null,
+    coverRemote: ex.coverCustom ? (ex.coverRemote || '') : (g.coverId ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.coverId}.jpg` : (ex.coverRemote || '')),
     ttb: d.ttb, syncedAt: Date.now()
   });
 }
@@ -1289,15 +1291,15 @@ $('artGrid').addEventListener('click', async (e) => {
     const { path } = await api('/api/sgdb/pick', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: it.url, kind: art.kind, game: art.sgdbId }) });
     const done = art.done; art = null;
     closeModal('artModal');
-    if (done) done(g, path);
+    if (done) done(g, path, it.url);
   } catch (err) { $('artHint').textContent = err.message; }
   $('artGrid').classList.remove('busy');
 });
 $('artSearchBtn').onclick = artSearch;
 $('artSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); artSearch(); } });
 function applyArt(kind) {
-  return (g, path) => {
-    if (kind === 'grid') { g.cover = path; g.coverCustom = true; }
+  return (g, path, remoteUrl) => {
+    if (kind === 'grid') { g.cover = path; g.coverCustom = true; if (remoteUrl && /^https:\/\//.test(remoteUrl)) { g.coverRemote = remoteUrl; delete g.coverThumb; } }
     else if (kind === 'hero') { g.banner = path; g.bannerCustom = true; }
     else { const first = !g.logo; g.logo = path; if (first) g.useLogo = true; }
     save(true); renderBoard();
@@ -1757,12 +1759,45 @@ function initCloudSync() {
     if (fromLive) toast('Synced update from cloud', null, 2500);
   }
 
+  function makeThumb(url) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const w = 140, h = Math.max(80, Math.min(200, Math.round((img.naturalHeight / (img.naturalWidth || 1)) * w)));
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(c.toDataURL('image/jpeg', 0.72));
+        } catch (e) { resolve(''); }
+      };
+      img.onerror = () => resolve('');
+      img.src = url;
+    });
+  }
+  async function ensureMobileThumbs() {
+    let added = false;
+    let totalBytes = JSON.stringify(state).length;
+    for (const g of state.games) {
+      if (totalBytes > 700000) break; // keep well under Firestore 1MB doc limit
+      if (g.coverRemote || g.coverId || g.coverThumb) continue;
+      if (!g.cover || !g.cover.startsWith('/media/')) continue;
+      const thumb = await makeThumb(g.cover);
+      if (thumb && thumb.length < 20000) {
+        g.coverThumb = thumb;
+        totalBytes += thumb.length;
+        added = true;
+      }
+    }
+    if (added) { skipCloudPush = true; save(true); }
+  }
+
   async function syncNow(showToast) {
     if (!CHL_CLOUD.getUser()) return;
     setCloudMsg('Syncing…');
     try {
       const rem = await CHL_CLOUD.pullOnce();
       if (rem) applyMerged(rem, false);
+      await ensureMobileThumbs();
       await CHL_CLOUD.pushState(state);
       setCloudMsg('Synced at ' + new Date().toLocaleTimeString());
       if (showToast) toast('Cloud sync complete');

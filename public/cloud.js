@@ -48,7 +48,7 @@
     if (remEmpty && !locEmpty) return loc;
     return Object.assign({}, loc, rem, {
       version: Math.max(loc.version || 1, rem.version || 1),
-      games: mergeLists(loc.games, rem.games, ['launchTarget', 'projectFolder', 'cover', 'banner', 'logo']),
+      games: mergeLists(loc.games, rem.games, ['launchTarget', 'projectFolder', 'cover', 'coverId', 'coverRemote', 'coverThumb', 'banner', 'logo']),
       journal: mergeLists(loc.journal, rem.journal),
       formats: rem.formats || loc.formats || null,
       ownerships: rem.ownerships || loc.ownerships || null,

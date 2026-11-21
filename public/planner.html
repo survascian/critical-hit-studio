@@ -26,6 +26,7 @@
   <script src="/tier.js"></script>
   <script src="/awards.js"></script>
   <script src="/plan.js"></script>
+  <script src="/cloud.js"></script>
   <script src="/planner.js" defer></script>
 </head>
 <body>
@@ -409,6 +410,29 @@
 
           <!-- DATA & BACKUP -->
           <div class="set-panel hidden" data-spanel="data">
+            <section class="set-sec">
+              <h4>Cloud Sync <small>(PC ↔ Phone, optional)</small></h4>
+              <p class="muted small">Sign in with an email &amp; password to automatically sync your planner &amp; journal between your PC and the mobile app in real time. Local backups always stay on this PC.</p>
+              <div id="cloudSignedOut">
+                <div class="grid2">
+                  <label>Email<input id="cloudEmail" class="field" type="email" autocomplete="email" placeholder="you@example.com"></label>
+                  <label>Password<input id="cloudPass" class="field" type="password" autocomplete="current-password" placeholder="Min 6 characters"></label>
+                </div>
+                <div class="row">
+                  <button id="cloudSignIn" class="btn primary" type="button">SIGN IN</button>
+                  <button id="cloudSignUp" class="btn" type="button">CREATE ACCOUNT</button>
+                  <button id="cloudReset" class="btn" type="button">Forgot password?</button>
+                </div>
+              </div>
+              <div id="cloudSignedIn" class="hidden">
+                <p class="small">Signed in as <b id="cloudUserEmail"></b> · <span class="muted">Real-time sync active</span></p>
+                <div class="row">
+                  <button id="cloudSyncNow" class="btn primary" type="button">SYNC NOW</button>
+                  <button id="cloudSignOut" class="btn danger" type="button">Sign out</button>
+                </div>
+              </div>
+              <p class="muted small" id="cloudMsg"></p>
+            </section>
             <section class="set-sec">
               <h4>Your data</h4>
               <p class="muted small">Everything is saved automatically on this computer, with a daily backup of the planner. You can also export or restore a JSON copy anytime. <span id="verLine"></span></p>

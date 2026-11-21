@@ -66,7 +66,7 @@ async function api(path, opts) {
 }
 const putJson = (path, obj) => api(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
 
-let saveTimer = null, dirty = false, saving = false, retryTimer = null;
+let saveTimer = null, dirty = false, saving = false, retryTimer = null, skipCloudPush = false;
 let loaded = false;          // never save before the stored board has loaded, so a failed load can't wipe it
 function setStatus(kind, msg) {
   const el = $('saveStatus');
@@ -83,7 +83,14 @@ async function flush() {
   if (!loaded) { setStatus('error', 'Your board has not loaded, so nothing is being saved (this protects your data). Restart the app.'); return; }
   if (saving || !dirty) return;
   saving = true; dirty = false;
-  try { await putJson('/api/planner', state); saving = false; setStatus(dirty ? 'saving' : 'saved'); if (dirty) flush(); }
+  const doCloud = !skipCloudPush; skipCloudPush = false;
+  try {
+    await putJson('/api/planner', state);
+    if (doCloud && window.CHL_CLOUD && CHL_CLOUD.getUser()) {
+      CHL_CLOUD.pushState(state).catch(() => {});
+    }
+    saving = false; setStatus(dirty ? 'saving' : 'saved'); if (dirty) flush();
+  }
   catch (e) { saving = false; dirty = true; setStatus('error', e.message); clearTimeout(retryTimer); retryTimer = setTimeout(flush, 3000); }
 }
 window.addEventListener('pagehide', () => { if (dirty) { try { fetch('/api/planner', { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) }); } catch (e) { /* best effort */ } } });
@@ -1729,4 +1736,74 @@ document.addEventListener('keydown', (e) => {
   await loadSettings();
   try { if (loaded && state.games.length === 0 && !localStorage.getItem('chl_wiz_done')) openWizard(); } catch (e) {}
   api('/api/info').then((i) => { $('verLine').textContent = 'Critical Hit Studio v' + i.version + '.'; }).catch(() => {});
+  initCloudSync();
 })();
+
+// ------------------------------------------------------------------ Cloud Sync (Firebase)
+function initCloudSync() {
+  if (!window.CHL_CLOUD) return;
+  const setCloudMsg = (t, isErr) => { const el = $('cloudMsg'); if (!el) return; el.textContent = t || ''; el.className = 'small ' + (isErr ? 'bad' : 'muted'); };
+  let syncedUid = null;
+
+  function applyMerged(remoteDoc, fromLive) {
+    if (!remoteDoc || !loaded) return;
+    const merged = CHL_CLOUD.mergeStates(state, remoteDoc);
+    merged.games = (merged.games || []).map((g) => initGame(Object.assign({ stage: 'Backlogged', developers: [], genres: [], platforms: [], publishers: [], hype: 0, hoursPlayed: 0 }, g)));
+    merged.journal = (merged.journal || []).map(PL.normJournal);
+    state = merged;
+    skipCloudPush = true;
+    save(true);
+    renderBoard();
+    if (fromLive) toast('Synced update from cloud', null, 2500);
+  }
+
+  async function syncNow(showToast) {
+    if (!CHL_CLOUD.getUser()) return;
+    setCloudMsg('Syncing…');
+    try {
+      const rem = await CHL_CLOUD.pullOnce();
+      if (rem) applyMerged(rem, false);
+      await CHL_CLOUD.pushState(state);
+      setCloudMsg('Synced at ' + new Date().toLocaleTimeString());
+      if (showToast) toast('Cloud sync complete');
+    } catch (e) { setCloudMsg('Sync failed: ' + e.message, true); }
+  }
+
+  CHL_CLOUD.init({
+    onAuth: async (user) => {
+      $('cloudSignedOut').classList.toggle('hidden', !!user);
+      $('cloudSignedIn').classList.toggle('hidden', !user);
+      if (user) {
+        $('cloudUserEmail').textContent = user.email || 'Signed in';
+        if (syncedUid !== user.uid) { syncedUid = user.uid; await syncNow(false); }
+      } else {
+        syncedUid = null;
+        setCloudMsg('');
+      }
+    },
+    onRemoteState: (remoteDoc) => applyMerged(remoteDoc, true),
+    onStatus: (kind, msg) => { if (kind === 'error') setCloudMsg(msg, true); }
+  });
+
+  $('cloudSignIn').onclick = async () => {
+    setCloudMsg('Signing in…');
+    try { await CHL_CLOUD.signIn($('cloudEmail').value, $('cloudPass').value); $('cloudPass').value = ''; }
+    catch (e) { setCloudMsg(e.message, true); }
+  };
+  $('cloudSignUp').onclick = async () => {
+    setCloudMsg('Creating account…');
+    try { await CHL_CLOUD.signUp($('cloudEmail').value, $('cloudPass').value); $('cloudPass').value = ''; toast('Account created & syncing!'); }
+    catch (e) { setCloudMsg(e.message, true); }
+  };
+  $('cloudReset').onclick = async () => {
+    const email = $('cloudEmail').value.trim();
+    if (!email) { setCloudMsg('Enter your email above first.', true); return; }
+    try { await CHL_CLOUD.resetPassword(email); setCloudMsg('Password reset email sent to ' + email + '.'); }
+    catch (e) { setCloudMsg(e.message, true); }
+  };
+  $('cloudSyncNow').onclick = () => syncNow(true);
+  $('cloudSignOut').onclick = async () => {
+    await CHL_CLOUD.signOut();
+    toast('Signed out of Cloud Sync (local data kept)');
+  };
+}

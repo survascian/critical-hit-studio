@@ -20,7 +20,10 @@
       <div class="mbar-sub">v{{VERSION}}<span id="mChannel" class="mbar-ch"></span></div>
     </div>
   </div>
-  <div id="mSaveStatus" class="msave">Saved</div>
+  <div class="mbar-right">
+    <button type="button" id="mCloudBtn" class="mcloud-btn" title="Cloud Sync">☁ Sync</button>
+    <div id="mSaveStatus" class="msave">Saved</div>
+  </div>
 </header>
 
 <main class="mmain">
@@ -263,6 +266,35 @@
   </div>
 </div>
 
+<!-- ==================== CLOUD SYNC SHEET ==================== -->
+<div id="cloudSheet" class="sheet hidden" role="dialog" aria-modal="true">
+  <div class="sheet-bar">
+    <button type="button" class="icon-btn" data-close-sheet="cloudSheet" aria-label="Close">✕</button>
+    <div class="sheet-title">Cloud Sync</div>
+  </div>
+  <div class="sheet-body">
+    <div id="mCloudSignedOut" class="mcard">
+      <div class="mcard-title">Sync PC &amp; Phone</div>
+      <div class="field-note">Sign in with the same email &amp; password you use in Critical Hit Studio on PC to keep your board and journal synced live.</div>
+      <label class="mfield"><span>Email</span><input id="mCloudEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+      <label class="mfield"><span>Password</span><input id="mCloudPass" type="password" autocomplete="current-password" placeholder="Min 6 characters"></label>
+      <button type="button" id="mCloudSignIn" class="btn-primary">Sign In</button>
+      <div class="mgrid2">
+        <button type="button" id="mCloudSignUp" class="chip-btn" style="padding:10px">Create Account</button>
+        <button type="button" id="mCloudReset" class="chip-btn" style="padding:10px">Forgot Password</button>
+      </div>
+    </div>
+    <div id="mCloudSignedIn" class="mcard hidden">
+      <div class="mcard-title">Connected</div>
+      <div id="mCloudEmailLbl" style="font-weight:700;font-size:16px"></div>
+      <div class="field-note">Real-time sync is active. Changes sync automatically between your PC and phone.</div>
+      <button type="button" id="mCloudSyncNow" class="btn-primary">Sync Now</button>
+      <button type="button" id="mCloudSignOut" class="btn-danger">Sign Out</button>
+    </div>
+    <div id="mCloudMsg" class="field-note" style="text-align:center"></div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="mToast" class="mtoast hidden">
   <span id="mToastMsg"></span>
@@ -273,6 +305,7 @@
 <script src="/genres.js"></script>
 <script src="/plan.js"></script>
 <script src="/awards.js"></script>
+<script src="/cloud.js"></script>
 <script src="/mobile.js"></script>
 </body>
 </html>

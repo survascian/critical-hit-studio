@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "server": "node server/server.js",
-    "test": "node test/platforms.test.js && node test/genres.test.js && node test/tier.test.js && node test/awards.test.js && node test/plan.test.js && node test/launcher.test.js && node test/sgdb.test.js && node test/youtube-genres.test.js && node test/backend.test.js",
+    "test": "node test/platforms.test.js && node test/genres.test.js && node test/tier.test.js && node test/awards.test.js && node test/plan.test.js && node test/cloud.test.js && node test/launcher.test.js && node test/sgdb.test.js && node test/youtube-genres.test.js && node test/backend.test.js",
     "dist": "electron-builder --win --x64"
   },
   "build": {

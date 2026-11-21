@@ -33,6 +33,14 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':
 const uid = () => 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const safeUrl = (u) => (/^(\/media\/|https?:\/\/)/.test(u || '') ? u : '');
 const cssUrl = (u) => (safeUrl(u) ? `url('${safeUrl(u).replace(/['"<>\s]/g, (c) => encodeURIComponent(c))}')` : 'none');
+let hasLocalApi = false;
+function coverUrlOf(g) {
+  if (!g) return '';
+  if (g.cover && /^https?:\/\//.test(g.cover)) return g.cover;
+  if (hasLocalApi && g.cover && g.cover.startsWith('/media/')) return g.cover;
+  if (g.coverId) return `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.coverId}.jpg`;
+  return hasLocalApi ? (g.cover || '') : '';
+}
 const todayIso = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 const stageObj = (id) => STAGES.find((s) => s.id === id) || STAGES[0];
 const studioOf = (g) => (g.developers || []).join(', ');
@@ -41,7 +49,10 @@ const vibrate = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } 
 
 let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null };
 let appSettings = { igdbConfigured: false, accentColor: '#e60000', useScores: false, youtubeChannel: null };
-let loaded = false, dirty = false, saving = false, saveTimer = null, retryTimer = null;
+let loaded = false, dirty = false, saving = false, saveTimer = null, retryTimer = null, skipCloudPush = false;
+const LOCAL_CACHE_KEY = 'chl_mobile_state_v1';
+function cacheLocal() { try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(state)); } catch (e) {} }
+function loadLocalCache() { try { const s = localStorage.getItem(LOCAL_CACHE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
 
 let activeTab = 'board';
 let selectedStage = 'ACTIVE'; // 'ACTIVE' or stage id
@@ -85,8 +96,13 @@ function save(immediate) {
 async function flush() {
   if (!loaded || saving || !dirty) return;
   saving = true; dirty = false;
+  const doCloud = !skipCloudPush; skipCloudPush = false;
+  cacheLocal();
   try {
-    await putJson('/api/planner', state);
+    const tasks = [];
+    if (hasLocalApi) tasks.push(putJson('/api/planner', state));
+    if (doCloud && window.CHL_CLOUD && CHL_CLOUD.getUser()) tasks.push(CHL_CLOUD.pushState(state));
+    if (tasks.length) await Promise.all(tasks);
     saving = false; setSaveStatus(dirty ? 'saving' : 'saved');
     if (dirty) flush();
   } catch (e) {
@@ -96,7 +112,10 @@ async function flush() {
 }
 window.addEventListener('pagehide', () => {
   if (dirty && loaded) {
-    try { fetch('/api/planner', { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) }); } catch (e) {}
+    cacheLocal();
+    if (hasLocalApi) {
+      try { fetch('/api/planner', { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) }); } catch (e) {}
+    }
   }
 });
 
@@ -174,8 +193,9 @@ function openMoveOverlay(gameId, mode, fromSheet) {
   const g = findGame(gameId); if (!g) return;
   moveState = { gameId, mode, hoverStage: null, fromSheet: !!fromSheet };
   const cov = $('moveGameCover');
-  cov.style.backgroundImage = cssUrl(g.cover);
-  cov.textContent = g.cover ? '' : (g.name || '?').charAt(0).toUpperCase();
+  const covUrl = coverUrlOf(g);
+  cov.style.backgroundImage = cssUrl(covUrl);
+  cov.textContent = covUrl ? '' : (g.name || '?').charAt(0).toUpperCase();
   $('moveGameName').textContent = g.name || 'Untitled';
   $('moveGameHint').textContent = mode === 'drag' ? 'Slide onto a stage and release (✕ to cancel)' : 'Tap a stage to move (✕ to cancel)';
 
@@ -397,8 +417,9 @@ function makeGameCard(g) {
   }
   if (g.video && g.video.views != null) chips.push(`<span class="mchip video">▶ ${compact(g.video.views)}</span>`);
 
+  const covUrl = coverUrlOf(g);
   el.innerHTML = `
-    <div class="gcard-cover" style="background-image:${cssUrl(g.cover)}">${g.cover ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div>
+    <div class="gcard-cover" style="background-image:${cssUrl(covUrl)}">${covUrl ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div>
     <div class="gcard-body">
       <div class="gcard-title">${esc(g.name || 'Untitled')}</div>
       <div class="gcard-sub">${esc(studioOf(g) || g.stage)}</div>
@@ -453,8 +474,9 @@ function populateGameSheet(g) {
   mv.style.setProperty('--sc', st.color);
 
   const cov = $('gsCover');
-  cov.style.backgroundImage = cssUrl(g.cover);
-  cov.textContent = g.cover ? '' : (g.name || '?').charAt(0).toUpperCase();
+  const covUrl = coverUrlOf(g);
+  cov.style.backgroundImage = cssUrl(covUrl);
+  cov.textContent = covUrl ? '' : (g.name || '?').charAt(0).toUpperCase();
 
   $('gsName').value = g.name || '';
   fillSelect($('gsFormat'), formatsOf().map((f) => ({ value: f.id, label: f.label })), g.format || '', '— None —');
@@ -902,10 +924,94 @@ function renderAll() {
   else if (activeTab === 'stats') renderStats();
 }
 
+// ------------------------------------------------------------------ CLOUD SYNC (FIREBASE)
+function initMobileCloud() {
+  if (!window.CHL_CLOUD) return;
+  const setMsg = (t) => { $('mCloudMsg').textContent = t || ''; };
+  let syncedUid = null;
+
+  $('mCloudBtn').onclick = () => $('cloudSheet').classList.remove('hidden');
+
+  function applyRemote(remoteDoc, fromLive) {
+    if (!remoteDoc) return;
+    state = CHL_CLOUD.mergeStates(state, remoteDoc);
+    state.games = (state.games || []).map((g) => { ensureHistory(g); ensureChecks(g, g.stage); return g; });
+    state.journal = (state.journal || []).map(PL.normJournal);
+    cacheLocal();
+    if (hasLocalApi) { skipCloudPush = true; save(true); }
+    renderAll();
+    if (openGameId) { const g = findGame(openGameId); if (g) populateGameSheet(g); }
+    if (fromLive) toast('Synced from PC', null, 2200);
+  }
+
+  async function syncNow(showToast) {
+    if (!CHL_CLOUD.getUser()) return;
+    setMsg('Syncing…');
+    try {
+      const rem = await CHL_CLOUD.pullOnce();
+      if (rem) applyRemote(rem, false);
+      await CHL_CLOUD.pushState(state);
+      setMsg('Synced at ' + new Date().toLocaleTimeString());
+      if (showToast) toast('Cloud sync complete');
+    } catch (e) { setMsg('Sync failed: ' + e.message); }
+  }
+
+  CHL_CLOUD.init({
+    onAuth: async (user) => {
+      $('mCloudSignedOut').classList.toggle('hidden', !!user);
+      $('mCloudSignedIn').classList.toggle('hidden', !user);
+      $('mCloudBtn').classList.toggle('online', !!user);
+      $('mCloudBtn').textContent = user ? '☁ Synced' : '☁ Sign in';
+      if (user) {
+        $('mCloudEmailLbl').textContent = user.email || 'Signed in';
+        if (syncedUid !== user.uid) { syncedUid = user.uid; await syncNow(false); }
+      } else {
+        syncedUid = null;
+        setMsg('');
+        if (!hasLocalApi && (!state.games || !state.games.length)) {
+          $('cloudSheet').classList.remove('hidden');
+        }
+      }
+    },
+    onRemoteState: (remoteDoc) => applyRemote(remoteDoc, true),
+    onStatus: (kind, msg) => { if (kind === 'error') setMsg(msg); }
+  });
+
+  $('mCloudSignIn').onclick = async () => {
+    setMsg('Signing in…');
+    try { await CHL_CLOUD.signIn($('mCloudEmail').value, $('mCloudPass').value); $('mCloudPass').value = ''; closeSheet('cloudSheet'); toast('Signed in & syncing!'); }
+    catch (e) { setMsg(e.message); }
+  };
+  $('mCloudSignUp').onclick = async () => {
+    setMsg('Creating account…');
+    try { await CHL_CLOUD.signUp($('mCloudEmail').value, $('mCloudPass').value); $('mCloudPass').value = ''; closeSheet('cloudSheet'); toast('Account created & syncing!'); }
+    catch (e) { setMsg(e.message); }
+  };
+  $('mCloudReset').onclick = async () => {
+    const email = $('mCloudEmail').value.trim();
+    if (!email) { setMsg('Enter your email above first.'); return; }
+    try { await CHL_CLOUD.resetPassword(email); setMsg('Reset email sent to ' + email); }
+    catch (e) { setMsg(e.message); }
+  };
+  $('mCloudSyncNow').onclick = () => syncNow(true);
+  $('mCloudSignOut').onclick = async () => {
+    await CHL_CLOUD.signOut();
+    toast('Signed out');
+  };
+}
+
 // ------------------------------------------------------------------ BOOT
 (async function boot() {
+  // Replace unrendered template tokens when running standalone inside Capacitor APK
+  const sub = document.querySelector('.mbar-sub');
+  if (sub && sub.textContent.includes('{{VERSION}}')) sub.innerHTML = 'Mobile<span id="mChannel" class="mbar-ch"></span>';
+  if (document.documentElement.style.getPropertyValue('--accent').includes('{{')) {
+    document.documentElement.style.setProperty('--accent', '#e60000');
+  }
+
   try {
     const [doc, st] = await Promise.all([api('/api/planner'), api('/api/settings')]);
+    hasLocalApi = true;
     if (doc && Array.isArray(doc.games)) state = Object.assign(state, doc);
     if (st) {
       appSettings = Object.assign(appSettings, st);
@@ -914,10 +1020,14 @@ function renderAll() {
         $('mChannel').textContent = ' · ' + (st.youtubeChannel.handle || st.youtubeChannel.title);
       }
     }
-    loaded = true;
-    renderAll();
+    cacheLocal();
   } catch (e) {
-    setSaveStatus('error');
-    toast('Could not load planner: ' + e.message, null, 8000);
+    // Standalone mobile APK / static web mode (no local PC server)
+    hasLocalApi = false;
+    const cached = loadLocalCache();
+    if (cached && Array.isArray(cached.games)) state = Object.assign(state, cached);
   }
+  loaded = true;
+  renderAll();
+  initMobileCloud();
 })();

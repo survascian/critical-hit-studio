@@ -46,6 +46,13 @@ body {
 }
 .mbar-sub { font-size: 12px; color: var(--muted); font-weight: 600; }
 .mbar-ch { color: #d5dae6; }
+.mbar-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.mcloud-btn {
+  padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line2);
+  background: var(--panel2); color: var(--ink); font-family: inherit;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.mcloud-btn.online { border-color: rgba(46, 204, 113, 0.5); color: #4ade80; background: rgba(46, 204, 113, 0.12); }
 .msave {
   font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
   padding: 4px 9px; border-radius: 999px; background: rgba(46, 204, 113, 0.12); color: #2ecc71;

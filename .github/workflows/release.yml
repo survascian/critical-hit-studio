@@ -1,0 +1,111 @@
+name: Publish GitHub Release (Windows + Android)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows installer & portable exe
+        run: npm run dist
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-builds
+          path: |
+            dist/Critical-Hit-Studio-*-win-setup.exe
+            dist/Critical-Hit-Studio-*-portable.exe
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Capacitor dependencies
+        working-directory: mobile-app
+        run: npm install
+
+      - name: Prepare mobile web assets
+        working-directory: mobile-app
+        run: npm run prepare-www
+
+      - name: Generate and sync Android project
+        working-directory: mobile-app
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Apply Critical Hit Studio app icon
+        run: |
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            dir="mobile-app/android/app/src/main/res/mipmap-$density"
+            if [ -d "$dir" ]; then
+              cp build/icon.png "$dir/ic_launcher.png"
+              cp build/icon.png "$dir/ic_launcher_round.png"
+              cp build/icon.png "$dir/ic_launcher_foreground.png"
+            fi
+          done
+
+      - name: Build Android APK
+        working-directory: mobile-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Rename APK with version tag
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          cp mobile-app/android/app/build/outputs/apk/debug/app-debug.apk "Critical-Hit-Studio-${VER}-android.apk"
+
+      - name: Upload Android APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: Critical-Hit-Studio-*-android.apk
+
+  publish-release:
+    needs: [build-windows, build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-files
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Critical Hit Studio ${{ github.ref_name }}"
+          generate_release_notes: true
+          files: release-files/*

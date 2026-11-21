@@ -1,0 +1,667 @@
+/* Critical Hit Studio — Themes (v2.0.1)
+   Loaded by both planner.html and hitlist.html.
+   On Hit List (data-page="hitlist"), themes ONLY affect the top header (.sbar).
+   Themes: default (Vanilla), isac (The Division 2 SHD HUD), discord (Discord Dark). */
+
+/* ==========================================================================
+   THEME 1: ISAC // SHD HUD (The Division 2)
+   Shape: 45-degree chamfered tactical corners, floating glass HUD, corner
+   targeting brackets, pulsing SHD beacons, skewed HUD tabs, terminal underlines
+   ========================================================================== */
+
+/* ---- ISAC Header (.sbar) — applies on Planner AND Hit List ---- */
+html[data-theme="isac"] .sbar {
+  --sb-line: rgba(255, 123, 0, 0.40);
+  --sb-panel2: rgba(16, 21, 29, 0.78);
+  --sb-mute: #94a0b2;
+  --sb-text: #f7f1e8;
+  --sb-yellow: #ffb347;
+  --sb-red: #ff6e00;
+  background: linear-gradient(180deg, rgba(16, 20, 28, 0.90), rgba(9, 12, 18, 0.84));
+  backdrop-filter: blur(16px);
+  border-bottom: 2px solid rgba(255, 123, 0, 0.55);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.72), 0 0 24px rgba(255, 123, 0, 0.14);
+}
+html[data-theme="isac"] .sbar-brand .hit {
+  color: #ff7b00;
+  text-shadow: 0 0 14px rgba(255, 123, 0, 0.85);
+}
+html[data-theme="isac"] .sbar-logo {
+  border-radius: 2px;
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+}
+html[data-theme="isac"] .snav {
+  background: rgba(12, 16, 24, 0.75);
+  border: 1px solid rgba(255, 123, 0, 0.34);
+  border-radius: 2px;
+  padding: 3px 5px;
+  gap: 5px;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+html[data-theme="isac"] .snav-item {
+  border-radius: 1px;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  padding: 0 16px;
+  letter-spacing: 0.12em;
+}
+html[data-theme="isac"] .snav-item.active {
+  color: #090b10;
+  background: linear-gradient(135deg, #ff9d2e, #ff6e00);
+  border-color: transparent;
+  text-shadow: none;
+  box-shadow: 0 0 16px rgba(255, 123, 0, 0.55);
+}
+html[data-theme="isac"] .sbar-ch { color: #ff9d2e; text-shadow: 0 0 8px rgba(255, 123, 0, 0.45); }
+html[data-theme="isac"] .sbar-av {
+  border-radius: 3px;
+  border-color: #ff7b00;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  box-shadow: 0 0 14px rgba(255, 123, 0, 0.45);
+}
+html[data-theme="isac"] .sbar-yt {
+  border-radius: 2px;
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  background: rgba(255, 123, 0, 0.16);
+  border-color: rgba(255, 123, 0, 0.6);
+  color: #ffb347;
+}
+html[data-theme="isac"] .sbar-yt:hover {
+  background: #ff6e00;
+  color: #07090d;
+  box-shadow: 0 0 18px rgba(255, 123, 0, 0.6);
+}
+
+/* ---- ISAC Planner Body & Components (NEVER applied on Hit List) ---- */
+html[data-theme="isac"]:not([data-page="hitlist"]) {
+  background: #06080c;
+  --bg: #06080c;
+  --panel: rgba(12, 16, 23, 0.82);
+  --panel2: rgba(18, 24, 33, 0.78);
+  --line: rgba(255, 123, 0, 0.28);
+  --red: #ff6e00;
+  --yellow: #ff9d2e;
+  --text: #f5efe6;
+  --mute: #8f9ba8;
+  --ok: #38e29d;
+  --warn: #ffb020;
+  --bad: #ff4533;
+}
+
+html[data-theme="isac"]:not([data-page="hitlist"]) body {
+  background-color: #06080c;
+  background-image:
+    radial-gradient(ellipse at 50% -12%, rgba(255, 123, 0, 0.24), transparent 56%),
+    radial-gradient(circle at 90% 92%, rgba(255, 110, 0, 0.10), transparent 44%),
+    repeating-linear-gradient(0deg, rgba(255, 145, 0, 0.032) 0px, rgba(255, 145, 0, 0.032) 1px, transparent 1px, transparent 4px),
+    radial-gradient(rgba(255, 140, 0, 0.18) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 4px, 28px 28px;
+}
+
+html[data-theme="isac"]:not([data-page="hitlist"]) .qbar,
+html[data-theme="isac"]:not([data-page="hitlist"]) .pipebar {
+  background: rgba(9, 12, 18, 0.68);
+  backdrop-filter: blur(12px);
+  border-bottom-color: rgba(255, 123, 0, 0.24);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .qpill {
+  border-radius: 1px;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  padding: 4px 14px;
+  background: rgba(18, 23, 32, 0.8);
+  border-color: rgba(255, 123, 0, 0.28);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .qpill.on {
+  background: rgba(255, 123, 0, 0.22);
+  box-shadow: 0 0 14px rgba(255, 123, 0, 0.28);
+}
+
+/* Floating Holographic Columns with SHD Corner Brackets & Status Beacon */
+html[data-theme="isac"]:not([data-page="hitlist"]) .board {
+  gap: 18px;
+  padding: 20px 24px 26px;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .column {
+  border-radius: 2px;
+  background:
+    linear-gradient(to right, #ff7b00 2px, transparent 2px) 0 0,
+    linear-gradient(to bottom, #ff7b00 2px, transparent 2px) 0 0,
+    linear-gradient(to left, #ff7b00 2px, transparent 2px) 100% 0,
+    linear-gradient(to bottom, #ff7b00 2px, transparent 2px) 100% 0,
+    linear-gradient(to right, rgba(255,123,0,.7) 2px, transparent 2px) 0 100%,
+    linear-gradient(to top, rgba(255,123,0,.7) 2px, transparent 2px) 0 100%,
+    linear-gradient(to left, rgba(255,123,0,.7) 2px, transparent 2px) 100% 100%,
+    linear-gradient(to top, rgba(255,123,0,.7) 2px, transparent 2px) 100% 100%,
+    rgba(11, 15, 22, 0.68);
+  background-repeat: no-repeat;
+  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px, 12px 12px, 12px 12px, 12px 12px, 12px 12px, 100% 100%;
+  border: 1px solid rgba(255, 123, 0, 0.24);
+  border-top: 2px solid var(--stage);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, 0.72), 0 0 20px rgba(255, 123, 0, 0.06);
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1), border-color 0.25s, box-shadow 0.25s;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .column:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 140, 0, 0.48);
+  box-shadow: 0 28px 54px rgba(0, 0, 0, 0.8), 0 0 28px rgba(255, 123, 0, 0.14);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .col-head {
+  border-bottom: 1px solid rgba(255, 123, 0, 0.16);
+  margin-bottom: 6px;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .col-head h2::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--stage);
+  box-shadow: 0 0 10px var(--stage);
+  transform: rotate(45deg);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .col-count {
+  border-radius: 1px;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  padding: 1px 11px;
+  border-color: rgba(255, 123, 0, 0.4);
+  color: #ffb347;
+  background: rgba(255, 123, 0, 0.10);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .col-add {
+  border-radius: 2px;
+  border-color: rgba(255, 123, 0, 0.35);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .col-add:hover {
+  background: rgba(255, 123, 0, 0.2);
+  color: #ffb347;
+  border-color: #ff7b00;
+}
+
+/* Chamfered Floating ISAC Cards */
+html[data-theme="isac"]:not([data-page="hitlist"]) .card {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  background: linear-gradient(135deg, rgba(24, 30, 42, 0.84), rgba(15, 20, 29, 0.78));
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 123, 0, 0.24);
+  border-left: 4px solid var(--stage);
+  padding: 10px 12px 10px 10px;
+  transition: transform 0.2s cubic-bezier(.2,.8,.2,1), background 0.2s, border-color 0.2s, filter 0.2s;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .card:hover {
+  transform: translateY(-4px) translateX(2px);
+  background: linear-gradient(135deg, rgba(36, 42, 54, 0.94), rgba(22, 26, 36, 0.90));
+  border-color: rgba(255, 150, 40, 0.75);
+  border-left-color: var(--stage);
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 10px rgba(255, 123, 0, 0.24));
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .card-cover {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  border-color: rgba(255, 123, 0, 0.35);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip {
+  border-radius: 1px;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  padding: 1px 9px;
+  background: rgba(8, 11, 17, 0.82);
+  border-color: rgba(255, 123, 0, 0.28);
+  color: #e6dfd5;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.plat {
+  background: var(--pc);
+  color: var(--pt);
+  border-color: var(--pc);
+  font-weight: 700;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.fmt {
+  color: var(--fc);
+  border-color: var(--fc);
+  background: color-mix(in srgb, var(--fc) 16%, rgba(8, 11, 17, 0.85));
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.up { color: #ffb347; border-color: rgba(255, 179, 71, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.hype { color: #ff8c59; border-color: rgba(255, 140, 89, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.list,
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.tasks.full { color: #38e29d; border-color: rgba(56, 226, 157, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.script { color: #8ab4f8; border-color: rgba(138, 180, 248, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.folder { color: #fcd34d; border-color: rgba(252, 211, 77, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.series { color: #93c5fd; border-color: rgba(147, 197, 253, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.video { color: #ff8a8a; border-color: rgba(255, 138, 138, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.due { color: #9ec5ff; border-color: rgba(77, 163, 255, 0.55); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.due.today { color: #fff; background: rgba(255, 122, 89, 0.32); border-color: rgba(255, 122, 89, 0.8); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.due.over,
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.stuck-bad { color: #fff; background: rgba(230, 0, 0, 0.42); border-color: rgba(255, 77, 77, 0.85); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.stuck-warn { color: #ffb347; background: rgba(255, 179, 71, 0.16); border-color: rgba(255, 179, 71, 0.65); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.timely { color: #ffb347; border-color: rgba(255, 179, 71, 0.6); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .chip.gsug.on { color: #ffb347; border-color: rgba(255, 157, 46, 0.75); background: rgba(255, 123, 0, 0.18); }
+
+/* Chamfered Buttons & Terminal-Underline Inputs */
+html[data-theme="isac"]:not([data-page="hitlist"]) .btn {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  padding: 8px 16px;
+  background: rgba(22, 28, 40, 0.86);
+  border-color: rgba(255, 123, 0, 0.38);
+  color: #f5efe6;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .btn:hover {
+  background: rgba(255, 123, 0, 0.2);
+  border-color: #ff9d2e;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .btn.primary {
+  background: linear-gradient(135deg, #ff8514, #e65c00);
+  border-color: #ffb347;
+  color: #07090d;
+  box-shadow: none;
+  filter: drop-shadow(0 0 12px rgba(255, 123, 0, 0.45));
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .btn.primary:hover {
+  background: linear-gradient(135deg, #ffa033, #ff6e00);
+  filter: drop-shadow(0 0 16px rgba(255, 140, 0, 0.65));
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .field {
+  border-radius: 2px 2px 0 0;
+  background: rgba(7, 10, 15, 0.82);
+  border: 1px solid rgba(255, 123, 0, 0.18);
+  border-bottom: 2px solid rgba(255, 123, 0, 0.55);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .field:focus {
+  border-color: rgba(255, 140, 0, 0.45);
+  border-bottom-color: #ffb347;
+  background: rgba(14, 18, 26, 0.94);
+  box-shadow: 0 4px 14px -4px rgba(255, 123, 0, 0.35);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .pill {
+  border-radius: 1px;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  padding: 5px 14px;
+}
+
+/* Floating Holographic Modals, Drawers, Stats, Calendar, Journal */
+html[data-theme="isac"]:not([data-page="hitlist"]) .modal { background: rgba(4, 6, 10, 0.74); backdrop-filter: blur(10px); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .sheet {
+  border-radius: 2px;
+  background: rgba(11, 15, 22, 0.90);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 123, 0, 0.52);
+  border-top: 3px solid #ff7b00;
+  box-shadow: 0 36px 95px rgba(0, 0, 0, 0.88), 0 0 40px rgba(255, 123, 0, 0.18);
+  animation: isacFloatIn 0.22s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes isacFloatIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .dcard,
+html[data-theme="isac"]:not([data-page="hitlist"]) .pl,
+html[data-theme="isac"]:not([data-page="hitlist"]) .set-sec,
+html[data-theme="isac"]:not([data-page="hitlist"]) .stat-card,
+html[data-theme="isac"]:not([data-page="hitlist"]) .stat-tile,
+html[data-theme="isac"]:not([data-page="hitlist"]) .recap-card,
+html[data-theme="isac"]:not([data-page="hitlist"]) .cal-cell,
+html[data-theme="isac"]:not([data-page="hitlist"]) .jr-edit,
+html[data-theme="isac"]:not([data-page="hitlist"]) .jr-item {
+  border-radius: 2px;
+  background: rgba(16, 21, 30, 0.76);
+  backdrop-filter: blur(10px);
+  border-color: rgba(255, 123, 0, 0.26);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .stat-tile,
+html[data-theme="isac"]:not([data-page="hitlist"]) .fact {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  border-left: 3px solid #ff7b00;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .set-nav {
+  background: rgba(7, 10, 15, 0.78);
+  border-right-color: rgba(255, 123, 0, 0.30);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .set-tab {
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .set-tab.active {
+  color: #07090d;
+  background: linear-gradient(90deg, #ff8c1a, #ff6e00);
+  border-color: transparent;
+}
+html[data-theme="isac"]:not([data-page="hitlist"]) .seg { border-radius: 2px; border-color: rgba(255, 123, 0, 0.38); }
+html[data-theme="isac"]:not([data-page="hitlist"]) .seg button.on { background: #ff7b00; color: #07090d; }
+html[data-theme="isac"]:not([data-page="hitlist"]) .toast {
+  border-radius: 2px;
+  background: rgba(12, 16, 23, 0.94);
+  border: 1px solid #ff7b00;
+  border-left: 4px solid #ffb347;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.8), 0 0 26px rgba(255, 123, 0, 0.32);
+}
+
+
+/* ==========================================================================
+   THEME 2: DISCORD DARK
+   Shape: Soft pill nav, # channel headers, Discord rich-embed forum cards,
+   round avatar with online green status dot, plush rounded buttons & modals
+   ========================================================================== */
+
+/* ---- Discord Header (.sbar) — applies on Planner AND Hit List ---- */
+html[data-theme="discord"] .sbar {
+  --sb-line: #1e1f22;
+  --sb-panel2: #2b2d31;
+  --sb-mute: #949ba4;
+  --sb-text: #f2f3f5;
+  --sb-yellow: #ffffff;
+  --sb-red: #5865f2;
+  background: #1e1f22;
+  backdrop-filter: none;
+  border-bottom: 1px solid #141517;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+html[data-theme="discord"] .sbar-brand {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+html[data-theme="discord"] .sbar-brand .hit { color: #5865f2; }
+html[data-theme="discord"] .sbar-logo { border-radius: 50%; }
+html[data-theme="discord"] .sbar-ch { color: #949cf7; font-family: 'Inter', system-ui, sans-serif; }
+html[data-theme="discord"] .snav {
+  background: #2b2d31;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+}
+html[data-theme="discord"] .snav-item {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  border-radius: 999px;
+  padding: 0 16px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: #b5bac1;
+}
+html[data-theme="discord"] .snav-item:hover { background: rgba(255, 255, 255, 0.07); color: #f2f3f5; }
+html[data-theme="discord"] .snav-item.active {
+  color: #ffffff;
+  background: #5865f2;
+  border-color: transparent;
+}
+html[data-theme="discord"] .sbar-av {
+  position: relative;
+  overflow: visible;
+  border: 2px solid #5865f2;
+  background: #2b2d31;
+  color: #f2f3f5;
+}
+html[data-theme="discord"] .sbar-av img { border-radius: 50%; }
+html[data-theme="discord"] .sbar-av::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #23a55a;
+  border: 2.5px solid #1e1f22;
+}
+html[data-theme="discord"] .sbar-yt {
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  background: #2b2d31;
+  border-color: transparent;
+  color: #f23f43;
+}
+html[data-theme="discord"] .sbar-yt:hover {
+  background: #da373c;
+  color: #fff;
+  border-radius: 12px;
+}
+
+/* ---- Discord Planner Body & Components (NEVER applied on Hit List) ---- */
+html[data-theme="discord"]:not([data-page="hitlist"]) {
+  background: #313338;
+  --bg: #313338;
+  --panel: #2b2d31;
+  --panel2: #232428;
+  --line: #3f4147;
+  --red: #5865f2;
+  --yellow: #949cf7;
+  --text: #dbdee1;
+  --mute: #949ba4;
+  --ok: #23a55a;
+  --warn: #f0b232;
+  --bad: #da373c;
+}
+
+html[data-theme="discord"]:not([data-page="hitlist"]) body {
+  background: #313338;
+  background-image: none;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #dbdee1;
+}
+
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn,
+html[data-theme="discord"]:not([data-page="hitlist"]) label,
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-head h2,
+html[data-theme="discord"]:not([data-page="hitlist"]) .sheet-head h3,
+html[data-theme="discord"]:not([data-page="hitlist"]) .sheet h4,
+html[data-theme="discord"]:not([data-page="hitlist"]) .set-tab,
+html[data-theme="discord"]:not([data-page="hitlist"]) .qpill,
+html[data-theme="discord"]:not([data-page="hitlist"]) .pl > summary,
+html[data-theme="discord"]:not([data-page="hitlist"]) .stat-tile span,
+html[data-theme="discord"]:not([data-page="hitlist"]) .stat-tile b,
+html[data-theme="discord"]:not([data-page="hitlist"]) .fact span,
+html[data-theme="discord"]:not([data-page="hitlist"]) .seg button,
+html[data-theme="discord"]:not([data-page="hitlist"]) .cal-head h3,
+html[data-theme="discord"]:not([data-page="hitlist"]) .cal-dow,
+html[data-theme="discord"]:not([data-page="hitlist"]) .cal-num,
+html[data-theme="discord"]:not([data-page="hitlist"]) .recap-head h4,
+html[data-theme="discord"]:not([data-page="hitlist"]) .empty h2 {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+html[data-theme="discord"]:not([data-page="hitlist"]) .qbar,
+html[data-theme="discord"]:not([data-page="hitlist"]) .pipebar {
+  background: #2b2d31;
+  border-bottom: 1px solid #1e1f22;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .qpill {
+  border-radius: 999px;
+  padding: 4px 13px;
+  background: #1e1f22;
+  border-color: transparent;
+  color: #b5bac1;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .qpill:hover { background: #383a40; color: #f2f3f5; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .qpill.on { background: #5865f2; border-color: #5865f2; color: #fff; }
+
+/* Discord Channel-style Columns (# Stage) */
+html[data-theme="discord"]:not([data-page="hitlist"]) .column {
+  background: #2b2d31;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-head {
+  background: #232428;
+  border-bottom: 1px solid #1e1f22;
+  padding: 12px 14px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-head h2 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: none;
+  color: #f2f3f5;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-head h2::before {
+  content: '# ';
+  color: var(--stage);
+  font-weight: 800;
+  font-size: 15px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-count {
+  background: #313338;
+  border: 0;
+  border-radius: 999px;
+  color: #b5bac1;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  padding: 2px 9px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-add {
+  border-radius: 50%;
+  border: 0;
+  background: #313338;
+  color: #b5bac1;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-add:hover {
+  background: #5865f2;
+  color: #fff;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .col-list {
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Discord Rich-Embed / Forum Cards */
+html[data-theme="discord"]:not([data-page="hitlist"]) .card {
+  background: #313338;
+  border: 1px solid #383a40;
+  border-left: 4px solid var(--stage);
+  border-radius: 12px;
+  padding: 11px;
+  box-shadow: none;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .card:hover {
+  background: #383a40;
+  border-color: #4e5058;
+  border-left-color: var(--stage);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .card-cover {
+  border-radius: 10px;
+  border: 0;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .card-title {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f2f3f5;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .card-sub {
+  font-size: 13px;
+  color: #949ba4;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .chip {
+  background: #232428;
+  border: 0;
+  color: #dbdee1;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .chip.plat {
+  background: var(--pc);
+  color: var(--pt);
+  font-weight: 700;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .qbar .toggle {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  color: #b5bac1;
+}
+
+/* Plush Discord Buttons & Chat-Box Inputs */
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn {
+  background: #4e5058;
+  border: 0;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 8px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  box-shadow: none;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn:hover { background: #6d6f78; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn.primary { background: #5865f2; color: #fff; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn.primary:hover { background: #4752c4; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn.danger { background: rgba(218, 55, 60, 0.18); color: #f87171; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn.danger:hover { background: #da373c; color: #fff; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .btn.icon { border-radius: 50%; width: 34px; height: 34px; padding: 0; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .field {
+  background: #1e1f22;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #dbdee1;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 9px 13px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .field:focus { border-color: #5865f2; }
+html[data-theme="discord"]:not([data-page="hitlist"]) label { color: #b5bac1; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .sheet h4,
+html[data-theme="discord"]:not([data-page="hitlist"]) .d-cols .pl > summary { color: #f2f3f5; font-size: 13px; }
+
+/* Discord Modals, User Settings Layout, Stats, Calendar, Journal */
+html[data-theme="discord"]:not([data-page="hitlist"]) .modal { background: rgba(0, 0, 0, 0.72); backdrop-filter: none; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .sheet {
+  background: #313338;
+  border: 1px solid #1e1f22;
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .dcard,
+html[data-theme="discord"]:not([data-page="hitlist"]) .pl,
+html[data-theme="discord"]:not([data-page="hitlist"]) .set-sec,
+html[data-theme="discord"]:not([data-page="hitlist"]) .stat-card,
+html[data-theme="discord"]:not([data-page="hitlist"]) .stat-tile,
+html[data-theme="discord"]:not([data-page="hitlist"]) .recap-card,
+html[data-theme="discord"]:not([data-page="hitlist"]) .cal-cell,
+html[data-theme="discord"]:not([data-page="hitlist"]) .jr-edit,
+html[data-theme="discord"]:not([data-page="hitlist"]) .jr-item {
+  background: #2b2d31;
+  border: 0;
+  border-radius: 12px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) .fact { background: #1e1f22; border: 0; border-radius: 10px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .fact b { font-family: 'Inter', system-ui, sans-serif; font-size: 20px; color: #f2f3f5; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .stat-tile b { color: #949cf7; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .set-nav { background: #2b2d31; border-right: 1px solid #1e1f22; padding: 14px 10px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .set-tab { border-radius: 6px; color: #b5bac1; font-weight: 600; text-transform: none; font-size: 14px; padding: 9px 12px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .set-tab:hover { background: rgba(255, 255, 255, 0.05); color: #dbdee1; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .set-tab.active { background: #404249; color: #ffffff; border-color: transparent; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .seg { background: #1e1f22; border: 0; border-radius: 999px; padding: 3px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .seg button { border-radius: 999px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .seg button.on { background: #5865f2; color: #fff; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .toast { background: #1e1f22; border: 1px solid #5865f2; border-radius: 12px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .pill { background: #2b2d31; border: 0; border-radius: 999px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .pill.ok { background: rgba(35, 165, 90, 0.16); color: #23a55a; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .pill.off { background: rgba(240, 178, 50, 0.16); color: #f0b232; }
+
+
+/* ==========================================================================
+   SETTINGS: THEME PICKER CARDS
+   ========================================================================== */
+.theme-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 0 14px; }
+.theme-card { appearance: none; text-align: left; background: #0f1117; border: 2px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; color: var(--text); display: flex; flex-direction: column; gap: 8px; transition: border-color .15s, transform .15s, box-shadow .15s; }
+.theme-card:hover { border-color: #5a6378; transform: translateY(-2px); }
+.theme-card.on { border-color: var(--yellow); box-shadow: 0 0 0 1px var(--yellow), 0 8px 20px rgba(0, 0, 0, 0.4); }
+.theme-prev { height: 54px; border-radius: 6px; padding: 7px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
+.theme-prev-bar { height: 8px; border-radius: 3px; width: 65%; }
+.theme-prev-dots { display: flex; gap: 5px; }
+.theme-prev-dots i { width: 16px; height: 16px; border-radius: 4px; display: block; }
+.theme-card b { font: 700 13px 'Orbitron', system-ui, sans-serif; letter-spacing: .04em; display: block; }
+.theme-card small { font: 500 12px 'Rajdhani', system-ui, sans-serif; color: var(--mute); line-height: 1.25; }
+@media (max-width: 640px) { .theme-grid { grid-template-columns: 1fr; } }

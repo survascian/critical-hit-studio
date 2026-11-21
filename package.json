@@ -1,0 +1,54 @@
+{
+  "name": "critical-hit-studio",
+  "productName": "Critical Hit Studio",
+  "version": "2.0.2",
+  "description": "Content planner for video-game creators, plus the Critical Hit List OBS overlay",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "server": "node server/server.js",
+    "test": "node test/platforms.test.js && node test/genres.test.js && node test/tier.test.js && node test/awards.test.js && node test/plan.test.js && node test/launcher.test.js && node test/sgdb.test.js && node test/youtube-genres.test.js && node test/backend.test.js",
+    "dist": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "com.criticalhit.studio",
+    "productName": "Critical Hit Studio",
+    "files": [
+      "main.js",
+      "preload.js",
+      "launcher.js",
+      "server/**",
+      "public/**",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Critical Hit Studio",
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": null,
+    "directories": {
+      "output": "dist"
+    },
+    "artifactName": "Critical-Hit-Studio-${version}-${os}-setup.${ext}",
+    "portable": {
+      "artifactName": "Critical-Hit-Studio-${version}-portable.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.3.3",
+    "electron-builder": "^26.18.0"
+  }
+}

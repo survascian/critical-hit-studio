@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{THEME}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Critical Hit Studio · Planner</title>
+  <link rel="icon" type="image/png" href="/icon-72.png">
+  <style>:root{--red:{{ACCENT}}}html{background:#0b0c10}html.fonts-pending body{opacity:0}</style>
+  <script>/* Keep the page invisible until its fonts are ready, so switching tabs never shows text in a stand-in font. */
+  (function(){var d=document.documentElement,done=false;d.classList.add('fonts-pending');
+  window.__chlReveal=function(){if(done)return;done=true;d.classList.remove('fonts-pending');};
+  setTimeout(window.__chlReveal,1500);})();</script>
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/orbitron-latin-900-normal.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/orbitron-latin-700-normal.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/rajdhani-latin-600-normal.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/rajdhani-latin-700-normal.woff2">
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <link rel="stylesheet" href="/topbar.css">
+  <link rel="stylesheet" href="/planner.css">
+  <link rel="stylesheet" href="/themes.css">
+  <script>(function(){var r=function(){window.__chlReveal&&window.__chlReveal();};if(!(document.fonts&&document.fonts.load))return r();
+  Promise.all(['900 16px Orbitron','700 11px Orbitron','500 14px Orbitron','500 14px Rajdhani','600 14px Rajdhani','700 14px Rajdhani'].map(function(f){return document.fonts.load(f).catch(function(){});})).then(function(){return document.fonts.ready;}).then(r,r);})();</script>
+  <script src="/vendor/Sortable.min.js"></script>
+  <script src="/platforms.js"></script>
+  <script src="/genres.js"></script>
+  <script src="/tier.js"></script>
+  <script src="/awards.js"></script>
+  <script src="/plan.js"></script>
+  <script src="/planner.js" defer></script>
+</head>
+<body>
+  <header class="sbar topbar">
+    <div class="sbar-id"><img class="sbar-logo" src="/icon-72.png" width="36" height="36" alt=""><div class="sbar-idtext"><div class="sbar-brand brand"><span class="sb-long">CRITICAL <span class="hit">HIT</span> STUDIO</span><span class="sb-short">C<span class="hit">H</span>S</span></div><div class="sbar-sub"><span class="sbar-ver" data-v="{{VERSION}}"></span><span class="sbar-ch" id="sbarCh" data-ch="{{CHANNEL}}"></span></div></div></div>
+    <nav class="snav" id="viewTabs" role="tablist" aria-label="Sections">
+      <button class="snav-item vt active" data-view="board" role="tab">BOARD</button>
+      <button class="snav-item vt" data-view="calendar" role="tab">CALENDAR</button>
+      <button class="snav-item vt" data-view="stats" role="tab">STATS</button>
+      <button class="snav-item vt" data-view="journal" role="tab">JOURNAL</button>
+      <a class="snav-item {{HITLIST_HIDE}}" id="navHitList" href="/hitlist">HIT LIST</a>
+    </nav>
+    <div class="sbar-right topbar-right">
+      <span id="saveStatus" class="save-status" title="">Saved</span>
+      <button id="igdbPill" class="pill" title="IGDB connection">IGDB: …</button>
+      <button id="addBtn" class="btn primary">+ ADD GAME <kbd>N</kbd></button>
+      <button id="settingsBtn" class="btn icon" title="Settings" aria-label="Settings">⚙</button>
+      <a id="ytStudioBtn" class="sbar-yt {{STUDIO_HIDE}}" href="{{STUDIO_URL}}" target="_blank" rel="noopener" title="Open YouTube Studio" aria-label="Open YouTube Studio"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg></a>
+      <a id="ytAvatarBtn" class="sbar-av {{CHANNEL_HIDE}}" href="{{CHANNEL_URL}}" target="_blank" rel="noopener" title="Open YouTube channel ({{CHANNEL}})" aria-label="Open YouTube channel">{{CHANNEL_AVATAR}}</a>
+    </div>
+  </header>
+
+  <div id="pipeBar" class="pipebar" aria-live="polite"></div>
+  <div id="qFilterBar" class="qbar" aria-label="Quick filters">
+    <div id="qFilterPills" class="qbar-left"></div>
+    <div id="boardTools" class="board-tools">
+      <input id="filterInput" class="field filter" type="search" placeholder="Filter games…  ( / )" autocomplete="off">
+      <label class="toggle" title="Hide the Shelved and Cancelled columns"><input type="checkbox" id="hideArchived"> <span>Hide archived</span></label>
+      <label class="toggle" title="Ultra-clean board: show only poster, title/logo, and studio"><input type="checkbox" id="simpleBoard"> <span>Simple mode</span></label>
+    </div>
+  </div>
+  <main id="boardWrap">
+    <div id="board" class="board"></div>
+    <div id="calView" class="view-pane hidden"></div>
+    <div id="statsView" class="view-pane hidden"></div>
+    <div id="journalView" class="view-pane hidden"></div>
+    <div id="emptyState" class="empty hidden">
+      <h2>Your board is empty</h2>
+      <p>Search IGDB for a game to add it as a card, then drag it through the stages as you work on it.</p>
+      <div class="row"><button class="btn primary" id="emptyAdd">+ ADD YOUR FIRST GAME</button><button class="btn" id="emptyWizard">Quick setup</button><button class="btn hidden" id="emptyImportYt">Import recent YouTube uploads</button></div>
+    </div>
+  </main>
+
+  <!-- ADD GAME -->
+  <div id="addModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Add game">
+    <div class="sheet wide">
+      <div class="sheet-head"><h3>ADD GAME</h3><button class="x" data-close>✕</button></div>
+      <div id="addNotice" class="notice hidden">IGDB isn't set up yet, so search is off. <button class="link" id="noticeSetup">Set it up</button> or add a game manually below.</div>
+      <div class="row">
+        <input id="searchInput" class="field grow" type="search" placeholder="Search IGDB by game name…" autocomplete="off">
+        <label class="inline">Add to
+          <select id="addStage" class="field"></select>
+        </label>
+      </div>
+      <div id="searchResults" class="results"></div>
+      <details class="manual">
+        <summary>Add manually (no IGDB)</summary>
+        <div class="row">
+          <input id="manName" class="field grow" placeholder="Game title">
+          <input id="manStudio" class="field grow" placeholder="Studio (optional)">
+          <button id="manAdd" class="btn">ADD</button>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- GAME DETAIL -->
+  <div id="detailModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Game details">
+    <div class="sheet drawer simple" id="dSheetBox">
+      <div id="dBanner" class="d-banner"></div>
+      <div class="sheet-head"><h3 id="dHeading">GAME</h3><span id="dSaved" class="save-status"></span>
+        <div class="seg" role="group" aria-label="Editor detail level"><button type="button" id="dModeSimple" class="on" title="Title, stage, script and game details">SIMPLE</button><button type="button" id="dModeAdv" title="Scratchpad, packaging, checklist, publishing, artwork and IGDB info">ADVANCED</button></div>
+        <button class="x" data-close>✕</button></div>
+      <div class="d-body">
+        <section class="dcard d-essentials">
+          <div class="grid3">
+            <label class="g-title">Title<input id="dName" class="field"></label>
+            <label>Stage<select id="dStage" class="field"></select></label>
+            <label>Video format<select id="dFormat" class="field"></select></label>
+            <label>Target date<input id="dDue" class="field" type="date" title="When you plan to publish. Shows on the card and the calendar."></label>
+            <label>Timing <select id="dTimely" class="field"><option value="">Evergreen</option><option value="1">Timely (post soon after release / event)</option></select></label>
+            <div class="g-full launch-row">
+              <label class="grow">App launch <small>(shows a ▶ button on the card)</small><input id="dLaunch" class="field" placeholder="Path to the game's shortcut (.lnk), or a steam://rungameid/… link" autocomplete="off" spellcheck="false"></label>
+              <button id="dLaunchPick" class="btn hidden" type="button">Browse…</button>
+              <button id="dLaunchGo" class="btn primary" type="button">LAUNCH</button>
+            </div>
+            <div class="g-full launch-row">
+              <label class="grow">Script <small>(Google Doc link or local file)</small><input id="dScript" class="field" placeholder="Paste a Google Docs link, or browse for a local file on this PC" autocomplete="off" spellcheck="false"></label>
+              <button id="dScriptPick" class="btn hidden" type="button">Browse…</button>
+              <a id="dScriptOpen" class="btn primary" target="_blank" rel="noopener">OPEN SCRIPT ↗</a>
+            </div>
+            <div class="g-full launch-row">
+              <label class="grow">Project / footage folder <small>(opens in Explorer from the card)</small><input id="dFolder" class="field" placeholder="Full path to your recordings or edit folder" autocomplete="off" spellcheck="false"></label>
+              <button id="dFolderPick" class="btn hidden" type="button">Browse…</button>
+              <button id="dFolderOpen" class="btn" type="button">OPEN FOLDER ↗</button>
+            </div>
+          </div>
+          <div class="row link-btns">
+            <a id="dScriptFind" class="btn" target="_blank" rel="noopener" title="Searches your Google Drive for this game's title">Find script in Drive ↗</a>
+            <a id="dGcal" class="btn" target="_blank" rel="noopener" title="Adds the target date to Google Calendar">Add date to Google Calendar ↗</a>
+          </div>
+          <div class="muted small" id="dLinkHint"></div>
+        </section>
+
+        <div class="d-cols">
+          <div class="d-main">
+            <details class="pl" id="dDetailsBox" open>
+              <summary><span>GAME DETAILS</span></summary>
+              <div class="pl-body">
+                <div class="grid2">
+                  <label>Studio<input id="dStudio" class="field" placeholder="Developer(s), comma separated"></label>
+                  <label>Release date<input id="dRelease" class="field" type="date"></label>
+                  <label class="span2">Genre<input id="dGenres" class="field" placeholder="Comma separated. The first one is the headline"><span id="dGenreSug" class="genre-sug"></span></label>
+                  <label>Played on<select id="dPlayedOn" class="field"></select><span id="dPlatPreview" class="plat-preview"></span></label>
+                  <label>Hours played<input id="dHours" class="field" type="number" min="0" step="0.5"></label>
+                  <label>Series / Franchise<input id="dSeries" class="field" list="seriesList" placeholder="e.g. Resident Evil, Souls" autocomplete="off"><datalist id="seriesList"></datalist></label>
+                  <label>Ownership<select id="dOwned" class="field" title="Shows in small text under the poster on the board card"></select></label>
+                  <label id="dScoreWrap">Your score /10<input id="dScore" class="field" type="number" min="0" max="10" step="0.5" placeholder="e.g. 9"></label>
+                  <label class="span2">Public hype <small>(your rating)</small>
+                    <div id="dHype" class="pips" role="radiogroup" aria-label="Public hype"></div>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <details class="pl adv" id="plNotesBox">
+              <summary><span>SCRATCHPAD <small>(optional)</small></span><span class="pl-sum" id="plNotesSum"></span></summary>
+              <div class="pl-body">
+                <textarea id="plNotes" class="field pl-notes" rows="5" placeholder="Optional scratchpad for things that happened you might want to note down…"></textarea>
+                <label>Your take <small>(one sentence: how does this game feel?)</small><textarea id="plAngle" class="field" rows="2" maxlength="400" placeholder="e.g. Gorgeous, punishing, and it respects your time"></textarea></label>
+                <label>Cold open <small>(first 15 seconds: your best line or moment)</small><textarea id="plHook" class="field" rows="2" maxlength="400" placeholder="Start on the strongest thing, then explain"></textarea></label>
+              </div>
+            </details>
+
+            <details class="pl adv" id="plPack" open>
+              <summary><span>PACKAGING</span><span class="pl-sum" id="plPackSum"></span></summary>
+              <div class="pl-body">
+                <p class="muted small" style="margin:0">Write three title candidates now so the choice is easy later. Tap the circle to pick the winner.</p>
+                <div id="plTitles" class="pl-titles"></div>
+                <label>Thumbnail idea<input id="plThumb" class="field" placeholder="Face reaction + the monster + 3 words max"></label>
+              </div>
+            </details>
+
+            <details class="pl adv" id="dAboutBox" open>
+              <summary><span>ABOUT THE GAME</span></summary>
+              <div class="pl-body">
+                <div class="facts" id="dFacts"></div>
+                <div id="dSummary" class="summary"></div>
+                <div id="dWarn" class="notice hidden"></div>
+              </div>
+            </details>
+          </div>
+
+          <div class="d-side adv">
+            <details class="pl" id="dChecksBox" open>
+              <summary><span id="dChecksTitle">STAGE CHECKLIST</span><span class="pl-sum" id="dChecksSum"></span></summary>
+              <div class="pl-body" id="dChecks"></div>
+            </details>
+
+            <details class="pl" id="dPubBox" open>
+              <summary><span>PUBLISHING</span></summary>
+              <div class="pl-body">
+                <div class="grid2 links">
+                  <label class="span2">Published video <small>(YouTube link)</small><input id="dVideo" class="field" placeholder="Paste any YouTube link (public, unlisted, or private)" autocomplete="off" spellcheck="false"></label>
+                  <div class="span2 row hidden" id="dVideoPickRow"><select id="dVideoPick" class="field grow"><option value="">Pick a public upload from your channel…</option></select><button id="dVideoPickLoad" class="btn" type="button" title="Load your channel's latest public uploads">↻ Load</button></div>
+                  <div class="span2 row video-row"><span id="dVideoStats" class="muted small"></span><a id="dVideoOpen" class="btn" target="_blank" rel="noopener">Open video ↗</a><a id="dVideoStudio" class="btn" target="_blank" rel="noopener" title="Open this video's details page in YouTube Studio">Studio ↗</a><button id="dVideoRefresh" class="btn" type="button">↻ Update stats</button></div>
+                  <label class="span2">Video Planner row <small>(Google Sheets link, optional)</small><input id="dSheet" class="field" placeholder="Paste a link to this game's row in your Video Planner" autocomplete="off" spellcheck="false"></label>
+                  <div class="span2 row link-btns"><a id="dSheetOpen" class="btn" target="_blank" rel="noopener">Open Video Planner ↗</a></div>
+                  <div class="span2 fieldgroup"><span class="fg-title">Planned Hit List awards <small>(a note to yourself: they fill in the Send dialog and can be changed on the Hit List)</small></span><div id="dAwards"></div></div>
+                </div>
+              </div>
+            </details>
+
+            <details class="pl" id="dArtBox" open>
+              <summary><span>ARTWORK</span></summary>
+              <div class="pl-body">
+                <div class="grid2 art">
+                  <div class="span2 art-box" style="margin-top:0;border:0;padding:0;background:none">
+                    <div class="art-head"><h4>Artwork <small>(SteamGridDB)</small></h4><span id="dArtMsg" class="muted small"></span></div>
+                    <div class="art-row">
+                      <div class="art-thumb poster" id="dArtPoster" title="Poster"></div>
+                      <div class="art-thumb banner" id="dArtBanner" title="Banner (used for the Critical Hit List)"></div>
+                      <div class="art-thumb logomark" id="dArtLogo" title="Logo"></div>
+                    </div>
+                    <div class="row art-btns">
+                      <button class="btn" type="button" data-art="grid">Poster…</button>
+                      <button class="btn" type="button" data-art="hero">Banner…</button>
+                      <button class="btn" type="button" data-art="logo">Logo…</button>
+                      <button class="btn" type="button" id="dArtReset" title="Go back to the IGDB poster and banner and remove the logo">Reset art</button>
+                    </div>
+                    <label class="inline-check"><input type="checkbox" id="dUseLogo"> Show the logo instead of the title on the board</label>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="d-actions">
+          <button id="dSend" class="btn primary">SEND TO CRITICAL HIT LIST</button>
+          <button id="dJournalIt" class="btn" type="button">JOURNAL IT</button>
+          <button id="dRefresh" class="btn adv">↻ Refresh from IGDB</button>
+          <a id="dIgdbLink" class="btn adv" target="_blank" rel="noopener">Open on IGDB ↗</a>
+          <button id="dDelete" class="btn danger">Delete</button>
+        </div>
+        <p class="muted small adv" id="dSynced"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEND TO HIT LIST -->
+  <div id="sendModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Send to Critical Hit List">
+    <div class="sheet">
+      <div class="sheet-head"><h3>SEND TO CRITICAL HIT LIST</h3><button class="x" data-close>✕</button></div>
+      <p class="muted">This adds the game to the Pre-Launch list in the Critical Hit List, where you can prep and insert it when you're ready.</p>
+      <div class="send-preview"><div id="sPreview" class="send-banner"></div><div><div id="sTitle" class="s-title"></div><div id="sDev" class="muted"></div></div></div>
+      <div class="grid2">
+        <div class="span2 row"><button id="sBanner" class="btn" type="button">Change banner (SteamGridDB)…</button></div>
+        <label>Score / notes tag<input id="sScore" class="field" placeholder="e.g. Critical Hit! (10/10)"><span id="sTier" class="tier-hint"></span></label>
+        <label>Target rank<input id="sRank" class="field" type="number" min="1" value="1"></label>
+        <label>Platform<select id="sPlatform" class="field"></select></label>
+        <label>Release year<input id="sYear" class="field" inputmode="numeric" maxlength="4" placeholder="e.g. 2022"></label>
+        <label class="span2">Extra tag <small>(optional, shows as its own pill)</small><input id="sMeta" class="field" placeholder="e.g. Early Access, DLC, Remake"></label>
+      </div>
+      <p class="muted small" id="sAwards"></p>
+      <p class="muted small" id="sHint"></p>
+      <div class="row end"><button class="btn" data-close>CANCEL</button><button id="sConfirm" class="btn primary">ADD TO PRE-LAUNCH LIST</button></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="sheet settings-sheet">
+      <div class="sheet-head"><h3>SETTINGS</h3><button class="x" data-close>✕</button></div>
+      <div class="set-layout">
+        <nav class="set-nav" id="settingsNav" role="tablist" aria-label="Settings sections">
+          <button type="button" class="set-tab active" data-stab="appearance" role="tab">Appearance</button>
+          <button type="button" class="set-tab" data-stab="workflow" role="tab">Workflow</button>
+          <button type="button" class="set-tab" data-stab="youtube" role="tab">YouTube</button>
+          <button type="button" class="set-tab" data-stab="connections" role="tab">IGDB &amp; Art</button>
+          <button type="button" class="set-tab" data-stab="data" role="tab">Data &amp; Backup</button>
+        </nav>
+        <div class="set-pane" id="settingsPane">
+
+          <!-- APPEARANCE -->
+          <div class="set-panel" data-spanel="appearance">
+            <section class="set-sec">
+              <h4>Theme</h4>
+              <p class="muted small">Changes the look and shape of the Planner (and the top header on the Hit List; the Hit List board itself stays untouched).</p>
+              <div class="theme-grid" id="themePicker">
+                <button type="button" class="theme-card" data-theme-pick="default">
+                  <div class="theme-prev" style="background:#0b0c10">
+                    <div class="theme-prev-bar" style="background:#e60000"></div>
+                    <div class="theme-prev-dots"><i style="background:#161920;border:1px solid #2a2f3d"></i><i style="background:#ffc700"></i><i style="background:#e60000"></i></div>
+                  </div>
+                  <b>Vanilla</b>
+                  <small>Original dark grid with red &amp; gold</small>
+                </button>
+                <button type="button" class="theme-card" data-theme-pick="isac">
+                  <div class="theme-prev" style="background:radial-gradient(circle at 50% 0, rgba(255,123,0,.38), #07090d 75%);border-color:rgba(255,123,0,.55)">
+                    <div class="theme-prev-bar" style="background:linear-gradient(90deg,#ff6e00,#ffb347)"></div>
+                    <div class="theme-prev-dots"><i style="background:rgba(255,123,0,.22);border:1px solid #ff7b00"></i><i style="background:#ff7b00"></i><i style="background:#ffb347"></i></div>
+                  </div>
+                  <b>ISAC // SHD</b>
+                  <small>Division 2 floating orange glass HUD</small>
+                </button>
+                <button type="button" class="theme-card" data-theme-pick="discord">
+                  <div class="theme-prev" style="background:#313338;border-color:#3f4147">
+                    <div class="theme-prev-bar" style="background:#5865f2"></div>
+                    <div class="theme-prev-dots"><i style="background:#1e1f22"></i><i style="background:#2b2d31"></i><i style="background:#5865f2"></i></div>
+                  </div>
+                  <b>Discord</b>
+                  <small>Clean dark grey &amp; Blurple surfaces</small>
+                </button>
+              </div>
+              <div class="row" id="accentRowWrap">
+                <label>Vanilla accent colour<div class="accent-row"><input id="setAccent" type="color" value="#e60000"><button id="setAccentReset" class="btn" type="button">Reset red</button></div></label>
+              </div>
+              <div class="set-checks">
+                <label class="inline-check"><input type="checkbox" id="setShowHitList" checked> Show the Critical Hit List tab</label>
+                <label class="inline-check"><input type="checkbox" id="setUseScores"> Use numeric scores (/10 &amp; tier strip)</label>
+              </div>
+              <div class="row"><button id="brandSave" class="btn primary" type="button">SAVE APPEARANCE</button></div>
+            </section>
+            <section class="set-sec">
+              <h4>Board cards</h4>
+              <p class="muted small">Choose what shows on each card. Nothing is deleted; hidden items stay in the game's details.</p>
+              <div id="dispBox" class="disp-box"></div>
+            </section>
+          </div>
+
+          <!-- WORKFLOW -->
+          <div class="set-panel hidden" data-spanel="workflow">
+            <section class="set-sec">
+              <h4>Video formats</h4>
+              <p class="muted small">Customize the formats you make (label, short card tag, and badge colour).</p>
+              <div id="fmtCfgList" class="cfg-list"></div>
+              <div class="row"><button id="fmtCfgAdd" class="btn" type="button">+ Add format</button><button id="fmtCfgReset" class="btn" type="button">Reset defaults</button></div>
+            </section>
+            <section class="set-sec">
+              <h4>Ownership labels <small>(optional text under card posters)</small></h4>
+              <div id="ownCfgList" class="cfg-list"></div>
+              <div class="row"><button id="ownCfgAdd" class="btn" type="button">+ Add label</button><button id="ownCfgReset" class="btn" type="button">Reset defaults</button></div>
+            </section>
+            <section class="set-sec">
+              <h4>Upload schedule</h4>
+              <p class="muted small">Pick your upload days to mark slots on the calendar, and optionally show the video buffer strip.</p>
+              <div id="cadBox" class="cad-box"></div>
+              <label class="cad-ready">Ready means: <select id="cadReady" class="field"></select></label>
+              <label class="inline-check"><input type="checkbox" id="cadShowBuffer"> Show the video buffer bar under the top bar</label>
+            </section>
+            <section class="set-sec">
+              <h4>Stage checklists</h4>
+              <p class="muted small">The to-do list each game gets when it enters a stage (one item per line). Existing cards keep their current lists.</p>
+              <div id="tplBox" class="tpl-box"></div>
+              <div class="row"><button id="tplReset" class="btn" type="button">Reset checklists to defaults</button></div>
+            </section>
+          </div>
+
+          <!-- YOUTUBE -->
+          <div class="set-panel hidden" data-spanel="youtube">
+            <section class="set-sec">
+              <h4>Your YouTube channel</h4>
+              <p class="muted small">Link your handle or channel URL (e.g. <code>@Survascian</code>). Shows your handle next to the version, puts your channel avatar and a one-click YouTube Studio button in the top right.</p>
+              <div class="row">
+                <input id="setYtCh" class="field grow" autocomplete="off" spellcheck="false" placeholder="@YourHandle or youtube.com/@YourHandle">
+                <button id="ytChSave" class="btn primary" type="button">LINK CHANNEL</button>
+              </div>
+              <div class="row">
+                <button id="ytChImport" class="btn" type="button" title="Adds your latest public uploads to the Published column">Import recent uploads</button>
+                <button id="ytChClear" class="btn danger" type="button">Unlink</button>
+              </div>
+              <p class="muted small" id="ytChMsg"></p>
+            </section>
+            <section class="set-sec">
+              <h4>YouTube Data API key <small>(optional)</small></h4>
+              <p class="muted small">Enables your channel avatar, subscriber/view stats, public upload picker, and per-video stats. Get a free key at <b>console.cloud.google.com</b> → enable <b>YouTube Data API v3</b> → <b>Create credentials → API key</b>. Stored only on this computer.</p>
+              <div class="row">
+                <input id="setYt" class="field grow" type="password" autocomplete="new-password" spellcheck="false" placeholder="Paste your API key">
+                <button id="ytSave" class="btn primary" type="button">SAVE</button>
+                <button id="ytTest" class="btn" type="button">TEST</button>
+                <button id="ytClear" class="btn danger" type="button">Remove</button>
+              </div>
+              <p class="muted small" id="ytMsg"></p>
+            </section>
+          </div>
+
+          <!-- CONNECTIONS (IGDB & STEAMGRIDDB) -->
+          <div class="set-panel hidden" data-spanel="connections">
+            <section class="set-sec">
+              <h4>IGDB connection</h4>
+              <p class="muted small">Free via Twitch: (1) sign in at <b>dev.twitch.tv/console</b> (requires 2FA), (2) <b>Register Your Application</b> with OAuth Redirect URL <code>http://localhost</code>, Category <i>Application Integration</i>, Client Type <i>Confidential</i>, (3) copy the <b>Client ID</b> and click <b>New Secret</b>.</p>
+              <div class="grid2">
+                <label>Client ID<input id="setId" class="field" autocomplete="off" spellcheck="false"></label>
+                <label>Client Secret<input id="setSecret" class="field" type="password" autocomplete="new-password" spellcheck="false" placeholder=""></label>
+              </div>
+              <div class="row">
+                <button id="setSave" class="btn primary" type="button">SAVE</button>
+                <button id="setTest" class="btn" type="button">TEST CONNECTION</button>
+                <button id="setClear" class="btn danger" type="button">Remove credentials</button>
+              </div>
+              <ul id="testSteps" class="steps"></ul>
+            </section>
+            <section class="set-sec">
+              <h4>IGDB sync</h4>
+              <p class="muted small">Re-fetches every IGDB-linked game (genres, themes, platforms, time to beat). Your own title, stage, hours, links and manual genres are kept.</p>
+              <div class="row"><button id="resyncBtn" class="btn" type="button">Re-sync all games from IGDB</button><span id="resyncMsg" class="muted small"></span></div>
+            </section>
+            <section class="set-sec">
+              <h4>SteamGridDB <small>(posters, banners &amp; logos)</small></h4>
+              <p class="muted small">Pick custom posters, Hit List banners, and transparent logos from steamgriddb.com. Get a free key at <b>steamgriddb.com/profile/preferences/api</b>.</p>
+              <div class="row">
+                <input id="setSgdb" class="field grow" type="password" autocomplete="new-password" spellcheck="false" placeholder="Paste your SteamGridDB API key">
+                <button id="sgdbSave" class="btn primary" type="button">SAVE</button>
+                <button id="sgdbTest" class="btn" type="button">TEST</button>
+                <button id="sgdbClear" class="btn danger" type="button">Remove</button>
+              </div>
+              <p class="muted small" id="sgdbMsg"></p>
+            </section>
+          </div>
+
+          <!-- DATA & BACKUP -->
+          <div class="set-panel hidden" data-spanel="data">
+            <section class="set-sec">
+              <h4>Your data</h4>
+              <p class="muted small">Everything is saved automatically on this computer, with a daily backup of the planner. You can also export or restore a JSON copy anytime. <span id="verLine"></span></p>
+              <div class="row">
+                <button id="expBtn" class="btn" type="button">Export planner (JSON)</button>
+                <button id="impBtn" class="btn" type="button">Import planner (JSON)</button>
+                <input type="file" id="impFile" accept="application/json,.json" class="hidden">
+              </div>
+            </section>
+            <section class="set-sec">
+              <h4>Quick setup</h4>
+              <p class="muted small">Want to walk through the initial setup again?</p>
+              <div class="row"><button id="reopenWizardBtn" class="btn" type="button">Open Quick Setup wizard</button></div>
+            </section>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARTWORK PICKER (SteamGridDB) -->
+  <div id="artModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Choose artwork">
+    <div class="sheet wide">
+      <div class="sheet-head"><h3 id="artTitle">CHOOSE ARTWORK</h3><button class="x" data-close>✕</button></div>
+      <div class="row"><input id="artSearch" class="field grow" type="search" placeholder="Search SteamGridDB for the game…" autocomplete="off"><button id="artSearchBtn" class="btn">SEARCH</button></div>
+      <div id="artGames" class="art-games"></div>
+      <div id="artGrid" class="art-grid"></div>
+      <p class="muted small" id="artHint"></p>
+    </div>
+  </div>
+
+  <!-- FIRST-RUN SETUP WIZARD -->
+  <div id="wizardModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Quick setup">
+    <div class="sheet">
+      <div class="sheet-head"><h3>WELCOME · QUICK SETUP</h3><button class="x" data-close>✕</button></div>
+      <div class="wiz-steps"><span class="wiz-dot on" id="wizDot1"></span><span class="wiz-dot" id="wizDot2"></span></div>
+      <div id="wizStep1">
+        <p class="muted">Set up your workspace in 30 seconds. Everything here is optional and can be changed in Settings anytime.</p>
+        <div class="grid2">
+          <label class="span2">YouTube channel <small>(optional, e.g. @Survascian)</small><input id="wizYtCh" class="field" placeholder="@YourHandle or youtube.com/@YourHandle" autocomplete="off" spellcheck="false"></label>
+          <label class="inline-check span2"><input type="checkbox" id="wizShowHitList" checked> Include the Critical Hit List OBS overlay tab</label>
+          <label class="inline-check span2"><input type="checkbox" id="wizUseScores"> Use numeric scores (/10)</label>
+        </div>
+        <div class="row end"><button class="btn" id="wizSkip" type="button">Skip for now</button><button class="btn primary" id="wizNext" type="button">NEXT →</button></div>
+      </div>
+      <div id="wizStep2" class="hidden">
+        <p class="muted">Connect <b>IGDB</b> (free via Twitch) to auto-fill game covers, studios, genres, and release dates—or skip and add games manually.</p>
+        <div class="grid2">
+          <label>Twitch Client ID<input id="wizIgdbId" class="field" autocomplete="off" spellcheck="false"></label>
+          <label>Twitch Client Secret<input id="wizIgdbSec" class="field" type="password" autocomplete="new-password" spellcheck="false"></label>
+        </div>
+        <p class="muted small">Get free credentials at <b>dev.twitch.tv/console</b> (Redirect URL <code>http://localhost</code>).</p>
+        <div class="row end"><button class="btn" id="wizBack" type="button">← Back</button><button class="btn primary" id="wizFinish" type="button">FINISH</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="modal hidden" role="alertdialog" aria-modal="true">
+    <div class="sheet small">
+      <p id="confirmMsg"></p>
+      <div class="row end"><button class="btn" data-close>CANCEL</button><button id="confirmYes" class="btn danger">CONFIRM</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"><span id="toastMsg"></span><a id="toastLink" class="toast-link hidden"></a></div>
+</body>
+</html>

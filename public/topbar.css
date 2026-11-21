@@ -1,0 +1,61 @@
+/* Shared top bar for the Planner and the Critical Hit List (v1.4.5).
+   Both pages load this file so the bar has the same height, brand and tab positions everywhere.
+   The left half (brand + tabs) never changes between pages or views; only the right-hand controls do. */
+.sbar {
+  --sb-line: #2a2f3d; --sb-panel2: #1d212b; --sb-mute: #8e96a8; --sb-text: #f2f4f8; --sb-yellow: #ffc700; --sb-red: var(--red, #e60000);
+  box-sizing: border-box; flex: none; width: 100%; height: 64px; min-height: 64px;
+  display: flex; align-items: center; gap: 16px; padding: 0 20px; flex-wrap: nowrap; overflow: hidden;
+  background: rgba(22,25,32,.92); border-bottom: 1px solid var(--sb-line); backdrop-filter: blur(6px);
+  position: relative; z-index: 40;
+}
+.sbar *, .sbar *::before, .sbar *::after { box-sizing: border-box; }
+.sbar-brand { flex: none; margin: 0; font: 900 16px/1 'Orbitron', sans-serif; letter-spacing: .14em; color: var(--sb-text); white-space: nowrap; text-decoration: none; }
+.sbar-brand .hit { color: var(--sb-red); }
+.sbar-brand .sb-short { display: none; }
+.sbar-id { flex: none; display: flex; align-items: center; gap: 11px; }
+.sbar-logo { width: 36px; height: 36px; flex: none; display: block; border-radius: 8px; }
+.sbar-idtext { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sbar-sub { display: flex; align-items: center; gap: 6px; min-height: 11px; }
+.sbar-ver { font: 600 11px/1 'Rajdhani', sans-serif; letter-spacing: .1em; color: var(--sb-mute); }
+.sbar-ver::before { content: 'v' attr(data-v); }
+.sbar-ver[data-v^="{{"] { display: none; }   /* page opened without the server: no version to show */
+.sbar-ch { font: 700 11px/1 'Rajdhani', sans-serif; letter-spacing: .04em; color: var(--sb-yellow); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+.sbar-ch::before { content: '· ' attr(data-ch); }
+.sbar-ch[data-ch=""], .sbar-ch[data-ch^="{{"] { display: none; }
+.sbar-yt { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 34px; border-radius: 9px; background: rgba(230,0,0,.16); border: 1px solid rgba(230,0,0,.5); color: #ff3b3b; text-decoration: none; transition: background .15s, border-color .15s, color .15s; }
+.sbar-yt:hover { background: #e60000; border-color: #e60000; color: #fff; }
+.sbar-yt.hidden { display: none !important; }
+.sbar-av { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,199,0,.55); background: #1d212b; color: #ffc700; text-decoration: none; transition: border-color .15s, transform .15s; flex: none; }
+.sbar-av:hover { border-color: #ffc700; transform: scale(1.06); }
+.sbar-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sbar-av-init { font: 800 14px/1 'Orbitron', sans-serif; }
+.sbar-av.hidden { display: none !important; }
+
+
+.snav { flex: none; display: flex; gap: 4px; padding: 3px; background: var(--sb-panel2); border: 1px solid var(--sb-line); border-radius: 10px; }
+.snav-item {
+  appearance: none; background: none; border: 1px solid transparent; border-radius: 7px; margin: 0; cursor: pointer; text-decoration: none; white-space: nowrap;
+  padding: 0 14px; height: 34px; display: inline-flex; align-items: center;
+  font: 700 11px/1 'Orbitron', sans-serif; letter-spacing: .1em; color: var(--sb-mute);
+  transition: color .12s ease, background-color .12s ease, border-color .12s ease;
+}
+.snav-item:hover { color: var(--sb-text); }
+.snav-item.hidden { display: none !important; }
+.snav-item.active { color: var(--sb-yellow); background: rgba(255,199,0,.12); border-color: rgba(255,199,0,.4); }
+
+.sbar-right { margin-left: auto; flex: 0 1 auto; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.sbar-right > * { flex: none; }
+
+/* keep the layout when a control is not relevant to the current view: hide it, never remove it */
+.sb-ghost { visibility: hidden; pointer-events: none; }
+
+@media (max-width: 1500px) {
+  .sbar { gap: 12px; padding: 0 16px; }
+  .snav-item { padding: 0 10px; letter-spacing: .06em; }
+  .sbar-right { gap: 9px; }
+}
+@media (max-width: 1240px) {
+  .sbar-brand .sb-long { display: none; }
+  .sbar-brand .sb-short { display: inline; }
+  .snav-item { padding: 0 9px; font-size: 10px; }
+}

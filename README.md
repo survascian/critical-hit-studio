@@ -1,131 +1,120 @@
 # Critical Hit Studio
 
-A production hub for video-game creators, combining a **Trello-style Content Planner**, an **Android Mobile Companion** with real-time cloud sync, and the **Critical Hit List** OBS ranking overlay.
+**A production hub built for gaming YouTubers and solo video creators** — combining a distraction-free **Content Planner**, a **Mobile Companion app** with real-time cloud sync, and an **OBS Ranking Overlay** in one lightweight desktop app.
 
-- **Planner (Desktop):** Nine-stage production board (`Backlogged`, `Planned`, `Recording`, `Writing`, `Editing`, `Reviewing`, `Published`, `Shelved`, `Cancelled`), Calendar with `.ics` export, Journal, Stats & Monthly/Year-End Recaps, YouTube channel & stats linking, IGDB metadata, SteamGridDB artwork, and 3 UI themes (**Vanilla**, **ISAC // SHD**, **Discord**).
-- **Mobile Companion (Android `.apk` / `/mobile`):** Purpose-built touch UI with a bottom tab bar (`Board`, `Calendar`, `Journal`, `Stats`), focused Game Sheet, and a press-and-hold **8-icon + center `✕`** floating stage mover.
-- **Cloud Sync (Optional):** Free real-time PC ↔ Phone sync via email & password (Firebase), while keeping local-first `planner.json` storage and daily backups on PC.
-- **Critical Hit List (OBS Overlay):** Live-controlled ranking board with uniform 92px rows, subjective award laurels, and a spoiler-free **Head-to-Head (`VS`)** compare overlay.
+> Built by a solo gaming creator to stay organized without drowning in busywork, bloated templates, or subscriptions.
 
 ---
 
-## Run It (Windows)
+## Download (No Coding Required)
 
-1. Install **Node.js LTS** from https://nodejs.org
-2. Open a terminal in this folder and run `npm install` (first time only).
-3. Run `npm start` to open the desktop app.
+Grab the latest installers directly from the **[Releases](https://github.com/survascian/critical-hit-studio/releases/latest)** page:
 
-To build the Windows installer & portable `.exe`: `npm run dist` (output appears in `dist/`). Windows SmartScreen may warn because the app is not code-signed — choose *More info → Run anyway*.
+| Platform | File | Notes |
+| --- | --- | --- |
+| **Windows (Installer)** | `Critical-Hit-Studio-*-win-setup.exe` | Adds Desktop & Start Menu shortcuts. *(Windows SmartScreen may show a warning because the app isn't code-signed — click **More info → Run anyway**.)* |
+| **Windows (Portable)** | `Critical-Hit-Studio-*-portable.exe` | Run from anywhere, no install needed. |
+| **Android (Mobile Companion)** | `Critical-Hit-Studio-*-android.apk` | Sideload onto Android (allow *"Install unknown apps"* once). |
 
-No Electron? `start-browser-mode.bat` runs the same app in your browser (needs only Node).
+---
 
-## Android Mobile App (`.apk`)
+## What It Does
 
-The Android companion app is built automatically via Capacitor in GitHub Actions (`.github/workflows/build-apk.yml`):
+### 1. Content Planner (Windows Desktop)
+* **9-Stage Production Board:** Track games from `Backlogged` → `Planned` → `Recording` → `Writing` → `Editing` → `Reviewing` → `Published` (plus `Shelved` & `Cancelled`) with drag-and-drop and stage checklists.
+* **Fast Quick-Filters & Simple Mode:** Filter by custom Video Format (`Critical Hit List`, `Critical Bite`, `Supercut`, `Funny Moments` — all editable), Platform, or Series. Toggle **Simple Mode** to strip every card down to poster + title/logo + studio.
+* **Focused Game Editor (Simple / Advanced):**
+  * **Quick-Launch Essentials:** Launch the game (`.lnk`, `.exe`, `steam://`, etc.), open your script (Google Docs *or* local `.docx`/`.md`/`.pdf` file), and jump straight to your project/footage folder.
+  * **Zero-Bloat Ideation:** Optional collapsible **Scratchpad** (+ *Your take* and *Cold open*), **Packaging** (3 title candidates with winner picker + thumbnail idea), and one-click **`JOURNAL IT`**.
+  * **Game Details & Artwork:** Pull studio, release date, smart-ordered genres, platforms, and time-to-beat from **IGDB**, and pick custom posters, banners, and transparent logos from **SteamGridDB**.
+* **Calendar, Journal & Stats:**
+  * **Calendar:** Drag-and-drop target dates, upload-day slot highlights, and one-click `.ics` export for Google Calendar.
+  * **Journal:** Standalone dated studio notes linked to your games.
+  * **Stats & Recaps:** Monthly & Year-End Recap cards (published count, hours played, video views, awards, format breakdown, `Copy recap`), pipeline bottleneck charts (*Where the Time Goes*), and YouTube channel snapshot.
+* **Customizable Themes:** Switch live between **Vanilla** (custom accent colour), **ISAC // SHD** (Division 2 frosted-glass HUD), and **Discord** (Dark + Blurple). Optional toggles for the Hit List tab and numeric `/10` scores (off by default).
 
-1. Open the repository's **Actions** tab and download the latest **`Critical-Hit-Studio-Mobile-APK`** artifact.
-2. Unzip and install `Critical-Hit-Studio-Mobile.apk` on your Android phone.
-3. Sign in with the same email & password you use in **Settings → Data & Backup → Cloud Sync** on PC.
+### 2. Android Mobile Companion (`.apk`)
+* **Built for phones, not a squished desktop page:** Bottom tab bar (`Board`, `Calendar`, `Journal`, `Stats`), floating `+` button, and a focused mobile Game Sheet (PC-only launchers and OBS controls stay out of the way).
+* **Press-and-Hold 8-Icon Stage Mover:** Press and hold any game card (or tap `⇄`) to float it above a 3×3 grid of the other 8 stages around a center `✕` Cancel button — slide your thumb onto a stage and release to move (with haptic feedback and Undo).
+* **Real-Time Cloud Sync (Optional):** Create a free account inside **Settings → Data & Backup → Cloud Sync** on PC and sign in on Android to sync your board, journal, and game posters live in both directions. *(Don't want an account? Skip login — the desktop app works 100% locally.)*
 
-## Connect IGDB (Free, Optional)
+### 3. Critical Hit List (OBS Ranking Overlay)
+* **Built-in OBS Overlay:** Control your ranked game list live or recorded straight from the app, synced to OBS in real time.
+* **Subjective Awards & Polish:** Uniform 92px rows, custom logo/banner fitting, 3 award styles (*Laurel wreath*, *Medal*, *Neon hex*) with held pop-in animation (`A`), and arrow-key panning.
+* **Head-to-Head (`VS`) Compare Overlay:** Spoiler-free banner + logo showdown with staged intros (`V`) and 3 live-switchable victor animations (`1` / `2`): *Knockout Smash*, *Golden Coronation*, and *Critical Hit Slash*.
 
-IGDB is run by Twitch and uses a free developer app:
+---
 
-1. Go to https://dev.twitch.tv/console and sign in (Twitch requires 2FA).
-2. **Register Your Application**: any name, OAuth Redirect URL `http://localhost`, Category *Application Integration*, Client Type *Confidential*.
-3. Open **Settings → IGDB & Art**, paste your **Client ID** and **Client Secret**, then click **Save** and **Test connection**.
+## Optional Setup Guides
 
-## OBS Browser Source
+Everything works out of the box with manual entry. When you want extras:
 
-While the app is running, add a **Browser Source** in OBS with URL:
+### OBS Browser Source
+While Critical Hit Studio is running on PC, add a **Browser Source** in OBS:
+* **URL:** `http://localhost:8787/hitlist?display=1`
+* Leave **Local file** unticked. Control it from the app's **Critical Hit List** tab.
 
-`http://localhost:8787/hitlist?display=1`
+### IGDB Game Metadata (Free)
+1. Go to [dev.twitch.tv/console](https://dev.twitch.tv/console) (Twitch requires 2FA) and click **Register Your Application**.
+2. Set OAuth Redirect URL to `http://localhost`, Category to *Application Integration*, Client Type to *Confidential*.
+3. Copy your **Client ID** and generate a **New Secret**, then paste both into **Settings → IGDB & Art** and click **Test connection**.
 
-Leave *Local file* unticked. Control it from the app's **Critical Hit List** tab. (Port **8787** is fixed on purpose so OBS and the Hit List's browser storage stay consistent.)
+### SteamGridDB Artwork & YouTube Stats (Free)
+* **SteamGridDB:** Paste a free API key from `steamgriddb.com/profile/preferences/api` in **Settings → IGDB & Art** to browse custom posters, banners, and transparent logos.
+* **YouTube:** Link your `@handle` in **Settings → YouTube** for a top-bar channel avatar and one-click YouTube Studio link. Add an optional free YouTube Data API v3 key to pull public upload lists and video/channel stats.
 
-## Where Your Data Lives
+---
 
-Windows: `%APPDATA%\Critical Hit Studio\`
+## Privacy & Where Your Data Lives
 
-- `planner.json` — your board, checklists, formats, and journal (auto-saved; daily backups in `backups\`, last 30 kept)
-- `backups\hitlist-latest.json` — automatic safety copy of the Hit List & Pre-Launch list
-- `settings.json` — local API keys, theme, and channel settings (stored on your PC only)
-- `media\` — locally cached IGDB/SteamGridDB art and channel avatar
+* **Local-first on PC:** All planner data, daily backups (last 30 kept), cached art, and API keys live in `%APPDATA%\Critical Hit Studio\`.
+* **API keys never leave your PC:** Your Twitch/IGDB, SteamGridDB, and YouTube keys are stored only in local `settings.json` and are never uploaded to Cloud Sync.
+* **Cloud Sync is opt-in:** Each user's synced planner is isolated to their own account via Firestore security rules.
 
-Run `npm test` to execute the automated test suite against fake local IGDB/YouTube/SteamGridDB servers (no credentials required).
+---
+
+## Running from Source (Developers)
+
+```bash
+npm install      # first time only
+npm start        # run Electron desktop app
+npm test         # run all 10 automated test suites (uses local fake APIs, no keys needed)
+npm run dist     # build Windows NSIS installer & portable .exe into dist/
+```
+
+No Electron? Run `start-browser-mode.bat` (or `node server/server.js`) to open the app in your browser at `http://localhost:8787/`.
 
 ---
 
 ## Changelog
 
-### v2.1.0 — Mobile Companion App & Cloud Sync
-- **Mobile Companion UI (`/mobile`) & Android `.apk`:** Purpose-built mobile layout packaged with Capacitor via GitHub Actions (no Android Studio required).
-- **8-Icon + Center `✕` Floating Stage Mover:** Press and hold any game card (or tap `⇄`) to float the card and slide onto any of the 8 other stages around a center Cancel button, with haptic feedback and 6-second Undo.
-- **Mobile Navigation & Focused Editor:** Bottom tab bar (`Board`, `Calendar`, `Journal`, `Stats`), floating `+` button, and a streamlined mobile Game Sheet (PC-only launchers and OBS Hit List cleanly omitted).
-- **Real-Time Cloud Sync (Optional):** Email/Password account sync (Firebase) in **Settings → Data & Backup** and on Mobile, with per-game/per-note timestamp merging and automatic poster sync (`coverRemote` + compact thumbnails).
-- **In-App Changelog:** Added a **Changelog** tab inside Settings so users can see release notes right in the app.
+### v2.1.0 — Mobile Companion App, Cloud Sync & In-App Changelog
+* **Mobile Companion UI (`/mobile`) & Android `.apk`:** Purpose-built touch UI packaged via Capacitor + automated GitHub Releases.
+* **8-Icon + Center `✕` Floating Stage Mover:** Press and hold any game card (or tap `⇄`) to slide-drop into any of the other 8 stages with haptics and Undo.
+* **Real-Time Cloud Sync (Optional):** Free Email/Password sync between PC and Android, with per-item timestamp merging and automatic poster sync.
+* **In-App Changelog:** Added a **Changelog** tab inside Settings.
+* **Security Hardening:** Strict `http:`/`https:` validation for external links and exact origin/port checks on local API writes.
 
 ### v2.0.0 – v2.0.2 — Themes & Quick-Filter Polish
-- Added 3 UI themes in **Settings → Appearance**: **Vanilla**, **ISAC // SHD** (The Division 2 frosted-glass HUD), and **Discord** (Dark + Blurple), applied server-side with zero load flash.
-- Scoped themes strictly to the Planner and the Hit List top bar (`.sbar`) so the Hit List board and OBS overlay stay completely untouched.
-- Moved Filter, Hide Archived, and Simple Mode controls to the right side of the quick-filter bar and improved pill contrast across ISAC and Discord themes.
+* Added **Vanilla**, **ISAC // SHD**, and **Discord** themes in **Settings → Appearance** (server-side applied with zero flash; Hit List board/OBS overlay stays untouched).
+* Moved Filter, Hide Archived, and Simple Mode controls to the right side of the quick-filter bar and improved pill contrast across themes.
 
-### v1.9.3 — Spoiler-Free VS Cards & Simple Board Mode
-- **Spoiler-free Head-to-Head (`VS`) cards:** Shows only the banner and centered logo (auto-loading Planner logos).
-- **3 Victor Animation Styles** (hotkeys `1` / `2`, switchable live, mirrored to OBS): *Knockout Smash*, *Golden Coronation*, and *Critical Hit Slash*.
-- **Simple Board Mode toggle:** Strips every Planner card down to poster + title/logo + studio only.
+### v1.9.0 – v1.9.3 — Personalization, Recap, Simple Mode & VS Overlay
+* Introduced the spoiler-free **Head-to-Head (`VS`)** overlay with staged reveals (`V`) and 3 victor animations (*Knockout Smash*, *Golden Coronation*, *Critical Hit Slash*).
+* Added **Simple Board Mode**, collapsible Game Editor sections, 2-pane sidebar Settings, customizable Vanilla accent colour, optional Hit List & Numeric Scores toggles, editable Video Formats & Ownership labels, 2-step Quick Setup wizard, Quick-Filter bar, Series grouping, Project/Footage folder picker, Import Recent YouTube Uploads, and **Monthly & Year-End Recaps**.
 
-### v1.9.2 — Collapsible Editor & Staged VS Reveals
-- Made every section in the Game Editor collapsible (`<details>`).
-- Removed 9:16 Vertical Reveal Mode from the Hit List.
-- Added staged VS intros (press `V` to fly in contenders one at a time) and victor crowning (`1` / `2`).
+### v1.8.0 – v1.8.5 — Streamlined Editor, Journal & YouTube Linking
+* Streamlined the Game Editor to a balanced 50/50 Advanced layout, optional collapsible Scratchpad (+ *Your take* / *Cold open*), and one-click `JOURNAL IT`.
+* Added YouTube channel linking (`@handle`), cached top-bar avatar, deep-linked YouTube Studio buttons, public uploads dropdown, local PC script file picker, standalone **Journal** tab, `.ics` Google Calendar export, and automatic logo trimming.
 
-### v1.9.1 — 2-Pane Settings & Essentials Reorder
-- Redesigned Settings into a 2-pane sidebar modal (*Appearance*, *Workflow*, *YouTube*, *IGDB & Art*, *Data & Backup*).
-- Reordered Essentials quick-launch rows: **App Launch → Script → Project / Footage Folder**.
-- Locked app branding to **Critical Hit Studio**.
+<details>
+<summary>Earlier Releases (v1.3.0 – v1.7.0)</summary>
 
-### v1.9.0 — Personalization, Quick-Filters, Recap & VS Compare
-- Added customizable Vanilla accent colour, optional Hit List tab toggle, and optional Numeric Scores toggle (off by default).
-- Added editable Video Formats, editable Ownership labels, and a 2-step Quick Setup wizard on empty boards.
-- Added the Quick-Filter bar (Format pills + Platform & Series dropdowns), Series grouping, Project/Footage folder picker, and **Import recent YouTube uploads**.
-- Added **Monthly & Year-End Recap** card in Stats with `Copy recap`.
-- Introduced the **Head-to-Head (`VS`)** Compare overlay on the Critical Hit List.
+* **v1.7.0:** Days-in-stage alerts for Writing/Editing, Packaging (3 title candidates + thumbnail idea), Timely flag, upload schedule slots, and *Where the time goes* Stats.
+* **v1.6.5:** Red `Cr` app icon, live version display, uniform 92px Hit List rows, and zero-flicker font loading.
+* **v1.6.0:** Per-entry Hit List award layouts (Laurel, Medal, Neon Hex), held pop-in animation (`A`), arrow-key panning, and Ownership labels.
+* **v1.5.0:** Subjective Hit List Special Awards and planned awards in the Planner.
+* **v1.4.0 – v1.4.5:** Game launcher shortcuts, Calendar drag-and-drop, customizable board card chips, SteamGridDB art picker, and unified top bar.
+* **v1.3.0:** IGDB theme-aware genre ordering, stage checklists, YouTube video stats, Stats view, and 10-second Delete Undo.
 
-### v1.8.4 – v1.8.5 — Channel Avatar, Local Scripts & Public Uploads
-- Ordered top-right controls as Channel Avatar → YouTube Studio → Settings, with local avatar caching.
-- Added toggle for the video buffer bar in Settings (off by default).
-- Added local PC script file picker (`Browse…`) alongside Google Docs links, plus a public YouTube uploads dropdown in Publishing.
-- Fixed a regex escape bug in `planner.js` (v1.8.5).
-
-### v1.8.3 — YouTube Channel Linking & 50/50 Advanced Layout
-- Balanced the Advanced Game Editor into a 50/50 two-column layout.
-- Added YouTube channel linking (`@handle` or URL), top-bar handle & deep-linked YouTube Studio button, per-video `Studio ↗`, and Stats channel snapshot.
-
-### v1.8.1 – v1.8.2 — Editor Streamlining
-- Removed manual moment-to-moment timestamping, clip-budget trackers, Video Plan, Beat Outline, and *After It's Up* sections.
-- Replaced with an optional collapsible **Scratchpad** (auto-migrating legacy moments) with *Your take* and *Cold open* underneath.
-- Simplified Simple mode to Essentials + Game Details and replaced the inline editor Journal box with a one-click **`JOURNAL IT`** button.
-
-### v1.8.0 — Video Formats, Journal & Google Calendar Export
-- Introduced Video Formats (`Critical Hit List`, `Critical Bite`, `Supercut`, `Funny Moments`), Simple/Advanced editor modes, standalone **Journal** tab, `.ics` Google Calendar export, and automatic logo margin trimming.
-- Removed Viewer Requests.
-
-### v1.7.0 — Pipeline Insights & Upload Cadence
-- Added days-in-stage alerts for Writing and Editing (yellow at 7 days, red at 14), **Packaging** (3 title candidates + thumbnail idea), **Timely** flag, upload schedule slots on Calendar, and *Where the time goes* in Stats.
-
-### v1.6.5 — Uniform Hit List Rows & Branding
-- Added the red `Cr` app icon and live version display in the top bar.
-- Standardized every Hit List entry to a uniform 92px height with zero-flicker font loading.
-
-### v1.6.0 — Award Layouts & Arrow-Key Panning
-- Added per-entry award layouts with 3 looks (*Laurel wreath*, *Medal*, *Neon hex*), held pop-in animation (hotkey `A`), arrow-key panning, and Ownership labels (`Owned` / `Shanks`).
-
-### v1.5.0 — Hit List Special Awards
-- Added subjective Special Awards (GOTY, Best Action/Horror/RPG/Indie/Story, custom, yearly or all-time) and planned awards in the Planner.
-
-### v1.4.0 – v1.4.5 — Launchers, SteamGridDB & Shared Top Bar
-- Added game launch shortcuts (`.lnk`, `.url`, `.exe`, `steam://`, etc.), Calendar drag-and-drop, customizable board card chips, SteamGridDB poster/banner/logo picker, and a unified top bar across all views.
-
-### v1.3.0 — Genres, Checklists, Stats & Undo
-- Added IGDB theme-aware genre ordering, stage checklists, YouTube video stats, Stats view, 10-second Delete Undo, and Published → Send to Hit List prompts.
+</details>

@@ -48,7 +48,8 @@ jobs:
 
       - name: Apply Critical Hit Studio app icon
         run: |
-          for dir in mobile-app/android/app/src/main/res/mipmap-*; do
+          for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            dir="mobile-app/android/app/src/main/res/mipmap-$density"
             if [ -d "$dir" ]; then
               cp build/icon.png "$dir/ic_launcher.png"
               cp build/icon.png "$dir/ic_launcher_round.png"

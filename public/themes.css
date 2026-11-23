@@ -363,7 +363,7 @@ html[data-theme="discord"] .sbar-brand {
   letter-spacing: 0.01em;
 }
 html[data-theme="discord"] .sbar-brand .hit { color: #5865f2; }
-html[data-theme="discord"] .sbar-logo { border-radius: 50%; }
+html[data-theme="discord"] .sbar-logo { border-radius: 4px; }
 html[data-theme="discord"] .sbar-ch { color: #949cf7; font-family: 'Inter', system-ui, sans-serif; }
 html[data-theme="discord"] .snav {
   background: #2b2d31;
@@ -470,8 +470,12 @@ html[data-theme="discord"]:not([data-page="hitlist"]) .pipebar {
   border-bottom: 1px solid #1e1f22;
 }
 html[data-theme="discord"]:not([data-page="hitlist"]) .qpill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   border-radius: 999px;
-  padding: 4px 13px;
+  padding: 6px 13px 7px;
   background: #1e1f22;
   border-color: transparent;
   color: #b5bac1;
@@ -508,13 +512,17 @@ html[data-theme="discord"]:not([data-page="hitlist"]) .col-head h2::before {
   font-size: 15px;
 }
 html[data-theme="discord"]:not([data-page="hitlist"]) .col-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   background: #313338;
   border: 0;
   border-radius: 999px;
   color: #b5bac1;
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 12px;
-  padding: 2px 9px;
+  padding: 4px 9px 5px;
 }
 html[data-theme="discord"]:not([data-page="hitlist"]) .col-add {
   border-radius: 50%;
@@ -561,6 +569,10 @@ html[data-theme="discord"]:not([data-page="hitlist"]) .card-sub {
   color: #949ba4;
 }
 html[data-theme="discord"]:not([data-page="hitlist"]) .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   background: #232428;
   border: 0;
   color: #dbdee1;
@@ -568,7 +580,7 @@ html[data-theme="discord"]:not([data-page="hitlist"]) .chip {
   font-size: 11px;
   font-weight: 600;
   border-radius: 999px;
-  padding: 2px 9px;
+  padding: 4px 9px 5px;
 }
 html[data-theme="discord"]:not([data-page="hitlist"]) .chip.plat {
   background: var(--pc);
@@ -646,9 +658,40 @@ html[data-theme="discord"]:not([data-page="hitlist"]) .seg { background: #1e1f22
 html[data-theme="discord"]:not([data-page="hitlist"]) .seg button { border-radius: 999px; }
 html[data-theme="discord"]:not([data-page="hitlist"]) .seg button.on { background: #5865f2; color: #fff; }
 html[data-theme="discord"]:not([data-page="hitlist"]) .toast { background: #1e1f22; border: 1px solid #5865f2; border-radius: 12px; }
-html[data-theme="discord"]:not([data-page="hitlist"]) .pill { background: #2b2d31; border: 0; border-radius: 999px; }
+html[data-theme="discord"]:not([data-page="hitlist"]) .pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 5px 12px 6px;
+  background: #2b2d31;
+  border: 0;
+  border-radius: 999px;
+}
 html[data-theme="discord"]:not([data-page="hitlist"]) .pill.ok { background: rgba(35, 165, 90, 0.16); color: #23a55a; }
 html[data-theme="discord"]:not([data-page="hitlist"]) .pill.off { background: rgba(240, 178, 50, 0.16); color: #f0b232; }
+
+/* Discord Light Grey Scrollbars */
+html[data-theme="discord"]:not([data-page="hitlist"]),
+html[data-theme="discord"]:not([data-page="hitlist"]) * {
+  scrollbar-color: #8b909a #2b2d31;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) ::-webkit-scrollbar-track {
+  background: #2b2d31;
+  border-radius: 999px;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) ::-webkit-scrollbar-thumb {
+  background: #8b909a;
+  border-radius: 999px;
+  border: 2px solid #2b2d31;
+}
+html[data-theme="discord"]:not([data-page="hitlist"]) ::-webkit-scrollbar-thumb:hover {
+  background: #a9aeb8;
+}
 
 
 /* ==========================================================================

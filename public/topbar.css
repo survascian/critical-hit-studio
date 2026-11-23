@@ -13,7 +13,7 @@
 .sbar-brand .hit { color: var(--sb-red); }
 .sbar-brand .sb-short { display: none; }
 .sbar-id { flex: none; display: flex; align-items: center; gap: 11px; }
-.sbar-logo { width: 36px; height: 36px; flex: none; display: block; border-radius: 8px; }
+.sbar-logo { width: 36px; height: 36px; flex: none; display: block; border-radius: 3px; }
 .sbar-idtext { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .sbar-sub { display: flex; align-items: center; gap: 6px; min-height: 11px; }
 .sbar-ver { font: 600 11px/1 'Rajdhani', sans-serif; letter-spacing: .1em; color: var(--sb-mute); }

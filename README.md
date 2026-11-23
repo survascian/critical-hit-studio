@@ -88,6 +88,11 @@ No Electron? Run `start-browser-mode.bat` (or `node server/server.js`) to open t
 
 ## Changelog
 
+### v2.2.3 — Visual Polish & Redesigned Cr App Icon
+* Redesigned the **Cr** app icon in a crisp Adobe Creative Suite style across Windows, top bar, and Android.
+* Fixed Discord theme pill vertical centering and upgraded Discord scrollbars to a readable light grey.
+* Theme-styled studio names on board cards: `@blooberteam` in **Discord** and `BLOOBER_TEAM` in **ISAC // SHD**.
+
 ### v2.2.2 — Standalone THUMBNAIL Checker Page
 * Moved the YouTube Thumbnail Checker out of the Game Editor into its own top-level **THUMBNAIL** tab in the header.
 * Added a full Thumbnail Library sorted **By Stage** (e.g. `Editing` → `HIT LIST - DISPATCH`) or **By Import Date**, plus standalone image importing and one-click jumping from any game's Packaging section.

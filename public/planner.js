@@ -124,6 +124,18 @@ document.querySelectorAll('.modal').forEach((m) => {
 // ------------------------------------------------------------------ helpers for display
 const findGame = (id) => state.games.find((g) => g.id === id);
 const studioOf = (g) => (g.developers || []).join(', ');
+function formatStudioForTheme(raw) {
+  const txt = String(raw || '').trim() || 'Unknown studio';
+  const th = document.documentElement.dataset.theme || (appSettings && appSettings.theme) || 'default';
+  if (th === 'discord') {
+    const parts = txt.split(',').map((s) => s.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '')).filter(Boolean);
+    return parts.length ? parts.map((p) => '@' + p).join(', ') : '@' + txt.toLowerCase().replace(/\s+/g, '');
+  }
+  if (th === 'isac') {
+    return txt.toUpperCase().replace(/[\s,]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+  return txt;
+}
 const yearOf = (g) => (g.releaseDate ? g.releaseDate.slice(0, 4) : '');
 function daysUntil(iso) {
   if (!iso) return null;
@@ -292,7 +304,7 @@ function cardEl(g) {
       <div class="card-cover-col"><div class="card-cover ${g.cover ? '' : 'none'}" style="background-image:${cssUrl(g.cover)}">${g.cover ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div></div>
       <div class="card-main">
         ${logo ? `<div class="card-title has-logo"><img class="card-logo ${logoCls(logo)}" data-src="${esc(logo)}" src="${esc(logoSrc(logo))}" alt="${esc(g.name)}" title="${esc(g.name)}"></div>` : `<div class="card-title">${esc(g.name)}</div>`}
-        <div class="card-sub">${esc(studioOf(g) || 'Unknown studio')}</div>
+        <div class="card-sub">${esc(formatStudioForTheme(studioOf(g) || 'Unknown studio'))}</div>
       </div>`;
     if (logo) fitLogo(logo);
     c.addEventListener('click', () => openDetail(g.id));
@@ -333,7 +345,7 @@ function cardEl(g) {
     ${(show('cover') || ownTxt || hypeN) ? `<div class="card-cover-col">${show('cover') ? `<div class="card-cover ${g.cover ? '' : 'none'}" style="background-image:${cssUrl(g.cover)}">${g.cover ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div>` : ''}${ownTxt ? `<div class="card-own" style="--oc:${esc(ownObj.color)}" title="Ownership">${esc(ownTxt)}</div>` : ''}${hypeN ? `<div class="card-hype" title="Public hype: ${hypeN}/5" aria-label="Public hype ${hypeN} out of 5">${'🔥'.repeat(hypeN)}</div>` : ''}</div>` : ''}
     <div class="card-main">
       ${logo ? `<div class="card-title has-logo"><img class="card-logo ${logoCls(logo)}" data-src="${esc(logo)}" src="${esc(logoSrc(logo))}" alt="${esc(g.name)}" title="${esc(g.name)}"></div>` : `<div class="card-title">${esc(g.name)}</div>`}
-      ${show('studio') ? `<div class="card-sub">${esc(studioOf(g) || 'Unknown studio')}</div>` : ''}
+      ${show('studio') ? `<div class="card-sub">${esc(formatStudioForTheme(studioOf(g) || 'Unknown studio'))}</div>` : ''}
       <div class="chips">${chips.join('')}</div>
     </div>
     ${launchOn ? `<button type="button" class="card-launch${g.launchTarget ? '' : ' unset'}" data-launch title="${esc(launchTip)}" aria-label="${esc(launchTip)}">${PLAY_SVG}</button>` : ''}`;
@@ -1619,6 +1631,7 @@ $('themePicker').addEventListener('click', async (e) => {
   const th = b.dataset.themePick;
   appSettings.theme = th;
   applyBrandingUI();
+  renderBoard();
   try { await putJson('/api/settings', { theme: th }); toast('Theme changed to ' + (th === 'isac' ? 'ISAC // SHD' : th === 'discord' ? 'Discord' : 'Vanilla')); }
   catch (err) { toast(err.message); }
 });

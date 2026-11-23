@@ -39,7 +39,7 @@ body {
   border-bottom: 1px solid var(--line);
 }
 .mbar-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.mbar-icon { width: 32px; height: 32px; border-radius: 7px; flex-shrink: 0; }
+.mbar-icon { width: 32px; height: 32px; border-radius: 3px; flex-shrink: 0; }
 .mbar-name {
   font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 13px;
   letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

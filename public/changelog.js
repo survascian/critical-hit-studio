@@ -6,6 +6,15 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.2.3',
+      title: 'Visual Polish & Redesigned Cr App Icon',
+      items: [
+        'Redesigned the Critical Hit Studio Cr icon in a crisp Adobe Creative Suite style (sharp crimson border, deep dark interior, centered Cr) across Windows, header, and Android.',
+        'Fixed vertical pill/chip text alignment and lightened scrollbars to clean light grey in the Discord theme.',
+        'Theme-styled studio names on board cards: Discord formats studios as @handles (e.g. Bloober Team → @blooberteam), and ISAC // SHD formats them in ALL_CAPS_WITH_UNDERSCORES.'
+      ]
+    },
+    {
       version: '2.2.2',
       title: 'Standalone THUMBNAIL Checker Page',
       items: [

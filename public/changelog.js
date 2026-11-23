@@ -6,6 +6,16 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.2.0',
+      title: 'Thumbnail Previews, Multi-Format / Parts & One-Click Updater',
+      items: [
+        'Attach up to 3 thumbnail versions (PNG/JPG/WebP) inside Packaging with winner picker and a built-in YouTube feed card preview.',
+        'Multi-format toggle pills per card (tag a recording game as both Hit List & Supercut), plus one-click Split into separate cards and + Add Part (PT 1 / PT 2 badge, without double-counting Hours Played).',
+        'Built-in GitHub Releases Updater: automatic update badge in the top bar, one-click Download & Install on Windows, and APK update alerts on Android.',
+        'Moved the Public Hype indicator under Ownership on the left of board cards as fire symbols (🔥).'
+      ]
+    },
+    {
       version: '2.1.0',
       title: 'Mobile Companion App & Cloud Sync',
       items: [

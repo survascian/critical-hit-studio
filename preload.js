@@ -7,5 +7,11 @@ contextBridge.exposeInMainWorld('chlDesktop', {
   openScript: (target) => ipcRenderer.invoke('chl:open-script', String(target == null ? '' : target)),
   pickScript: () => ipcRenderer.invoke('chl:pick-script'),
   openFolder: (target) => ipcRenderer.invoke('chl:open-folder', String(target == null ? '' : target)),
-  pickFolder: () => ipcRenderer.invoke('chl:pick-folder')
+  pickFolder: () => ipcRenderer.invoke('chl:pick-folder'),
+  installUpdate: (info) => ipcRenderer.invoke('chl:install-update', info),
+  onUpdateProgress: (cb) => {
+    if (typeof cb !== 'function') return;
+    ipcRenderer.removeAllListeners('chl:update-progress');
+    ipcRenderer.on('chl:update-progress', (_e, data) => cb(data));
+  }
 });

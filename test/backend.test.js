@@ -92,6 +92,17 @@ const fake = require('./fake-igdb');
   rr = await fetch(base + '/api/img/..%2F..%2Fx', { method: 'PUT', body: 'x' });
   ok('relay image key traversal blocked', rr.status === 400);
 
+  // thumbnail upload + updater helpers
+  const pngBuf = fs.readFileSync(path.join(__dirname, 'cover.png'));
+  const upOk = await fetch(base + '/api/thumb/upload', { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: pngBuf });
+  const upBody = await upOk.json();
+  ok('thumbnail upload saves under /media/', upOk.status === 200 && /^\/media\/thumb_[0-9a-f]+\.png$/.test(upBody.path), JSON.stringify(upBody));
+  const upBad = await fetch(base + '/api/thumb/upload', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: 'nope' });
+  ok('thumbnail upload rejects non-images', upBad.status === 400, String(upBad.status));
+  const upd = require('../server/updater');
+  ok('updater semver compare works', upd.compareSemver('2.2.0', '2.1.0') === 1 && upd.compareSemver('2.2.0', '2.2.0') === 0 && upd.compareSemver('2.1.9', '2.2.0') === -1);
+  ok('updater download URL & filename allowlist', upd.isAllowedDownloadUrl('https://github.com/survascian/critical-hit-studio/releases/download/v2.2.0/Critical-Hit-Studio-2.2.0-win-setup.exe') && !upd.isAllowedDownloadUrl('https://evil.com/x.exe') && !!upd.safeInstallerName('Critical-Hit-Studio-2.2.0-win-setup.exe') && !upd.safeInstallerName('../evil.exe'));
+
   // token reuse: only one token request for many calls
   const tokenCalls = F.log().filter((l) => l.includes('/oauth2/token')).length;
   console.log('token requests so far:', tokenCalls);

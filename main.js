@@ -3,7 +3,9 @@
 const { app, BrowserWindow, shell, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { classify, classifyScript, classifyFolder } = require('./launcher');
+const { isAllowedDownloadUrl, safeInstallerName } = require('./server/updater');
 const { startServer } = require('./server/server');
 
 const PORT = parseInt(process.env.CHL_PORT, 10) || 8787;
@@ -89,6 +91,43 @@ ipcMain.handle('chl:pick-folder', async (e) => {
   if (!fromOurPage(e)) return null;
   const r = await dialog.showOpenDialog(win, { title: 'Choose the project / footage folder', properties: ['openDirectory', 'dontAddToRecent'] });
   return r.canceled || !r.filePaths[0] ? null : r.filePaths[0];
+});
+ipcMain.handle('chl:install-update', async (e, info) => {
+  if (!fromOurPage(e)) return { ok: false, error: 'Not allowed.' };
+  const url = info && info.url;
+  const name = safeInstallerName(info && info.name);
+  if (!name || !isAllowedDownloadUrl(url)) return { ok: false, error: 'Invalid update download link.' };
+  const dest = path.join(os.tmpdir(), name);
+  const tmp = dest + '.part';
+  try {
+    const r = await fetch(url, { headers: { 'User-Agent': 'Critical-Hit-Studio' } });
+    if (!r.ok || !r.body) return { ok: false, error: 'Download failed (HTTP ' + r.status + ').' };
+    if (r.url && !isAllowedDownloadUrl(r.url)) return { ok: false, error: 'Blocked unexpected redirect host.' };
+    const total = parseInt(r.headers.get('content-length') || '0', 10) || 0;
+    const out = fs.createWriteStream(tmp);
+    let received = 0, lastSent = 0;
+    const reader = r.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      out.write(Buffer.from(value));
+      received += value.length;
+      const now = Date.now();
+      if (win && (now - lastSent > 120 || received === total)) {
+        lastSent = now;
+        win.webContents.send('chl:update-progress', { received, total, pct: total ? Math.min(100, Math.round((received / total) * 100)) : 0 });
+      }
+    }
+    await new Promise((res, rej) => { out.end(() => res()); out.on('error', rej); });
+    fs.renameSync(tmp, dest);
+    const err = await shell.openPath(dest);
+    if (err) return { ok: false, error: 'Could not launch installer: ' + err };
+    setTimeout(() => app.quit(), 450);
+    return { ok: true };
+  } catch (err) {
+    try { fs.unlinkSync(tmp); } catch (_e) {}
+    return { ok: false, error: err.message };
+  }
 });
 
 if (!app.requestSingleInstanceLock()) {

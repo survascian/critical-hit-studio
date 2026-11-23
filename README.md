@@ -88,6 +88,12 @@ No Electron? Run `start-browser-mode.bat` (or `node server/server.js`) to open t
 
 ## Changelog
 
+### v2.2.0 — Thumbnail Previews, Multi-Format / Parts & One-Click Updater
+* **3 Thumbnail Versions + YouTube Preview:** Attach up to 3 thumbnail images right inside **Packaging**, pick a winner, and preview them large or at realistic YouTube feed card size with your chosen title.
+* **Multi-Format Cards, Split & `+ Add Part`:** Toggle multiple video formats on a single card while recording (e.g. `HIT LIST` + `SUPERCUT`), then click **Split** if you end up making both—or click **`+ Add Part`** for multi-part Supercuts (`PT 1`, `PT 2`…) without double-counting Hours Played.
+* **Built-In GitHub Updater:** Automatically checks GitHub Releases on launch with a top-bar update badge, one-click **Download & Install** on Windows, and an **Update APK** alert on Android.
+* **Fire Hype Indicator:** Moved Public Hype under the Ownership label on the left of each board card as fire symbols (`🔥`).
+
 ### v2.1.0 — Mobile Companion App, Cloud Sync & In-App Changelog
 * **Mobile Companion UI (`/mobile`) & Android `.apk`:** Purpose-built touch UI packaged via Capacitor + automated GitHub Releases.
 * **8-Icon + Center `✕` Floating Stage Mover:** Press and hold any game card (or tap `⇄`) to slide-drop into any of the other 8 stages with haptics and Undo.

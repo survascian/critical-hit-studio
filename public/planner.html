@@ -42,6 +42,7 @@
     </nav>
     <div class="sbar-right topbar-right">
       <span id="saveStatus" class="save-status" title="">Saved</span>
+      <button id="updatePill" class="pill upd hidden" title="A newer version of Critical Hit Studio is available">Update</button>
       <button id="igdbPill" class="pill" title="IGDB connection">IGDB: …</button>
       <button id="addBtn" class="btn primary">+ ADD GAME <kbd>N</kbd></button>
       <button id="settingsBtn" class="btn icon" title="Settings" aria-label="Settings">⚙</button>
@@ -106,9 +107,19 @@
           <div class="grid3">
             <label class="g-title">Title<input id="dName" class="field"></label>
             <label>Stage<select id="dStage" class="field"></select></label>
-            <label>Video format<select id="dFormat" class="field"></select></label>
+            <label>Part # <small>(optional)</small><input id="dPart" class="field" type="number" min="1" max="99" step="1" placeholder="—"></label>
             <label>Target date<input id="dDue" class="field" type="date" title="When you plan to publish. Shows on the card and the calendar."></label>
             <label>Timing <select id="dTimely" class="field"><option value="">Evergreen</option><option value="1">Timely (post soon after release / event)</option></select></label>
+            <div class="g-full fmt-picker-row">
+              <div class="fmt-picker-head">
+                <span class="fmt-picker-lbl">Video format(s) <small>(pick one, multiple while recording, or leave blank)</small></span>
+                <div class="row">
+                  <button id="dSplitFmt" class="btn hidden" type="button" title="Split each selected format into its own card">Split into separate cards</button>
+                  <button id="dAddPart" class="btn" type="button" title="Create Part 2 (or next part) carrying over game info &amp; artwork">+ Add Part</button>
+                </div>
+              </div>
+              <div id="dFormats" class="fmt-pills-ed"></div>
+            </div>
             <div class="g-full launch-row">
               <label class="grow">App launch <small>(shows a ▶ button on the card)</small><input id="dLaunch" class="field" placeholder="Path to the game's shortcut (.lnk), or a steam://rungameid/… link" autocomplete="off" spellcheck="false"></label>
               <button id="dLaunchPick" class="btn hidden" type="button">Browse…</button>
@@ -168,6 +179,9 @@
                 <p class="muted small" style="margin:0">Write three title candidates now so the choice is easy later. Tap the circle to pick the winner.</p>
                 <div id="plTitles" class="pl-titles"></div>
                 <label>Thumbnail idea<input id="plThumb" class="field" placeholder="Face reaction + the monster + 3 words max"></label>
+                <div class="pl-thumbs-head"><span class="small muted">Thumbnail versions (up to 3 · click any to preview)</span></div>
+                <div id="plThumbs" class="pl-thumbs"></div>
+                <input type="file" id="plThumbFile" accept="image/png,image/jpeg,image/webp" class="hidden">
               </div>
             </details>
 
@@ -453,6 +467,23 @@
 
           <!-- CHANGELOG -->
           <div class="set-panel hidden" data-spanel="changelog">
+            <section class="set-sec" id="updateSec">
+              <h4>App Updates</h4>
+              <div class="row">
+                <span class="small muted">Running <b>v{{VERSION}}</b></span>
+                <button id="updCheckBtn" class="btn" type="button">Check for updates</button>
+              </div>
+              <div id="updBox" class="upd-box hidden">
+                <div class="upd-head"><b id="updVerTitle"></b><a id="updRelLink" class="btn" target="_blank" rel="noopener">View on GitHub ↗</a></div>
+                <div id="updNotes" class="upd-notes"></div>
+                <div class="row">
+                  <button id="updInstallBtn" class="btn primary" type="button">DOWNLOAD &amp; INSTALL UPDATE</button>
+                  <a id="updApkLink" class="btn hidden" target="_blank" rel="noopener">Android APK ↗</a>
+                </div>
+                <div id="updProgWrap" class="upd-prog hidden"><div id="updProgFill" class="upd-prog-fill"></div></div>
+              </div>
+              <p class="muted small" id="updMsg"></p>
+            </section>
             <section class="set-sec">
               <h4>What's New in Critical Hit Studio</h4>
               <p class="muted small">Full release history from v1.3.0 to v{{VERSION}}.</p>
@@ -506,6 +537,33 @@
     <div class="sheet small">
       <p id="confirmMsg"></p>
       <div class="row end"><button class="btn" data-close>CANCEL</button><button id="confirmYes" class="btn danger">CONFIRM</button></div>
+    </div>
+  </div>
+
+  <!-- THUMBNAIL PREVIEW MODAL -->
+  <div id="thumbModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Thumbnail preview">
+    <div class="sheet wide">
+      <div class="sheet-head"><h3 id="thumbPrevTitle">THUMBNAIL PREVIEW</h3><button class="x" data-close>✕</button></div>
+      <div class="thumb-prev-bar">
+        <div id="thumbPrevTabs" class="row"></div>
+        <button type="button" id="thumbPrevPick" class="btn primary">SET AS WINNER</button>
+      </div>
+      <div class="thumb-prev-grid">
+        <div class="thumb-prev-full"><img id="thumbPrevImg" alt="Thumbnail preview"></div>
+        <div class="thumb-prev-yt">
+          <div class="yt-card-lbl">YouTube feed preview</div>
+          <div class="yt-card">
+            <div class="yt-card-img"><img id="thumbPrevYtImg" alt=""><span class="yt-dur">24:18</span></div>
+            <div class="yt-card-meta">
+              <div id="thumbPrevAv" class="yt-card-av"></div>
+              <div class="yt-card-txt">
+                <div id="thumbPrevYtTitle" class="yt-card-t"></div>
+                <div id="thumbPrevYtSub" class="yt-card-s"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

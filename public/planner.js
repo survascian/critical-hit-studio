@@ -111,7 +111,7 @@ $('confirmYes').onclick = () => { closeModal('confirmModal'); const cb = confirm
 function openModal(id) { $(id).classList.remove('hidden'); }
 function closeModal(id) { $(id).classList.add('hidden'); if (id === 'detailModal') { openId = null; renderBoard(); } }
 function closeTopModal() {
-  for (const id of ['confirmModal', 'wizardModal', 'artModal', 'sendModal', 'settingsModal', 'addModal', 'detailModal']) {
+  for (const id of ['confirmModal', 'thumbModal', 'wizardModal', 'artModal', 'sendModal', 'settingsModal', 'addModal', 'detailModal']) {
     if (!$(id).classList.contains('hidden')) { closeModal(id); return true; }
   }
   return false;
@@ -307,8 +307,13 @@ function cardEl(g) {
   if (show('due')) chips.push(dueChip(g));
   if (show('tasks')) { const pr = checkProgress(g, g.stage); if (pr.total) chips.push(`<span class="chip tasks ${pr.done === pr.total ? 'full' : ''}" title="${esc(g.stage)} checklist">TASKS ${pr.done}/${pr.total}</span>`); }
   if (show('video') && g.video && g.video.views != null) chips.push(`<span class="chip video" title="Views on YouTube${g.video.fetchedAt ? ' (updated ' + new Date(g.video.fetchedAt).toLocaleDateString() + ')' : ''}">▶ ${compact(g.video.views)}</span>`);
-  if (show('format')) { const fm = formatById(g.format); if (fm) chips.push(`<span class="chip fmt" style="--fc:${fm.color}" title="Video format: ${esc(fm.label)}">${esc(fm.short)}</span>`); }
-  if (show('hype') && g.hype > 0) chips.push(`<span class="chip hype" title="Public hype (your rating)">HYPE ${g.hype}/5</span>`);
+  if (show('format')) {
+    PL.gameFormats(g).forEach((fid) => {
+      const fm = formatById(fid);
+      if (fm) chips.push(`<span class="chip fmt" style="--fc:${fm.color}" title="Video format: ${esc(fm.label)}">${esc(fm.short)}</span>`);
+    });
+    if (g.part > 0) chips.push(`<span class="chip part" title="Part ${g.part}">PT ${g.part}</span>`);
+  }
   const beat = g.ttb && (g.ttb.normally || g.ttb.hastily || g.ttb.completely);
   if (show('beat') && beat) chips.push(`<span class="chip" title="IGDB time to beat">BEAT ~${hrs(beat)}</span>`);
   if (show('played') && g.hoursPlayed > 0) chips.push(`<span class="chip">PLAYED ${hrs(g.hoursPlayed)}</span>`);
@@ -321,10 +326,11 @@ function cardEl(g) {
   const launchOn = show('launch');
   const ownObj = show('owned') ? ownershipOf(g.ownership) : null;
   const ownTxt = ownObj ? ownObj.label : '';
+  const hypeN = (show('hype') && g.hype > 0) ? Math.min(5, Math.max(0, Math.round(Number(g.hype)))) : 0;
   const launchTip = g.launchTarget ? 'Launch ' + g.name : 'Link a shortcut to launch this game';
   c.classList.toggle('has-launch', launchOn);
   c.innerHTML = `
-    ${(show('cover') || ownTxt) ? `<div class="card-cover-col">${show('cover') ? `<div class="card-cover ${g.cover ? '' : 'none'}" style="background-image:${cssUrl(g.cover)}">${g.cover ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div>` : ''}${ownTxt ? `<div class="card-own" style="--oc:${esc(ownObj.color)}" title="Ownership">${esc(ownTxt)}</div>` : ''}</div>` : ''}
+    ${(show('cover') || ownTxt || hypeN) ? `<div class="card-cover-col">${show('cover') ? `<div class="card-cover ${g.cover ? '' : 'none'}" style="background-image:${cssUrl(g.cover)}">${g.cover ? '' : esc((g.name || '?').charAt(0).toUpperCase())}</div>` : ''}${ownTxt ? `<div class="card-own" style="--oc:${esc(ownObj.color)}" title="Ownership">${esc(ownTxt)}</div>` : ''}${hypeN ? `<div class="card-hype" title="Public hype: ${hypeN}/5" aria-label="Public hype ${hypeN} out of 5">${'🔥'.repeat(hypeN)}</div>` : ''}</div>` : ''}
     <div class="card-main">
       ${logo ? `<div class="card-title has-logo"><img class="card-logo ${logoCls(logo)}" data-src="${esc(logo)}" src="${esc(logoSrc(logo))}" alt="${esc(g.name)}" title="${esc(g.name)}"></div>` : `<div class="card-title">${esc(g.name)}</div>`}
       ${show('studio') ? `<div class="card-sub">${esc(studioOf(g) || 'Unknown studio')}</div>` : ''}
@@ -410,8 +416,9 @@ function renderBoardView() {
     const list = col.querySelector('.col-list');
     games.forEach((g) => {
       const c = cardEl(g);
-      const missText = q && ![g.name, studioOf(g), g.series || '', (g.genres || []).join(' '), P.label(g.playedOn, 'full'), (g.platforms || []).join(' '), (formatById(g.format) || {}).label || ''].join(' ').toLowerCase().includes(q);
-      const missFmt = qFormat && g.format !== qFormat;
+      const fmtLabels = PL.gameFormats(g).map((fid) => (formatById(fid) || {}).label || '').join(' ');
+      const missText = q && ![g.name, studioOf(g), g.series || '', (g.genres || []).join(' '), P.label(g.playedOn, 'full'), (g.platforms || []).join(' '), fmtLabels, g.part ? 'part ' + g.part : ''].join(' ').toLowerCase().includes(q);
+      const missFmt = qFormat && !PL.gameFormats(g).includes(qFormat);
       const missPlat = qPlatform && g.playedOn !== qPlatform;
       const missSeries = qSeries && (g.series || '').trim() !== qSeries;
       if (missText || missFmt || missPlat || missSeries) c.classList.add('dim');
@@ -547,8 +554,8 @@ function openDetail(id) {
   $('dOwned').value = ownershipOf(g.ownership) ? g.ownership : '';
   $('dScoreWrap').classList.toggle('hidden', !appSettings.useScores);
   $('dScore').value = g.myScore == null ? '' : g.myScore; $('dDue').value = g.dueDate || '';
-  $('dFormat').innerHTML = '<option value="">Not set</option>' + formatsOf().map((f) => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join('');
-  $('dFormat').value = formatById(g.format) ? g.format : ''; renderGcal(g);
+  $('dPart').value = g.part > 0 ? g.part : '';
+  renderDetailFormats(g); renderGcal(g);
   $('dSend').classList.toggle('hidden', appSettings.showHitList === false);
   renderGenreSug(g); renderChecks(g); renderLaunch(g); renderArt(g);
   $('dVideo').value = g.videoUrl || ''; renderVideo(g);
@@ -677,22 +684,209 @@ const planTouch = (g) => { renderPlanSums(g); touch(g); };
 function renderPlanSums(g) {
   const p = planOf(g);
   $('plNotesSum').textContent = (p.notes.trim() || p.angle.trim() || p.hook.trim()) ? 'has notes' : 'empty';
-  const n = p.titles.filter(Boolean).length; $('plPackSum').textContent = p.chosen >= 0 && p.titles[p.chosen] ? 'title chosen' : (n ? n + ' of 3 titles' : 'empty');
+  const n = p.titles.filter(Boolean).length;
+  const tn = p.thumbs.filter(Boolean).length;
+  const parts = [];
+  if (p.chosen >= 0 && p.titles[p.chosen]) parts.push('title chosen');
+  else if (n) parts.push(n + '/3 titles');
+  if (tn) parts.push(tn + '/3 thumbs');
+  $('plPackSum').textContent = parts.length ? parts.join(' · ') : 'empty';
 }
 function renderTitles(g) {
   const p = planOf(g);
   $('plTitles').innerHTML = p.titles.map((t, i) => `<div class="ttl"><button type="button" class="pick${p.chosen === i ? ' on' : ''}" data-i="${i}" title="Use this title" aria-label="Choose title ${i + 1}"></button><input class="field" data-i="${i}" value="${esc(t)}" maxlength="120" placeholder="Title option ${i + 1}"><small class="muted">${t.length ? t.length + (t.length > 60 ? ' (may cut off)' : '') : ''}</small></div>`).join('');
 }
+let thumbPickSlot = -1, thumbPrevIdx = 0;
+function renderThumbs(g) {
+  const p = planOf(g);
+  $('plThumbs').innerHTML = p.thumbs.map((src, i) => {
+    const ok = safeUrl(src);
+    if (!ok) return `<div class="th-slot" data-th-slot="${i}" title="Attach thumbnail version ${i + 1}"><span class="th-empty">+ THUMB ${i + 1}</span></div>`;
+    const isWin = p.chosenThumb === i;
+    return `<div class="th-slot filled${isWin ? ' winner' : ''}" data-th-prev="${i}" title="Click to preview version ${i + 1}">
+      <img src="${esc(ok)}" alt="Thumbnail ${i + 1}">
+      <span class="th-badge">V${i + 1}</span>
+      <div class="th-acts">
+        <button type="button" class="th-btn win${isWin ? ' on' : ''}" data-th-win="${i}" title="Pick as winner">★</button>
+        <button type="button" class="th-btn" data-th-slot="${i}" title="Replace image">↻</button>
+        <button type="button" class="th-btn del" data-th-del="${i}" title="Remove">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openThumbPreview(g, idx) {
+  const p = planOf(g);
+  thumbPrevIdx = idx;
+  const src = safeUrl(p.thumbs[idx]); if (!src) return;
+  $('thumbPrevTitle').textContent = `THUMBNAIL PREVIEW · V${idx + 1}`;
+  $('thumbPrevImg').src = src;
+  $('thumbPrevYtImg').src = src;
+  const chosenTitle = (p.chosen >= 0 && p.titles[p.chosen]) || p.titles.find(Boolean) || g.name || 'Untitled Video';
+  $('thumbPrevYtTitle').textContent = chosenTitle;
+  const ch = appSettings.youtubeChannel;
+  const chName = (ch && (ch.title || ch.handle)) || 'Your Channel';
+  $('thumbPrevYtSub').textContent = `${chName} · 12K views · 2 hours ago`;
+  const av = $('thumbPrevAv');
+  if (ch && ch.avatar && safeUrl(ch.avatar)) av.innerHTML = `<img src="${esc(ch.avatar)}" alt="">`;
+  else av.textContent = chName.replace(/^@/, '').charAt(0).toUpperCase() || 'C';
+  $('thumbPrevTabs').innerHTML = [0, 1, 2].map((i) => {
+    const has = !!safeUrl(p.thumbs[i]);
+    return `<button type="button" class="btn${i === idx ? ' primary' : ''}" data-tp-idx="${i}" ${has ? '' : 'disabled'}>V${i + 1}${p.chosenThumb === i ? ' ★' : ''}</button>`;
+  }).join('');
+  const isWin = p.chosenThumb === idx;
+  $('thumbPrevPick').textContent = isWin ? '★ WINNER' : 'SET AS WINNER';
+  openModal('thumbModal');
+}
+$('plThumbs').addEventListener('click', (e) => {
+  const g = findGame(openId); if (!g) return;
+  const p = planOf(g);
+  const winBtn = e.target.closest('[data-th-win]');
+  if (winBtn) { e.stopPropagation(); const i = +winBtn.dataset.thWin; p.chosenThumb = p.chosenThumb === i ? -1 : i; renderThumbs(g); planTouch(g); return; }
+  const delBtn = e.target.closest('[data-th-del]');
+  if (delBtn) { e.stopPropagation(); const i = +delBtn.dataset.thDel; p.thumbs[i] = ''; if (p.chosenThumb === i) p.chosenThumb = -1; renderThumbs(g); planTouch(g); return; }
+  const slotBtn = e.target.closest('[data-th-slot]');
+  if (slotBtn) { e.stopPropagation(); thumbPickSlot = +slotBtn.dataset.thSlot; $('plThumbFile').value = ''; $('plThumbFile').click(); return; }
+  const prevBtn = e.target.closest('[data-th-prev]');
+  if (prevBtn) { openThumbPreview(g, +prevBtn.dataset.thPrev); }
+});
+$('plThumbFile').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  const g = findGame(openId);
+  if (!file || !g || thumbPickSlot < 0) return;
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) { toast('Please pick a PNG, JPG, or WebP image.'); return; }
+  try {
+    const r = await fetch('/api/thumb/upload', { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Upload failed');
+    const p = planOf(g);
+    p.thumbs[thumbPickSlot] = j.path;
+    renderThumbs(g); planTouch(g);
+    toast(`Thumbnail V${thumbPickSlot + 1} attached`);
+  } catch (err) { toast('Thumbnail upload failed: ' + err.message); }
+});
+$('thumbPrevTabs').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-tp-idx]'); const g = findGame(openId);
+  if (!b || !g || b.disabled) return;
+  openThumbPreview(g, +b.dataset.tpIdx);
+});
+$('thumbPrevPick').addEventListener('click', () => {
+  const g = findGame(openId); if (!g) return;
+  const p = planOf(g);
+  p.chosenThumb = p.chosenThumb === thumbPrevIdx ? -1 : thumbPrevIdx;
+  renderThumbs(g); planTouch(g); openThumbPreview(g, thumbPrevIdx);
+});
 function renderPlan(g) {
   const p = planOf(g);
   $('plNotes').value = p.notes; $('plAngle').value = p.angle; $('plHook').value = p.hook; $('plNotesBox').open = false;
   $('plThumb').value = p.thumb;
-  renderTitles(g); renderPlanSums(g);
+  renderTitles(g); renderThumbs(g); renderPlanSums(g);
 }
-$('dFormat').addEventListener('change', () => {
-  const g = findGame(openId); if (!g) return; const v = $('dFormat').value;
-  if (v) g.format = v; else delete g.format;
+function renderDetailFormats(g) {
+  const active = PL.gameFormats(g);
+  $('dFormats').innerHTML = formatsOf().map((f) => {
+    const on = active.includes(f.id);
+    return `<button type="button" class="fmt-ed-btn${on ? ' on' : ''}" data-dfmt="${esc(f.id)}" style="--fc:${esc(f.color)}">${esc(f.label)}</button>`;
+  }).join('');
+  $('dSplitFmt').classList.toggle('hidden', active.length < 2);
+}
+function spawnSiblingCard(src, overrides) {
+  const copy = {
+    id: uid(),
+    name: src.name,
+    igdbId: src.igdbId || null,
+    slug: src.slug || '',
+    summary: src.summary || '',
+    developers: (src.developers || []).slice(),
+    publishers: (src.publishers || []).slice(),
+    genres: (src.genres || []).slice(),
+    genresAuto: (src.genresAuto || []).slice(),
+    igdbGenres: (src.igdbGenres || []).slice(),
+    igdbThemes: (src.igdbThemes || []).slice(),
+    platforms: (src.platforms || []).slice(),
+    releaseDate: src.releaseDate || '',
+    igdbHypes: src.igdbHypes || null,
+    follows: src.follows || null,
+    rating: src.rating || null,
+    playedOn: src.playedOn || '',
+    series: src.series || '',
+    ownership: src.ownership || '',
+    hype: src.hype || 0,
+    hoursPlayed: 0, // hours stay logged on the original card so Stats never double-counts playtime
+    ttb: src.ttb || null,
+    cover: src.cover || '',
+    coverCustom: !!src.coverCustom,
+    coverId: src.coverId || null,
+    coverRemote: src.coverRemote || '',
+    coverThumb: src.coverThumb || '',
+    banner: src.banner || '',
+    bannerCustom: !!src.bannerCustom,
+    logo: src.logo || '',
+    useLogo: !!src.useLogo,
+    launchTarget: src.launchTarget || '',
+    projectFolder: src.projectFolder || '',
+    stage: src.stage === 'Published' ? 'Planned' : src.stage,
+    sentToHitList: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    plan: PL.normalize({})
+  };
+  Object.assign(copy, overrides || {});
+  return initGame(copy);
+}
+$('dFormats').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-dfmt]'); const g = findGame(openId); if (!b || !g) return;
+  const fid = b.dataset.dfmt;
+  const cur = PL.gameFormats(g);
+  const next = cur.includes(fid) ? cur.filter((x) => x !== fid) : cur.concat([fid]);
+  if (next.length) { g.formats = next; g.format = next[0]; } else { delete g.formats; delete g.format; }
+  renderDetailFormats(g); renderGcal(g); touch(g);
+});
+$('dPart').addEventListener('input', () => {
+  const g = findGame(openId); if (!g) return;
+  const n = parseInt($('dPart').value, 10);
+  if (Number.isInteger(n) && n >= 1 && n <= 99) g.part = n; else delete g.part;
   renderGcal(g); touch(g);
+});
+$('dSplitFmt').addEventListener('click', () => {
+  const g = findGame(openId); if (!g) return;
+  const fmts = PL.gameFormats(g);
+  if (fmts.length < 2) return;
+  const first = fmts[0];
+  const rest = fmts.slice(1);
+  g.formats = [first]; g.format = first; g.updatedAt = Date.now();
+  const created = rest.map((fid) => {
+    const c = spawnSiblingCard(g, { format: fid, formats: [fid] });
+    state.games.unshift(c);
+    return c;
+  });
+  renderDetailFormats(g); renderGcal(g); save(true); renderBoard();
+  const names = created.map((c) => (formatById(c.format) || {}).label || c.format).join(', ');
+  toast(`Split! Created ${created.length} new card${created.length > 1 ? 's' : ''} (${names})`, {
+    label: 'OPEN NEW CARD',
+    fn: () => { $('toast').classList.add('hidden'); openDetail(created[0].id); }
+  }, 8000);
+});
+$('dAddPart').addEventListener('click', () => {
+  const g = findGame(openId); if (!g) return;
+  if (!g.part) { g.part = 1; $('dPart').value = '1'; }
+  const primaryFmt = PL.gameFormats(g)[0] || '';
+  const sameGames = state.games.filter((x) =>
+    ((g.igdbId && x.igdbId === g.igdbId) || x.name.toLowerCase() === g.name.toLowerCase()) &&
+    (!primaryFmt || PL.gameFormats(x).includes(primaryFmt))
+  );
+  const maxPart = sameGames.reduce((m, x) => Math.max(m, Number(x.part) || 0), 1);
+  const nextPart = maxPart + 1;
+  const newCard = spawnSiblingCard(g, {
+    part: nextPart,
+    format: primaryFmt,
+    formats: primaryFmt ? [primaryFmt] : []
+  });
+  state.games.unshift(newCard);
+  save(true); renderBoard();
+  toast(`Created "${g.name}" Part ${nextPart}`, {
+    label: `OPEN PART ${nextPart}`,
+    fn: () => { $('toast').classList.add('hidden'); openDetail(newCard.id); }
+  }, 8000);
 });
 bind('plNotes', (g, v) => { planOf(g).notes = v; renderPlanSums(g); });
 bind('plAngle', (g, v) => { planOf(g).angle = v; renderPlanSums(g); });
@@ -782,7 +976,7 @@ try { setDrawerMode(localStorage.getItem('chl_drawer_mode') === 'adv'); } catch 
 
 const gcalDate = (iso) => iso.replace(/-/g, '');
 const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-const eventTitle = (g) => { const fm = formatById(g.format); return g.name + (fm ? ' (' + fm.label + ')' : '') + (g.stage === 'Published' ? '' : ' - publish'); };
+const eventTitle = (g) => { const fm = formatById(PL.gameFormats(g)[0]); return g.name + (g.part > 0 ? ' Pt ' + g.part : '') + (fm ? ' (' + fm.label + ')' : '') + (g.stage === 'Published' ? '' : ' - publish'); };
 function renderGcal(g) {
   const a = $('dGcal'); const d = g.dueDate;
   a.classList.toggle('disabled', !d);
@@ -1126,7 +1320,7 @@ function renderStats() {
   const byGenre = group((g) => (g.genres || [])[0]);
   const hoursTop = G.filter((g) => g.hoursPlayed > 0).sort((a, b) => b.hoursPlayed - a.hoursPlayed).slice(0, 6);
   const vids = G.filter((g) => g.video && g.video.views != null).sort((a, b) => b.video.views - a.video.views).slice(0, 6);
-  const fmts = formatsOf().map((f) => ({ label: f.label, v: G.filter((g) => g.format === f.id).length, color: f.color })).filter((r) => r.v > 0);
+  const fmts = formatsOf().map((f) => ({ label: f.label, v: G.filter((g) => PL.gameFormats(g).includes(f.id)).length, color: f.color })).filter((r) => r.v > 0);
   const seriesMap = {}; G.forEach((g) => { const s = (g.series || '').trim(); if (s) seriesMap[s] = (seriesMap[s] || 0) + 1; });
   const bySeries = Object.entries(seriesMap).map(([label, v]) => ({ label, v, color: '#93c5fd' })).sort((a, b) => b.v - a.v).slice(0, 8);
   const none = '<div class="muted small">Not enough data yet.</div>';
@@ -1740,7 +1934,74 @@ document.addEventListener('keydown', (e) => {
   api('/api/info').then((i) => { $('verLine').textContent = 'Critical Hit Studio v' + i.version + '.'; }).catch(() => {});
   renderChangelog();
   initCloudSync();
+  initUpdater();
 })();
+
+// ------------------------------------------------------------------ GitHub Releases Updater
+function initUpdater() {
+  let latestInfo = null;
+  const setMsg = (t, isErr) => { const el = $('updMsg'); if (!el) return; el.textContent = t || ''; el.className = 'small ' + (isErr ? 'bad' : 'muted'); };
+
+  async function checkUpdates(manual) {
+    if (manual) setMsg('Checking GitHub Releases…');
+    try {
+      const info = await api('/api/update/check');
+      latestInfo = info;
+      const pill = $('updatePill');
+      if (info.hasUpdate) {
+        pill.textContent = `Update v${info.latest}`;
+        pill.classList.remove('hidden');
+        $('updVerTitle').textContent = `Critical Hit Studio v${info.latest} is available!`;
+        $('updRelLink').href = info.releaseUrl;
+        $('updNotes').textContent = info.notes || 'Includes the latest improvements and fixes.';
+        const apk = $('updApkLink');
+        if (info.apkAsset && info.apkAsset.url) { apk.href = info.apkAsset.url; apk.classList.remove('hidden'); }
+        else apk.classList.add('hidden');
+        $('updInstallBtn').disabled = !info.winAsset;
+        $('updInstallBtn').textContent = window.chlDesktop && window.chlDesktop.installUpdate ? 'DOWNLOAD & INSTALL UPDATE' : 'DOWNLOAD INSTALLER ↗';
+        $('updBox').classList.remove('hidden');
+        setMsg('');
+      } else {
+        pill.classList.add('hidden');
+        $('updBox').classList.add('hidden');
+        if (manual) setMsg(`You're up to date (v${info.current}).`);
+      }
+    } catch (e) {
+      if (manual) setMsg('Could not check for updates: ' + e.message, true);
+    }
+  }
+
+  $('updatePill').onclick = () => openSettings('changelog');
+  $('updCheckBtn').onclick = () => checkUpdates(true);
+  $('updInstallBtn').onclick = async () => {
+    if (!latestInfo || !latestInfo.winAsset) return;
+    if (!(window.chlDesktop && window.chlDesktop.installUpdate)) {
+      window.open(latestInfo.winAsset.url, '_blank', 'noopener');
+      return;
+    }
+    const btn = $('updInstallBtn');
+    btn.disabled = true; btn.textContent = 'DOWNLOADING… 0%';
+    $('updProgWrap').classList.remove('hidden');
+    $('updProgFill').style.width = '0%';
+    setMsg('Downloading installer from GitHub Releases…');
+    window.chlDesktop.onUpdateProgress((p) => {
+      const pct = (p && p.pct) || 0;
+      $('updProgFill').style.width = pct + '%';
+      btn.textContent = `DOWNLOADING… ${pct}%`;
+    });
+    const res = await window.chlDesktop.installUpdate(latestInfo.winAsset);
+    if (!res || !res.ok) {
+      btn.disabled = false; btn.textContent = 'DOWNLOAD & INSTALL UPDATE';
+      $('updProgWrap').classList.add('hidden');
+      setMsg('Update failed: ' + ((res && res.error) || 'Unknown error'), true);
+    } else {
+      btn.textContent = 'LAUNCHING INSTALLER…';
+      setMsg('Installer launched — Critical Hit Studio will close so the update can apply.');
+    }
+  };
+
+  setTimeout(() => checkUpdates(false), 3000);
+}
 
 function renderChangelog() {
   const box = $('changelogBox');

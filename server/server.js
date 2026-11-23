@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const { IgdbClient, IgdbError, imageUrl } = require('./igdb');
 const { fetchVideo, fetchChannel, fetchChannelVideos, videoIdFrom, parseChannelInput, YoutubeError } = require('./youtube');
 const sgdb = require('./sgdb');
+const updater = require('./updater');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -167,6 +168,10 @@ function startServer(opts) {
       if (p === '/hitlist') return serveFile(res, path.join(publicDir, 'hitlist.html'), noStore);
 
       if (p === '/api/info') return sendJson(res, 200, { version: require('../package.json').version });
+      if (p === '/api/update/check' && req.method === 'GET') {
+        try { return sendJson(res, 200, await updater.checkLatest(require('../package.json').version)); }
+        catch (e) { return sendJson(res, 502, { error: e.message }); }
+      }
 
       // ----- relay -----
       if (p === '/api/ping') { res.writeHead(200, { 'Content-Type': 'text/plain', ...noStore }); return res.end('chl-relay'); }
@@ -203,7 +208,18 @@ function startServer(opts) {
         res.writeHead(404); return res.end('not found');
       }
 
-      // ----- cached IGDB media -----
+      // ----- cached IGDB media & local thumbnail uploads -----
+      if (p === '/api/thumb/upload' && req.method === 'POST') {
+        const type = (req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+        const ext = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[type];
+        if (!ext) return sendJson(res, 400, { error: 'Only PNG, JPG, or WebP images are supported.' });
+        const buf = await readBody(req, 10 * 1024 * 1024);
+        if (!buf.length) return sendJson(res, 400, { error: 'Empty image file.' });
+        const hash = crypto.createHash('sha1').update(buf).digest('hex').slice(0, 12);
+        const name = `thumb_${hash}.${ext}`;
+        fs.writeFileSync(path.join(mediaDir, name), buf);
+        return sendJson(res, 200, { path: '/media/' + name });
+      }
       if (p.startsWith('/media/')) {
         const rel = decodeURIComponent(p.slice('/media/'.length));
         const full = safeKey(rel) ? underDir(mediaDir, rel) : null;

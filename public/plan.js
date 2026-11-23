@@ -33,6 +33,11 @@
     return out.length ? out.slice(0, 16) : FORMATS.map((f) => Object.assign({}, f));
   }
   const formatOf = (id, list) => (Array.isArray(list) && list.length ? list : FORMATS).find((f) => f.id === id) || null;
+  function gameFormats(g) {
+    if (!g) return [];
+    const arr = Array.isArray(g.formats) && g.formats.length ? g.formats : (g.format ? [g.format] : []);
+    return [...new Set(arr.map((x) => String(x || '').trim()).filter(Boolean))];
+  }
   // old tags/series text -> format, used once when a game has no format yet
   const guessFormat = (tags) => { const t = (tags || []).join(' ').toLowerCase(); return /bite/.test(t) ? 'bite' : /super\s*cut/.test(t) ? 'supercut' : /funny|moments/.test(t) ? 'funny' : /hit\s*list|critical hit/.test(t) ? 'hitlist' : ''; };
 
@@ -54,12 +59,15 @@
     const hook = str(p.hook != null && p.hook !== '' ? p.hook : f.hook, 400);
     const notes = p.notes != null ? str(p.notes, MAX_NOTES) : str(migrateMoments(p.moments), MAX_NOTES);
     const titles = [0, 1, 2].map((i) => str(p.titles && p.titles[i], 120));
+    const thumbs = [0, 1, 2].map((i) => str(p.thumbs && p.thumbs[i], 300));
     return {
       angle, hook, notes, titles, thumb: str(p.thumb, 300),
-      chosen: [0, 1, 2].includes(p.chosen) ? p.chosen : -1
+      chosen: [0, 1, 2].includes(p.chosen) ? p.chosen : -1,
+      thumbs,
+      chosenThumb: [0, 1, 2].includes(p.chosenThumb) ? p.chosenThumb : -1
     };
   }
-  const isEmpty = (p) => { p = normalize(p); return !(p.angle.trim() || p.hook.trim() || p.notes.trim() || p.titles.some(Boolean) || p.thumb); };
+  const isEmpty = (p) => { p = normalize(p); return !(p.angle.trim() || p.hook.trim() || p.notes.trim() || p.titles.some(Boolean) || p.thumb || p.thumbs.some(Boolean)); };
 
   // ---- monthly / yearly recap
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -79,7 +87,7 @@
     const awards = [];
     list.forEach((g) => { (Array.isArray(g.awards) ? g.awards : []).forEach((a) => awards.push({ game: g.name, award: a })); });
     const fmts = Array.isArray(formats) && formats.length ? formats : FORMATS;
-    const byFormat = fmts.map((f) => ({ label: f.label, color: f.color, v: list.filter((g) => g.format === f.id).length })).filter((r) => r.v > 0);
+    const byFormat = fmts.map((f) => ({ label: f.label, color: f.color, v: list.filter((g) => gameFormats(g).includes(f.id)).length })).filter((r) => r.v > 0);
     const topViews = list.filter((g) => g.video && g.video.views != null).sort((a, b) => b.video.views - a.video.views).slice(0, 5);
     const periodLabel = mode === 'month' ? `${MONTHS[Math.max(0, Math.min(11, (+m || 1) - 1))]} ${y}` : y;
     return { mode, year: y, month: m, periodLabel, count: list.length, games: list, hours, views, awards, byFormat, topViews };
@@ -150,5 +158,5 @@
     const per = cleanDays(days).length;
     return { ready: ready.length, days: per ? Math.round((ready.length * 7) / per) : null, perWeek: per };
   }
-  return { normJournal, sortJournal, FORMATS, normalizeFormats, formatOf, guessFormat, normalize, isEmpty, MONTHS, pubDateOf, recap, stageSince, stuckDays, stuck, stageDurations, forecast, cleanDays, isSlot, nextSlots, buffer, median, rid };
+  return { normJournal, sortJournal, FORMATS, normalizeFormats, formatOf, gameFormats, guessFormat, normalize, isEmpty, MONTHS, pubDateOf, recap, stageSince, stuckDays, stuck, stageDurations, forecast, cleanDays, isSlot, nextSlots, buffer, median, rid };
 }));

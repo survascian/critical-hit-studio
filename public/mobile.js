@@ -408,9 +408,9 @@ $('formatPills').addEventListener('click', (e) => {
 $('mSearch').addEventListener('input', (e) => { searchQuery = e.target.value.trim().toLowerCase(); renderBoard(); });
 
 function matchesFilters(g) {
-  if (selectedFormat && g.format !== selectedFormat) return false;
+  if (selectedFormat && !PL.gameFormats(g).includes(selectedFormat)) return false;
   if (searchQuery) {
-    const hay = [g.name, studioOf(g), g.series, (g.genres || []).join(' ')].join(' ').toLowerCase();
+    const hay = [g.name, studioOf(g), g.series, (g.genres || []).join(' '), g.part ? 'part ' + g.part : ''].join(' ').toLowerCase();
     if (!hay.includes(searchQuery)) return false;
   }
   return true;
@@ -423,8 +423,11 @@ function makeGameCard(g) {
   el.style.setProperty('--stage', st.color);
 
   const chips = [];
-  const fm = formatById(g.format);
-  if (fm) chips.push(`<span class="mchip fmt" style="--fc:${fm.color}">${esc(fm.short)}</span>`);
+  PL.gameFormats(g).forEach((fid) => {
+    const fm = formatById(fid);
+    if (fm) chips.push(`<span class="mchip fmt" style="--fc:${fm.color}">${esc(fm.short)}</span>`);
+  });
+  if (g.part > 0) chips.push(`<span class="mchip">PT ${g.part}</span>`);
   const due = dueChipHtml(g);
   if (due) chips.push(due);
   const pr = checkProgress(g, g.stage);
@@ -1053,4 +1056,26 @@ function initMobileCloud() {
   loaded = true;
   renderAll();
   initMobileCloud();
+  checkMobileUpdate();
 })();
+
+async function checkMobileUpdate() {
+  try {
+    const sub = document.querySelector('.mbar-sub');
+    const m = sub && /v(\d+\.\d+\.\d+)/.exec(sub.textContent || '');
+    const cur = m ? m[1] : '2.2.0';
+    const r = await fetch('https://api.github.com/repos/survascian/critical-hit-studio/releases/latest', { headers: { Accept: 'application/vnd.github+json' } });
+    if (!r.ok) return;
+    const j = await r.json();
+    const latest = String(j.tag_name || '').replace(/^v/i, '').trim();
+    const cmp = (a, b) => {
+      const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+      for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0) ? 1 : -1;
+      return 0;
+    };
+    if (!latest || cmp(latest, cur) <= 0) return;
+    const apk = (j.assets || []).find((a) => a && /-android\.apk$/i.test(a.name || '') && /^https:\/\/github\.com\//.test(a.browser_download_url || ''));
+    const url = (apk && apk.browser_download_url) || j.html_url;
+    if (url) toast(`Update v${latest} available!`, { label: 'GET APK', fn: () => window.open(url, '_blank', 'noopener') }, 12000);
+  } catch (e) { /* offline — ignore */ }
+}

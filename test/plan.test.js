@@ -9,6 +9,10 @@ t('normalize clamps, repairs, and migrates legacy moments and f fields', () => {
   assert.strictEqual(p.angle.length, 400); assert.strictEqual(p.hook, 'open');
   assert.strictEqual(p.notes, '- [1:02:10] boom');
   assert.strictEqual(p.chosen, -1); assert.strictEqual(p.titles.length, 3);
+  assert.strictEqual(p.thumbs.length, 3); assert.strictEqual(p.chosenThumb, -1);
+  assert.ok(!P.isEmpty({ thumbs: ['/media/thumb_abc.png'] }));
+  assert.deepStrictEqual(P.gameFormats({ format: 'hitlist' }), ['hitlist']);
+  assert.deepStrictEqual(P.gameFormats({ format: 'hitlist', formats: ['hitlist', 'supercut', 'hitlist'] }), ['hitlist', 'supercut']);
   assert.ok(P.isEmpty(null)); assert.ok(!P.isEmpty({ f: { hook: 'a' } })); assert.ok(!P.isEmpty({ angle: 'great' })); assert.ok(!P.isEmpty({ notes: 'boss glitched' }));
   assert.strictEqual(P.normalize({ notes: 'kept', moments: [{ text: 'old' }] }).notes, 'kept');
 });

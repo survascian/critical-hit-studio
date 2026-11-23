@@ -88,6 +88,10 @@ No Electron? Run `start-browser-mode.bat` (or `node server/server.js`) to open t
 
 ## Changelog
 
+### v2.2.1 — YouTube Thumbnail Safe-Area & Multi-Device Checker
+* Upgraded the in-editor Thumbnail Preview into a full **YouTube Thumbnail Checker** with 5 views (*Safe Area*, *Desktop Home*, *Desktop Sidebar 168px*, *Mobile Feed*, *TV Preview*).
+* Added live overlay toggles: **10% Text Safe Margins**, **Duration Badge** (*Standard / Long-form / LIVE / Custom*), **Desktop Hover Actions**, and **Watched Progress Bar**, plus one-click title candidate switching (`T1 / T2 / T3`).
+
 ### v2.2.0 — Thumbnail Previews, Multi-Format / Parts & One-Click Updater
 * **3 Thumbnail Versions + YouTube Preview:** Attach up to 3 thumbnail images right inside **Packaging**, pick a winner, and preview them large or at realistic YouTube feed card size with your chosen title.
 * **Multi-Format Cards, Split & `+ Add Part`:** Toggle multiple video formats on a single card while recording (e.g. `HIT LIST` + `SUPERCUT`), then click **Split** if you end up making both—or click **`+ Add Part`** for multi-part Supercuts (`PT 1`, `PT 2`…) without double-counting Hours Played.

@@ -540,28 +540,48 @@
     </div>
   </div>
 
-  <!-- THUMBNAIL PREVIEW MODAL -->
-  <div id="thumbModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Thumbnail preview">
-    <div class="sheet wide">
-      <div class="sheet-head"><h3 id="thumbPrevTitle">THUMBNAIL PREVIEW</h3><button class="x" data-close>✕</button></div>
+  <!-- THUMBNAIL CHECKER & PREVIEW MODAL -->
+  <div id="thumbModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Thumbnail checker">
+    <div class="sheet wide thumb-sheet">
+      <div class="sheet-head"><h3 id="thumbPrevTitle">THUMBNAIL CHECKER</h3><button class="x" data-close>✕</button></div>
       <div class="thumb-prev-bar">
         <div id="thumbPrevTabs" class="row"></div>
         <button type="button" id="thumbPrevPick" class="btn primary">SET AS WINNER</button>
       </div>
-      <div class="thumb-prev-grid">
-        <div class="thumb-prev-full"><img id="thumbPrevImg" alt="Thumbnail preview"></div>
-        <div class="thumb-prev-yt">
-          <div class="yt-card-lbl">YouTube feed preview</div>
-          <div class="yt-card">
-            <div class="yt-card-img"><img id="thumbPrevYtImg" alt=""><span class="yt-dur">24:18</span></div>
-            <div class="yt-card-meta">
-              <div id="thumbPrevAv" class="yt-card-av"></div>
-              <div class="yt-card-txt">
-                <div id="thumbPrevYtTitle" class="yt-card-t"></div>
-                <div id="thumbPrevYtSub" class="yt-card-s"></div>
-              </div>
-            </div>
+      <div class="tc-layout">
+        <!-- Controls Sidebar -->
+        <div class="tc-side">
+          <label>Test title <small>(pre-filled from Packaging)</small>
+            <input id="tcTitleInput" class="field" type="text" placeholder="Enter video title…">
+          </label>
+          <div id="tcTitleChips" class="tc-title-chips"></div>
+          <label>Duration badge
+            <select id="tcDurType" class="field">
+              <option value="standard">Standard (14:25)</option>
+              <option value="long">Long-form / Supercut (48:15)</option>
+              <option value="live">LIVE badge</option>
+              <option value="custom">Custom text…</option>
+            </select>
+          </label>
+          <input id="tcDurCustom" class="field hidden" type="text" maxlength="15" value="PREMIERE" placeholder="Custom badge text (max 15)">
+          <div class="tc-checks">
+            <div class="yt-card-lbl">Active Overlays</div>
+            <label class="inline-check"><input type="checkbox" id="tcOvSafe" checked> 10% text safe margins</label>
+            <label class="inline-check"><input type="checkbox" id="tcOvBadge" checked> Duration badge (bottom-right)</label>
+            <label class="inline-check"><input type="checkbox" id="tcOvHover" checked> Desktop hover icons (top-right)</label>
+            <label class="inline-check"><input type="checkbox" id="tcOvProg" checked> Watched progress bar (bottom)</label>
           </div>
+        </div>
+        <!-- Viewport & Device Tabs -->
+        <div class="tc-main">
+          <div class="tc-vtabs" role="tablist">
+            <button type="button" class="tc-vtab on" data-tc-view="canvas">Safe Area</button>
+            <button type="button" class="tc-vtab" data-tc-view="home">Desktop Home</button>
+            <button type="button" class="tc-vtab" data-tc-view="sidebar">Desktop Sidebar</button>
+            <button type="button" class="tc-vtab" data-tc-view="mobile">Mobile Feed</button>
+            <button type="button" class="tc-vtab" data-tc-view="tv">TV Preview</button>
+          </div>
+          <div id="tcStage" class="tc-stage"></div>
         </div>
       </div>
     </div>

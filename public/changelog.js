@@ -6,6 +6,15 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.2.1',
+      title: 'Full YouTube Thumbnail Safe-Area & Multi-Device Checker',
+      items: [
+        'Upgraded the in-editor Thumbnail Preview into a full YouTube Thumbnail Checker with 5 live views: Safe Area, Desktop Home, Desktop Sidebar (168px), Mobile Feed, and TV Preview.',
+        'Added toggleable YouTube overlays: 10% Text Safe Margins, Duration Badge (Standard / Long-form / LIVE / Custom), Desktop Hover Actions (Watch Later + Queue), and Watched Progress Bar.',
+        'One-click title candidate switcher (T1 / T2 / T3) + live title testing alongside your real channel avatar and handle.'
+      ]
+    },
+    {
       version: '2.2.0',
       title: 'Thumbnail Previews, Multi-Format / Parts & One-Click Updater',
       items: [

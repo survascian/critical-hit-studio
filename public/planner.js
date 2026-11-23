@@ -696,14 +696,14 @@ function renderTitles(g) {
   const p = planOf(g);
   $('plTitles').innerHTML = p.titles.map((t, i) => `<div class="ttl"><button type="button" class="pick${p.chosen === i ? ' on' : ''}" data-i="${i}" title="Use this title" aria-label="Choose title ${i + 1}"></button><input class="field" data-i="${i}" value="${esc(t)}" maxlength="120" placeholder="Title option ${i + 1}"><small class="muted">${t.length ? t.length + (t.length > 60 ? ' (may cut off)' : '') : ''}</small></div>`).join('');
 }
-let thumbPickSlot = -1, thumbPrevIdx = 0;
+let thumbPickSlot = -1, thumbPrevIdx = 0, tcView = 'canvas';
 function renderThumbs(g) {
   const p = planOf(g);
   $('plThumbs').innerHTML = p.thumbs.map((src, i) => {
     const ok = safeUrl(src);
     if (!ok) return `<div class="th-slot" data-th-slot="${i}" title="Attach thumbnail version ${i + 1}"><span class="th-empty">+ THUMB ${i + 1}</span></div>`;
     const isWin = p.chosenThumb === i;
-    return `<div class="th-slot filled${isWin ? ' winner' : ''}" data-th-prev="${i}" title="Click to preview version ${i + 1}">
+    return `<div class="th-slot filled${isWin ? ' winner' : ''}" data-th-prev="${i}" title="Click to preview &amp; check version ${i + 1}">
       <img src="${esc(ok)}" alt="Thumbnail ${i + 1}">
       <span class="th-badge">V${i + 1}</span>
       <div class="th-acts">
@@ -714,29 +714,131 @@ function renderThumbs(g) {
     </div>`;
   }).join('');
 }
+function tcBadgeText() {
+  const t = $('tcDurType').value;
+  if (t === 'long') return { text: '48:15', live: false };
+  if (t === 'live') return { text: 'LIVE', live: true };
+  if (t === 'custom') return { text: ($('tcDurCustom').value || 'PREMIERE').trim().slice(0, 15), live: false };
+  return { text: '14:25', live: false };
+}
+function tcImgBoxHtml(src, allowHover) {
+  const ovSafe = $('tcOvSafe').checked;
+  const ovBadge = $('tcOvBadge').checked;
+  const ovHover = allowHover && $('tcOvHover').checked;
+  const ovProg = $('tcOvProg').checked;
+  const b = tcBadgeText();
+  return `<div class="tc-imgbox">
+    <img src="${esc(src)}" alt="Thumbnail preview">
+    ${ovSafe ? '<div class="tc-safe"></div>' : ''}
+    ${ovHover ? '<div class="tc-hover-acts"><span class="tc-hover-ic" title="Watch Later">🕒</span><span class="tc-hover-ic" title="Add to queue">☰</span></div>' : ''}
+    ${ovBadge ? `<span class="tc-badge${b.live ? ' live' : ''}">${esc(b.text)}</span>` : ''}
+    ${ovProg ? '<div class="tc-prog"></div>' : ''}
+  </div>`;
+}
+function renderThumbCheckerStage() {
+  const g = findGame(openId); if (!g) return;
+  const p = planOf(g);
+  const src = safeUrl(p.thumbs[thumbPrevIdx]); if (!src) return;
+  const title = $('tcTitleInput').value.trim() || g.name || 'Untitled Video';
+  const ch = appSettings.youtubeChannel;
+  const chName = (ch && (ch.title || ch.handle)) || 'Your Channel';
+  const avHtml = (ch && ch.avatar && safeUrl(ch.avatar))
+    ? `<img src="${esc(ch.avatar)}" alt="">`
+    : esc(chName.replace(/^@/, '').charAt(0).toUpperCase() || 'C');
+
+  const stage = $('tcStage');
+  if (tcView === 'canvas') {
+    stage.innerHTML = `<div class="tc-canvas-wrap">${tcImgBoxHtml(src, true)}</div>`;
+  } else if (tcView === 'home') {
+    stage.innerHTML = `<div class="yt-card">
+      ${tcImgBoxHtml(src, true)}
+      <div class="yt-card-meta">
+        <div class="yt-card-av">${avHtml}</div>
+        <div class="yt-card-txt">
+          <div class="yt-card-t">${esc(title)}</div>
+          <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+        </div>
+      </div>
+    </div>`;
+  } else if (tcView === 'sidebar') {
+    const ghost = `<div class="tc-sb-item tc-sb-ghost"><div class="tc-sb-thumb"></div><div style="flex:1"><div class="tc-ghost-line" style="width:92%"></div><div class="tc-ghost-line" style="width:65%"></div><div class="tc-ghost-line" style="width:45%"></div></div></div>`;
+    stage.innerHTML = `<div class="tc-sidebar-wrap">
+      <div class="yt-card-lbl">Up Next (Desktop Sidebar · 168px)</div>
+      <div class="tc-sb-item hi">
+        <div class="tc-sb-thumb">${tcImgBoxHtml(src, true)}</div>
+        <div class="yt-card-txt">
+          <div class="yt-card-t">${esc(title)}</div>
+          <div class="yt-card-s">${esc(chName)}</div>
+          <div class="yt-card-s">45K views · 3 hours ago</div>
+        </div>
+      </div>
+      ${ghost}${ghost}
+    </div>`;
+  } else if (tcView === 'mobile') {
+    stage.innerHTML = `<div class="tc-phone">
+      <div class="tc-phone-top"><div><span class="tc-phone-yt">▶</span>YouTube</div><span style="opacity:.6">🔍</span></div>
+      ${tcImgBoxHtml(src, false)}
+      <div class="tc-phone-meta">
+        <div class="yt-card-av">${avHtml}</div>
+        <div class="yt-card-txt">
+          <div class="yt-card-t">${esc(title)}</div>
+          <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+        </div>
+      </div>
+      <div class="tc-phone-ghost"><div class="ph-box"></div><div class="tc-ghost-line" style="width:80%"></div></div>
+    </div>`;
+  } else if (tcView === 'tv') {
+    stage.innerHTML = `<div style="width:100%;max-width:540px">
+      <div class="tc-tv">
+        ${tcImgBoxHtml(src, false)}
+        <div class="tc-tv-meta">
+          <div class="yt-card-av">${avHtml}</div>
+          <div class="yt-card-txt">
+            <div class="yt-card-t" style="font-size:16px">${esc(title)}</div>
+            <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc-tv-stand"></div>
+    </div>`;
+  }
+}
 function openThumbPreview(g, idx) {
   const p = planOf(g);
   thumbPrevIdx = idx;
   const src = safeUrl(p.thumbs[idx]); if (!src) return;
-  $('thumbPrevTitle').textContent = `THUMBNAIL PREVIEW · V${idx + 1}`;
-  $('thumbPrevImg').src = src;
-  $('thumbPrevYtImg').src = src;
+  $('thumbPrevTitle').textContent = `THUMBNAIL CHECKER · V${idx + 1}`;
   const chosenTitle = (p.chosen >= 0 && p.titles[p.chosen]) || p.titles.find(Boolean) || g.name || 'Untitled Video';
-  $('thumbPrevYtTitle').textContent = chosenTitle;
-  const ch = appSettings.youtubeChannel;
-  const chName = (ch && (ch.title || ch.handle)) || 'Your Channel';
-  $('thumbPrevYtSub').textContent = `${chName} · 12K views · 2 hours ago`;
-  const av = $('thumbPrevAv');
-  if (ch && ch.avatar && safeUrl(ch.avatar)) av.innerHTML = `<img src="${esc(ch.avatar)}" alt="">`;
-  else av.textContent = chName.replace(/^@/, '').charAt(0).toUpperCase() || 'C';
+  if ($('thumbModal').classList.contains('hidden')) $('tcTitleInput').value = chosenTitle;
+  const nonEmptyTitles = p.titles.map((t, i) => ({ t: t.trim(), i })).filter((x) => x.t);
+  $('tcTitleChips').innerHTML = nonEmptyTitles.map((x) => `<button type="button" class="tc-tchip" data-tc-t="${esc(x.t)}" title="${esc(x.t)}">T${x.i + 1}: ${esc(x.t)}</button>`).join('');
   $('thumbPrevTabs').innerHTML = [0, 1, 2].map((i) => {
     const has = !!safeUrl(p.thumbs[i]);
     return `<button type="button" class="btn${i === idx ? ' primary' : ''}" data-tp-idx="${i}" ${has ? '' : 'disabled'}>V${i + 1}${p.chosenThumb === i ? ' ★' : ''}</button>`;
   }).join('');
-  const isWin = p.chosenThumb === idx;
-  $('thumbPrevPick').textContent = isWin ? '★ WINNER' : 'SET AS WINNER';
+  $('thumbPrevPick').textContent = p.chosenThumb === idx ? '★ WINNER' : 'SET AS WINNER';
+  document.querySelectorAll('.tc-vtab').forEach((b) => b.classList.toggle('on', b.dataset.tcView === tcView));
   openModal('thumbModal');
+  renderThumbCheckerStage();
 }
+document.querySelectorAll('.tc-vtab').forEach((b) => {
+  b.addEventListener('click', () => {
+    tcView = b.dataset.tcView;
+    document.querySelectorAll('.tc-vtab').forEach((x) => x.classList.toggle('on', x === b));
+    renderThumbCheckerStage();
+  });
+});
+['tcTitleInput', 'tcDurCustom'].forEach((id) => $(id).addEventListener('input', renderThumbCheckerStage));
+['tcOvSafe', 'tcOvBadge', 'tcOvHover', 'tcOvProg'].forEach((id) => $(id).addEventListener('change', renderThumbCheckerStage));
+$('tcDurType').addEventListener('change', () => {
+  $('tcDurCustom').classList.toggle('hidden', $('tcDurType').value !== 'custom');
+  renderThumbCheckerStage();
+});
+$('tcTitleChips').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-tc-t]'); if (!b) return;
+  $('tcTitleInput').value = b.dataset.tcT;
+  renderThumbCheckerStage();
+});
 $('plThumbs').addEventListener('click', (e) => {
   const g = findGame(openId); if (!g) return;
   const p = planOf(g);

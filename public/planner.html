@@ -38,6 +38,7 @@
       <button class="snav-item vt" data-view="calendar" role="tab">CALENDAR</button>
       <button class="snav-item vt" data-view="stats" role="tab">STATS</button>
       <button class="snav-item vt" data-view="journal" role="tab">JOURNAL</button>
+      <button class="snav-item vt" data-view="thumbnail" role="tab">THUMBNAIL</button>
       <a class="snav-item {{HITLIST_HIDE}}" id="navHitList" href="/hitlist">HIT LIST</a>
     </nav>
     <div class="sbar-right topbar-right">
@@ -65,6 +66,7 @@
     <div id="calView" class="view-pane hidden"></div>
     <div id="statsView" class="view-pane hidden"></div>
     <div id="journalView" class="view-pane hidden"></div>
+    <div id="thumbView" class="view-pane hidden"></div>
     <div id="emptyState" class="empty hidden">
       <h2>Your board is empty</h2>
       <p>Search IGDB for a game to add it as a card, then drag it through the stages as you work on it.</p>
@@ -179,7 +181,10 @@
                 <p class="muted small" style="margin:0">Write three title candidates now so the choice is easy later. Tap the circle to pick the winner.</p>
                 <div id="plTitles" class="pl-titles"></div>
                 <label>Thumbnail idea<input id="plThumb" class="field" placeholder="Face reaction + the monster + 3 words max"></label>
-                <div class="pl-thumbs-head"><span class="small muted">Thumbnail versions (up to 3 · click any to preview)</span></div>
+                <div class="pl-thumbs-head row" style="justify-content:space-between;align-items:center">
+                  <span class="small muted">Thumbnail versions (up to 3)</span>
+                  <button type="button" id="plThumbCheckerBtn" class="btn" title="Open these thumbnails in the standalone Thumbnail Checker page">Open in Thumbnail Checker ↗</button>
+                </div>
                 <div id="plThumbs" class="pl-thumbs"></div>
                 <input type="file" id="plThumbFile" accept="image/png,image/jpeg,image/webp" class="hidden">
               </div>
@@ -537,53 +542,6 @@
     <div class="sheet small">
       <p id="confirmMsg"></p>
       <div class="row end"><button class="btn" data-close>CANCEL</button><button id="confirmYes" class="btn danger">CONFIRM</button></div>
-    </div>
-  </div>
-
-  <!-- THUMBNAIL CHECKER & PREVIEW MODAL -->
-  <div id="thumbModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Thumbnail checker">
-    <div class="sheet wide thumb-sheet">
-      <div class="sheet-head"><h3 id="thumbPrevTitle">THUMBNAIL CHECKER</h3><button class="x" data-close>✕</button></div>
-      <div class="thumb-prev-bar">
-        <div id="thumbPrevTabs" class="row"></div>
-        <button type="button" id="thumbPrevPick" class="btn primary">SET AS WINNER</button>
-      </div>
-      <div class="tc-layout">
-        <!-- Controls Sidebar -->
-        <div class="tc-side">
-          <label>Test title <small>(pre-filled from Packaging)</small>
-            <input id="tcTitleInput" class="field" type="text" placeholder="Enter video title…">
-          </label>
-          <div id="tcTitleChips" class="tc-title-chips"></div>
-          <label>Duration badge
-            <select id="tcDurType" class="field">
-              <option value="standard">Standard (14:25)</option>
-              <option value="long">Long-form / Supercut (48:15)</option>
-              <option value="live">LIVE badge</option>
-              <option value="custom">Custom text…</option>
-            </select>
-          </label>
-          <input id="tcDurCustom" class="field hidden" type="text" maxlength="15" value="PREMIERE" placeholder="Custom badge text (max 15)">
-          <div class="tc-checks">
-            <div class="yt-card-lbl">Active Overlays</div>
-            <label class="inline-check"><input type="checkbox" id="tcOvSafe" checked> 10% text safe margins</label>
-            <label class="inline-check"><input type="checkbox" id="tcOvBadge" checked> Duration badge (bottom-right)</label>
-            <label class="inline-check"><input type="checkbox" id="tcOvHover" checked> Desktop hover icons (top-right)</label>
-            <label class="inline-check"><input type="checkbox" id="tcOvProg" checked> Watched progress bar (bottom)</label>
-          </div>
-        </div>
-        <!-- Viewport & Device Tabs -->
-        <div class="tc-main">
-          <div class="tc-vtabs" role="tablist">
-            <button type="button" class="tc-vtab on" data-tc-view="canvas">Safe Area</button>
-            <button type="button" class="tc-vtab" data-tc-view="home">Desktop Home</button>
-            <button type="button" class="tc-vtab" data-tc-view="sidebar">Desktop Sidebar</button>
-            <button type="button" class="tc-vtab" data-tc-view="mobile">Mobile Feed</button>
-            <button type="button" class="tc-vtab" data-tc-view="tv">TV Preview</button>
-          </div>
-          <div id="tcStage" class="tc-stage"></div>
-        </div>
-      </div>
     </div>
   </div>
 

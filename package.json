@@ -1,7 +1,7 @@
 {
   "name": "critical-hit-studio",
   "productName": "Critical Hit Studio",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Content planner for video-game creators, plus the Critical Hit List OBS overlay",
   "main": "main.js",
   "private": true,

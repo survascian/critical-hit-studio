@@ -60,10 +60,12 @@
     const notes = p.notes != null ? str(p.notes, MAX_NOTES) : str(migrateMoments(p.moments), MAX_NOTES);
     const titles = [0, 1, 2].map((i) => str(p.titles && p.titles[i], 120));
     const thumbs = [0, 1, 2].map((i) => str(p.thumbs && p.thumbs[i], 300));
+    const thumbDates = [0, 1, 2].map((i) => Number(p.thumbDates && p.thumbDates[i]) || 0);
     return {
       angle, hook, notes, titles, thumb: str(p.thumb, 300),
       chosen: [0, 1, 2].includes(p.chosen) ? p.chosen : -1,
       thumbs,
+      thumbDates,
       chosenThumb: [0, 1, 2].includes(p.chosenThumb) ? p.chosenThumb : -1
     };
   }

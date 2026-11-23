@@ -6,6 +6,15 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.2.2',
+      title: 'Standalone THUMBNAIL Checker Page',
+      items: [
+        'Moved the YouTube Thumbnail Safe-Area & Multi-Device Checker out of the Game Editor modal into its own top-level THUMBNAIL tab in the header.',
+        'Browse every thumbnail imported into Critical Hit Studio in a left-hand library, sorted either By Stage (e.g. Editing → HIT LIST - DISPATCH) or By Import Date, plus + Import for standalone tests.',
+        'Added a one-click "Open in Thumbnail Checker ↗" button inside Packaging (and clicking any attached thumbnail jumps straight to it) so the Game Editor stays clean and uncluttered.'
+      ]
+    },
+    {
       version: '2.2.1',
       title: 'Full YouTube Thumbnail Safe-Area & Multi-Device Checker',
       items: [

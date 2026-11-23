@@ -88,6 +88,10 @@ No Electron? Run `start-browser-mode.bat` (or `node server/server.js`) to open t
 
 ## Changelog
 
+### v2.2.2 — Standalone THUMBNAIL Checker Page
+* Moved the YouTube Thumbnail Checker out of the Game Editor into its own top-level **THUMBNAIL** tab in the header.
+* Added a full Thumbnail Library sorted **By Stage** (e.g. `Editing` → `HIT LIST - DISPATCH`) or **By Import Date**, plus standalone image importing and one-click jumping from any game's Packaging section.
+
 ### v2.2.1 — YouTube Thumbnail Safe-Area & Multi-Device Checker
 * Upgraded the in-editor Thumbnail Preview into a full **YouTube Thumbnail Checker** with 5 views (*Safe Area*, *Desktop Home*, *Desktop Sidebar 168px*, *Mobile Feed*, *TV Preview*).
 * Added live overlay toggles: **10% Text Safe Margins**, **Duration Badge** (*Standard / Long-form / LIVE / Custom*), **Desktop Hover Actions**, and **Watched Progress Bar**, plus one-click title candidate switching (`T1 / T2 / T3`).

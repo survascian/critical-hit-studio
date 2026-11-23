@@ -38,7 +38,7 @@ const safeUrl = (u) => (/^(\/media\/|https?:\/\/)/.test(u || '') ? u : '');
 // single quotes: the result is placed inside double-quoted style="" attributes
 const cssUrl = (u) => (safeUrl(u) ? `url('${safeUrl(u).replace(/['"<>\s]/g, (c) => encodeURIComponent(c))}')` : 'none');
 
-let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null };
+let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null, standaloneThumbs: [] };
 const PL = CHL_PLAN;   // formats, scratchpad, recap, stuck/forecast, upload buffer (plan.js)
 let appSettings = { igdbConfigured: false, igdbClientId: '', igdbHasSecret: false, youtubeHasKey: false, theme: 'default', accentColor: '#e60000', showHitList: true, useScores: false };
 const DEFAULT_OWNERSHIPS = [{ id: 'owned', label: 'Owned', color: '#2ECC71' }, { id: 'shanks', label: 'Shanks', color: '#FB923C' }];
@@ -111,7 +111,7 @@ $('confirmYes').onclick = () => { closeModal('confirmModal'); const cb = confirm
 function openModal(id) { $(id).classList.remove('hidden'); }
 function closeModal(id) { $(id).classList.add('hidden'); if (id === 'detailModal') { openId = null; renderBoard(); } }
 function closeTopModal() {
-  for (const id of ['confirmModal', 'thumbModal', 'wizardModal', 'artModal', 'sendModal', 'settingsModal', 'addModal', 'detailModal']) {
+  for (const id of ['confirmModal', 'wizardModal', 'artModal', 'sendModal', 'settingsModal', 'addModal', 'detailModal']) {
     if (!$(id).classList.contains('hidden')) { closeModal(id); return true; }
   }
   return false;
@@ -696,14 +696,16 @@ function renderTitles(g) {
   const p = planOf(g);
   $('plTitles').innerHTML = p.titles.map((t, i) => `<div class="ttl"><button type="button" class="pick${p.chosen === i ? ' on' : ''}" data-i="${i}" title="Use this title" aria-label="Choose title ${i + 1}"></button><input class="field" data-i="${i}" value="${esc(t)}" maxlength="120" placeholder="Title option ${i + 1}"><small class="muted">${t.length ? t.length + (t.length > 60 ? ' (may cut off)' : '') : ''}</small></div>`).join('');
 }
-let thumbPickSlot = -1, thumbPrevIdx = 0, tcView = 'canvas';
+let thumbPickSlot = -1;
+let tcState = { sort: 'stage', view: 'canvas', selectedKey: '', ovSafe: true, ovBadge: true, ovHover: true, ovProg: true, durType: 'standard', durCustom: 'PREMIERE', titleText: '' };
+
 function renderThumbs(g) {
   const p = planOf(g);
   $('plThumbs').innerHTML = p.thumbs.map((src, i) => {
     const ok = safeUrl(src);
     if (!ok) return `<div class="th-slot" data-th-slot="${i}" title="Attach thumbnail version ${i + 1}"><span class="th-empty">+ THUMB ${i + 1}</span></div>`;
     const isWin = p.chosenThumb === i;
-    return `<div class="th-slot filled${isWin ? ' winner' : ''}" data-th-prev="${i}" title="Click to preview &amp; check version ${i + 1}">
+    return `<div class="th-slot filled${isWin ? ' winner' : ''}" data-th-prev="${i}" title="Open V${i + 1} in Thumbnail Checker">
       <img src="${esc(ok)}" alt="Thumbnail ${i + 1}">
       <span class="th-badge">V${i + 1}</span>
       <div class="th-acts">
@@ -714,130 +716,26 @@ function renderThumbs(g) {
     </div>`;
   }).join('');
 }
-function tcBadgeText() {
-  const t = $('tcDurType').value;
-  if (t === 'long') return { text: '48:15', live: false };
-  if (t === 'live') return { text: 'LIVE', live: true };
-  if (t === 'custom') return { text: ($('tcDurCustom').value || 'PREMIERE').trim().slice(0, 15), live: false };
-  return { text: '14:25', live: false };
-}
-function tcImgBoxHtml(src, allowHover) {
-  const ovSafe = $('tcOvSafe').checked;
-  const ovBadge = $('tcOvBadge').checked;
-  const ovHover = allowHover && $('tcOvHover').checked;
-  const ovProg = $('tcOvProg').checked;
-  const b = tcBadgeText();
-  return `<div class="tc-imgbox">
-    <img src="${esc(src)}" alt="Thumbnail preview">
-    ${ovSafe ? '<div class="tc-safe"></div>' : ''}
-    ${ovHover ? '<div class="tc-hover-acts"><span class="tc-hover-ic" title="Watch Later">🕒</span><span class="tc-hover-ic" title="Add to queue">☰</span></div>' : ''}
-    ${ovBadge ? `<span class="tc-badge${b.live ? ' live' : ''}">${esc(b.text)}</span>` : ''}
-    ${ovProg ? '<div class="tc-prog"></div>' : ''}
-  </div>`;
-}
-function renderThumbCheckerStage() {
-  const g = findGame(openId); if (!g) return;
-  const p = planOf(g);
-  const src = safeUrl(p.thumbs[thumbPrevIdx]); if (!src) return;
-  const title = $('tcTitleInput').value.trim() || g.name || 'Untitled Video';
-  const ch = appSettings.youtubeChannel;
-  const chName = (ch && (ch.title || ch.handle)) || 'Your Channel';
-  const avHtml = (ch && ch.avatar && safeUrl(ch.avatar))
-    ? `<img src="${esc(ch.avatar)}" alt="">`
-    : esc(chName.replace(/^@/, '').charAt(0).toUpperCase() || 'C');
-
-  const stage = $('tcStage');
-  if (tcView === 'canvas') {
-    stage.innerHTML = `<div class="tc-canvas-wrap">${tcImgBoxHtml(src, true)}</div>`;
-  } else if (tcView === 'home') {
-    stage.innerHTML = `<div class="yt-card">
-      ${tcImgBoxHtml(src, true)}
-      <div class="yt-card-meta">
-        <div class="yt-card-av">${avHtml}</div>
-        <div class="yt-card-txt">
-          <div class="yt-card-t">${esc(title)}</div>
-          <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
-        </div>
-      </div>
-    </div>`;
-  } else if (tcView === 'sidebar') {
-    const ghost = `<div class="tc-sb-item tc-sb-ghost"><div class="tc-sb-thumb"></div><div style="flex:1"><div class="tc-ghost-line" style="width:92%"></div><div class="tc-ghost-line" style="width:65%"></div><div class="tc-ghost-line" style="width:45%"></div></div></div>`;
-    stage.innerHTML = `<div class="tc-sidebar-wrap">
-      <div class="yt-card-lbl">Up Next (Desktop Sidebar · 168px)</div>
-      <div class="tc-sb-item hi">
-        <div class="tc-sb-thumb">${tcImgBoxHtml(src, true)}</div>
-        <div class="yt-card-txt">
-          <div class="yt-card-t">${esc(title)}</div>
-          <div class="yt-card-s">${esc(chName)}</div>
-          <div class="yt-card-s">45K views · 3 hours ago</div>
-        </div>
-      </div>
-      ${ghost}${ghost}
-    </div>`;
-  } else if (tcView === 'mobile') {
-    stage.innerHTML = `<div class="tc-phone">
-      <div class="tc-phone-top"><div><span class="tc-phone-yt">▶</span>YouTube</div><span style="opacity:.6">🔍</span></div>
-      ${tcImgBoxHtml(src, false)}
-      <div class="tc-phone-meta">
-        <div class="yt-card-av">${avHtml}</div>
-        <div class="yt-card-txt">
-          <div class="yt-card-t">${esc(title)}</div>
-          <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
-        </div>
-      </div>
-      <div class="tc-phone-ghost"><div class="ph-box"></div><div class="tc-ghost-line" style="width:80%"></div></div>
-    </div>`;
-  } else if (tcView === 'tv') {
-    stage.innerHTML = `<div style="width:100%;max-width:540px">
-      <div class="tc-tv">
-        ${tcImgBoxHtml(src, false)}
-        <div class="tc-tv-meta">
-          <div class="yt-card-av">${avHtml}</div>
-          <div class="yt-card-txt">
-            <div class="yt-card-t" style="font-size:16px">${esc(title)}</div>
-            <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
-          </div>
-        </div>
-      </div>
-      <div class="tc-tv-stand"></div>
-    </div>`;
+function openThumbnailPage(gameId, slotIdx) {
+  if (gameId) {
+    const g = findGame(gameId);
+    if (g) {
+      const p = planOf(g);
+      const idx = (slotIdx >= 0 && safeUrl(p.thumbs[slotIdx])) ? slotIdx : p.thumbs.findIndex((u) => !!safeUrl(u));
+      if (idx >= 0) {
+        tcState.selectedKey = `g:${g.id}:${idx}`;
+        tcState.titleText = (p.chosen >= 0 && p.titles[p.chosen]) || p.titles.find(Boolean) || g.name || '';
+      }
+    }
   }
+  if (!$('detailModal').classList.contains('hidden')) closeModal('detailModal');
+  view = 'thumbnail';
+  try { localStorage.setItem('chl_view', view); } catch (e) {}
+  renderBoard();
 }
-function openThumbPreview(g, idx) {
-  const p = planOf(g);
-  thumbPrevIdx = idx;
-  const src = safeUrl(p.thumbs[idx]); if (!src) return;
-  $('thumbPrevTitle').textContent = `THUMBNAIL CHECKER · V${idx + 1}`;
-  const chosenTitle = (p.chosen >= 0 && p.titles[p.chosen]) || p.titles.find(Boolean) || g.name || 'Untitled Video';
-  if ($('thumbModal').classList.contains('hidden')) $('tcTitleInput').value = chosenTitle;
-  const nonEmptyTitles = p.titles.map((t, i) => ({ t: t.trim(), i })).filter((x) => x.t);
-  $('tcTitleChips').innerHTML = nonEmptyTitles.map((x) => `<button type="button" class="tc-tchip" data-tc-t="${esc(x.t)}" title="${esc(x.t)}">T${x.i + 1}: ${esc(x.t)}</button>`).join('');
-  $('thumbPrevTabs').innerHTML = [0, 1, 2].map((i) => {
-    const has = !!safeUrl(p.thumbs[i]);
-    return `<button type="button" class="btn${i === idx ? ' primary' : ''}" data-tp-idx="${i}" ${has ? '' : 'disabled'}>V${i + 1}${p.chosenThumb === i ? ' ★' : ''}</button>`;
-  }).join('');
-  $('thumbPrevPick').textContent = p.chosenThumb === idx ? '★ WINNER' : 'SET AS WINNER';
-  document.querySelectorAll('.tc-vtab').forEach((b) => b.classList.toggle('on', b.dataset.tcView === tcView));
-  openModal('thumbModal');
-  renderThumbCheckerStage();
-}
-document.querySelectorAll('.tc-vtab').forEach((b) => {
-  b.addEventListener('click', () => {
-    tcView = b.dataset.tcView;
-    document.querySelectorAll('.tc-vtab').forEach((x) => x.classList.toggle('on', x === b));
-    renderThumbCheckerStage();
-  });
-});
-['tcTitleInput', 'tcDurCustom'].forEach((id) => $(id).addEventListener('input', renderThumbCheckerStage));
-['tcOvSafe', 'tcOvBadge', 'tcOvHover', 'tcOvProg'].forEach((id) => $(id).addEventListener('change', renderThumbCheckerStage));
-$('tcDurType').addEventListener('change', () => {
-  $('tcDurCustom').classList.toggle('hidden', $('tcDurType').value !== 'custom');
-  renderThumbCheckerStage();
-});
-$('tcTitleChips').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-tc-t]'); if (!b) return;
-  $('tcTitleInput').value = b.dataset.tcT;
-  renderThumbCheckerStage();
+$('plThumbCheckerBtn').addEventListener('click', () => {
+  const g = findGame(openId);
+  openThumbnailPage(g ? g.id : '', -1);
 });
 $('plThumbs').addEventListener('click', (e) => {
   const g = findGame(openId); if (!g) return;
@@ -845,37 +743,40 @@ $('plThumbs').addEventListener('click', (e) => {
   const winBtn = e.target.closest('[data-th-win]');
   if (winBtn) { e.stopPropagation(); const i = +winBtn.dataset.thWin; p.chosenThumb = p.chosenThumb === i ? -1 : i; renderThumbs(g); planTouch(g); return; }
   const delBtn = e.target.closest('[data-th-del]');
-  if (delBtn) { e.stopPropagation(); const i = +delBtn.dataset.thDel; p.thumbs[i] = ''; if (p.chosenThumb === i) p.chosenThumb = -1; renderThumbs(g); planTouch(g); return; }
+  if (delBtn) { e.stopPropagation(); const i = +delBtn.dataset.thDel; p.thumbs[i] = ''; p.thumbDates[i] = 0; if (p.chosenThumb === i) p.chosenThumb = -1; renderThumbs(g); planTouch(g); return; }
   const slotBtn = e.target.closest('[data-th-slot]');
   if (slotBtn) { e.stopPropagation(); thumbPickSlot = +slotBtn.dataset.thSlot; $('plThumbFile').value = ''; $('plThumbFile').click(); return; }
   const prevBtn = e.target.closest('[data-th-prev]');
-  if (prevBtn) { openThumbPreview(g, +prevBtn.dataset.thPrev); }
+  if (prevBtn) { openThumbnailPage(g.id, +prevBtn.dataset.thPrev); }
 });
 $('plThumbFile').addEventListener('change', async (e) => {
   const file = e.target.files && e.target.files[0];
-  const g = findGame(openId);
-  if (!file || !g || thumbPickSlot < 0) return;
+  if (!file) return;
   if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) { toast('Please pick a PNG, JPG, or WebP image.'); return; }
   try {
     const r = await fetch('/api/thumb/upload', { method: 'POST', headers: { 'Content-Type': file.type }, body: file });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'Upload failed');
+    if (thumbPickSlot === -99) {
+      // Standalone import directly on the THUMBNAIL page
+      state.standaloneThumbs = Array.isArray(state.standaloneThumbs) ? state.standaloneThumbs : [];
+      const item = { id: uid(), path: j.path, name: file.name.replace(/\.[^.]+$/, ''), importedAt: Date.now() };
+      state.standaloneThumbs.unshift(item);
+      tcState.selectedKey = `s:${item.id}`;
+      tcState.titleText = item.name;
+      save(true);
+      renderThumbnailPage();
+      toast('Thumbnail imported');
+      return;
+    }
+    const g = findGame(openId);
+    if (!g || thumbPickSlot < 0) return;
     const p = planOf(g);
     p.thumbs[thumbPickSlot] = j.path;
+    p.thumbDates[thumbPickSlot] = Date.now();
     renderThumbs(g); planTouch(g);
     toast(`Thumbnail V${thumbPickSlot + 1} attached`);
   } catch (err) { toast('Thumbnail upload failed: ' + err.message); }
-});
-$('thumbPrevTabs').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-tp-idx]'); const g = findGame(openId);
-  if (!b || !g || b.disabled) return;
-  openThumbPreview(g, +b.dataset.tpIdx);
-});
-$('thumbPrevPick').addEventListener('click', () => {
-  const g = findGame(openId); if (!g) return;
-  const p = planOf(g);
-  p.chosenThumb = p.chosenThumb === thumbPrevIdx ? -1 : thumbPrevIdx;
-  renderThumbs(g); planTouch(g); openThumbPreview(g, thumbPrevIdx);
 });
 function renderPlan(g) {
   const p = planOf(g);
@@ -1307,17 +1208,24 @@ $('dVideoPick').addEventListener('change', async () => {
   if (await loadVideoStats(g, true) && openId === g.id) renderVideo(g);
 });
 
-// ------------------------------------------------------------------ views: board / calendar / stats
+// ------------------------------------------------------------------ views: board / calendar / stats / journal / thumbnail
 function renderBoard() {
   document.querySelectorAll('#viewTabs .vt').forEach((b) => { const on = b.dataset.view === view; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
   $('board').classList.toggle('hidden', view !== 'board');
   $('calView').classList.toggle('hidden', view !== 'calendar');
   $('statsView').classList.toggle('hidden', view !== 'stats');
   $('journalView').classList.toggle('hidden', view !== 'journal');
+  $('thumbView').classList.toggle('hidden', view !== 'thumbnail');
   document.body.dataset.view = view;
   renderPipeBar();
   if (view === 'board') renderBoardView();
-  else { $('emptyState').classList.add('hidden'); if (view === 'calendar') renderCalendar(); else if (view === 'journal') renderJournal(); else renderStats(); }
+  else {
+    $('emptyState').classList.add('hidden');
+    if (view === 'calendar') renderCalendar();
+    else if (view === 'journal') renderJournal();
+    else if (view === 'thumbnail') renderThumbnailPage();
+    else renderStats();
+  }
 }
 document.getElementById('viewTabs').addEventListener('click', (e) => {
   const b = e.target.closest('.vt'); if (!b) return;
@@ -2005,12 +1913,12 @@ document.addEventListener('keydown', (e) => {
 });
 
 (async function init() {
-  try { hideArchived = localStorage.getItem('chl_hide_archived') === '1'; $('hideArchived').checked = hideArchived; simpleBoard = localStorage.getItem('chl_simple_board') === '1'; $('simpleBoard').checked = simpleBoard; document.body.classList.toggle('simple-board', simpleBoard); const v = localStorage.getItem('chl_view'); if (['board', 'calendar', 'stats', 'journal'].includes(v)) view = v; } catch (e) { /* ignore */ }
-  { const qv = new URLSearchParams(location.search).get('view'); if (['board', 'calendar', 'stats', 'journal'].includes(qv)) { view = qv; try { localStorage.setItem('chl_view', qv); } catch (e) { /* ignore */ } } }   // links from the Hit List page
+  try { hideArchived = localStorage.getItem('chl_hide_archived') === '1'; $('hideArchived').checked = hideArchived; simpleBoard = localStorage.getItem('chl_simple_board') === '1'; $('simpleBoard').checked = simpleBoard; document.body.classList.toggle('simple-board', simpleBoard); const v = localStorage.getItem('chl_view'); if (['board', 'calendar', 'stats', 'journal', 'thumbnail'].includes(v)) view = v; } catch (e) { /* ignore */ }
+  { const qv = new URLSearchParams(location.search).get('view'); if (['board', 'calendar', 'stats', 'journal', 'thumbnail'].includes(qv)) { view = qv; try { localStorage.setItem('chl_view', qv); } catch (e) { /* ignore */ } } }   // links from the Hit List page
   try {
     const doc = await api('/api/planner');
     let migrated = false;
-    state = { version: 1, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null, games: (doc.games || []).map((g) => {
+    state = { version: 1, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null, standaloneThumbs: Array.isArray(doc.standaloneThumbs) ? doc.standaloneThumbs : [], games: (doc.games || []).map((g) => {
       const game = Object.assign({ stage: 'Backlogged', developers: [], genres: [], platforms: [], publishers: [], hype: 0, hoursPlayed: 0 }, g);
       // "Played on" used to be free text; it is now one of the platform ids. Convert old values once.
       if (game.playedOn && !P.byId(game.playedOn)) {
@@ -2219,4 +2127,319 @@ function initCloudSync() {
     await CHL_CLOUD.signOut();
     toast('Signed out of Cloud Sync (local data kept)');
   };
+}
+
+// ------------------------------------------------------------------ Standalone THUMBNAIL Page
+function allThumbEntries() {
+  const entries = [];
+  (state.games || []).forEach((g) => {
+    const p = planOf(g);
+    const fmts = PL.gameFormats(g).map((fid) => (formatById(fid) || {}).short || fid.toUpperCase());
+    const fmtTag = fmts.length ? fmts.join(' / ') : '';
+    const baseName = (g.name || 'Untitled') + (g.part > 0 ? ' PT ' + g.part : '');
+    const label = fmtTag ? `${fmtTag} - ${baseName}` : baseName;
+    p.thumbs.forEach((src, i) => {
+      const ok = safeUrl(src);
+      if (!ok) return;
+      entries.push({
+        key: `g:${g.id}:${i}`,
+        kind: 'game',
+        game: g,
+        slotIdx: i,
+        src: ok,
+        stage: g.stage || 'Backlogged',
+        label,
+        isWinner: p.chosenThumb === i,
+        importedAt: Number(p.thumbDates && p.thumbDates[i]) || Number(g.updatedAt || g.stageChangedAt || g.createdAt || 0)
+      });
+    });
+  });
+  (Array.isArray(state.standaloneThumbs) ? state.standaloneThumbs : []).forEach((s) => {
+    const ok = safeUrl(s && s.path);
+    if (!ok) return;
+    entries.push({
+      key: `s:${s.id}`,
+      kind: 'standalone',
+      standalone: s,
+      src: ok,
+      stage: 'Standalone',
+      label: s.name || 'Standalone Thumbnail',
+      isWinner: false,
+      importedAt: Number(s.importedAt) || 0
+    });
+  });
+  return entries;
+}
+
+function tcBadgeTextOf() {
+  if (tcState.durType === 'long') return { text: '48:15', live: false };
+  if (tcState.durType === 'live') return { text: 'LIVE', live: true };
+  if (tcState.durType === 'custom') return { text: (tcState.durCustom || 'PREMIERE').trim().slice(0, 15), live: false };
+  return { text: '14:25', live: false };
+}
+
+function tcImgBoxHtml(src, allowHover) {
+  const b = tcBadgeTextOf();
+  return `<div class="tc-imgbox">
+    <img src="${esc(src)}" alt="Thumbnail preview">
+    ${tcState.ovSafe ? '<div class="tc-safe"></div>' : ''}
+    ${(allowHover && tcState.ovHover) ? '<div class="tc-hover-acts"><span class="tc-hover-ic" title="Watch Later">🕒</span><span class="tc-hover-ic" title="Add to queue">☰</span></div>' : ''}
+    ${tcState.ovBadge ? `<span class="tc-badge${b.live ? ' live' : ''}">${esc(b.text)}</span>` : ''}
+    ${tcState.ovProg ? '<div class="tc-prog"></div>' : ''}
+  </div>`;
+}
+
+function renderThumbnailStage(sel) {
+  const stage = $('tcPageStage');
+  if (!stage || !sel) return;
+  const title = (tcState.titleText || '').trim() || (sel.game ? sel.game.name : sel.label) || 'Untitled Video';
+  const ch = appSettings.youtubeChannel;
+  const chName = (ch && (ch.title || ch.handle)) || 'Your Channel';
+  const avHtml = (ch && ch.avatar && safeUrl(ch.avatar))
+    ? `<img src="${esc(ch.avatar)}" alt="">`
+    : esc(chName.replace(/^@/, '').charAt(0).toUpperCase() || 'C');
+
+  if (tcState.view === 'canvas') {
+    stage.innerHTML = `<div class="tc-canvas-wrap">${tcImgBoxHtml(sel.src, true)}</div>`;
+  } else if (tcState.view === 'home') {
+    stage.innerHTML = `<div class="yt-card">
+      ${tcImgBoxHtml(sel.src, true)}
+      <div class="yt-card-meta">
+        <div class="yt-card-av">${avHtml}</div>
+        <div class="yt-card-txt">
+          <div class="yt-card-t">${esc(title)}</div>
+          <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+        </div>
+      </div>
+    </div>`;
+  } else if (tcState.view === 'sidebar') {
+    const ghost = `<div class="tc-sb-item tc-sb-ghost"><div class="tc-sb-thumb"></div><div style="flex:1"><div class="tc-ghost-line" style="width:92%"></div><div class="tc-ghost-line" style="width:65%"></div><div class="tc-ghost-line" style="width:45%"></div></div></div>`;
+    stage.innerHTML = `<div class="tc-sidebar-wrap">
+      <div class="yt-card-lbl">Up Next (Desktop Sidebar · 168px)</div>
+      <div class="tc-sb-item hi">
+        <div class="tc-sb-thumb">${tcImgBoxHtml(sel.src, true)}</div>
+        <div class="yt-card-txt">
+          <div class="yt-card-t">${esc(title)}</div>
+          <div class="yt-card-s">${esc(chName)}</div>
+          <div class="yt-card-s">45K views · 3 hours ago</div>
+        </div>
+      </div>
+      ${ghost}${ghost}
+    </div>`;
+  } else if (tcState.view === 'mobile') {
+    stage.innerHTML = `<div class="tc-phone">
+      <div class="tc-phone-top"><div><span class="tc-phone-yt">▶</span>YouTube</div><span style="opacity:.6">🔍</span></div>
+      ${tcImgBoxHtml(sel.src, false)}
+      <div class="tc-phone-meta">
+        <div class="yt-card-av">${avHtml}</div>
+        <div class="yt-card-txt">
+          <div class="yt-card-t">${esc(title)}</div>
+          <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+        </div>
+      </div>
+      <div class="tc-phone-ghost"><div class="ph-box"></div><div class="tc-ghost-line" style="width:80%"></div></div>
+    </div>`;
+  } else if (tcState.view === 'tv') {
+    stage.innerHTML = `<div style="width:100%;max-width:540px">
+      <div class="tc-tv">
+        ${tcImgBoxHtml(sel.src, false)}
+        <div class="tc-tv-meta">
+          <div class="yt-card-av">${avHtml}</div>
+          <div class="yt-card-txt">
+            <div class="yt-card-t" style="font-size:16px">${esc(title)}</div>
+            <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+          </div>
+        </div>
+      </div>
+      <div class="tc-tv-stand"></div>
+    </div>`;
+  }
+}
+
+function renderThumbnailPage() {
+  const root = $('thumbView');
+  if (!root) return;
+  const entries = allThumbEntries();
+  let sel = entries.find((e) => e.key === tcState.selectedKey) || entries[0] || null;
+  if (sel && sel.key !== tcState.selectedKey) {
+    tcState.selectedKey = sel.key;
+    if (sel.game) {
+      const p = planOf(sel.game);
+      tcState.titleText = (p.chosen >= 0 && p.titles[p.chosen]) || p.titles.find(Boolean) || sel.game.name || '';
+    } else {
+      tcState.titleText = sel.label || '';
+    }
+  }
+
+  const fmtDate = (ms) => (ms ? new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '');
+  const itemHtml = (e) => `<button type="button" class="th-lib-item${sel && sel.key === e.key ? ' on' : ''}" data-th-pick="${esc(e.key)}">
+    <div class="th-lib-thumb"><img src="${esc(e.src)}" alt="" loading="lazy"></div>
+    <div class="th-lib-meta">
+      <div class="th-lib-title" title="${esc(e.label)}">${esc(e.label)}</div>
+      <div class="th-lib-sub">${e.kind === 'game' ? `V${e.slotIdx + 1}${e.isWinner ? ' ★' : ''} · ${esc(e.stage)}` : 'Standalone'}${e.importedAt ? ' · ' + esc(fmtDate(e.importedAt)) : ''}</div>
+    </div>
+  </button>`;
+
+  let libBodyHtml = '';
+  if (!entries.length) {
+    libBodyHtml = '<div class="muted small" style="padding:14px 4px;text-align:center">No thumbnails imported yet. Attach one in any game\'s Packaging section, or click <b>+ Import</b> above.</div>';
+  } else if (tcState.sort === 'date') {
+    const sorted = entries.slice().sort((a, b) => b.importedAt - a.importedAt);
+    libBodyHtml = `<div class="th-lib-list">${sorted.map(itemHtml).join('')}</div>`;
+  } else {
+    const order = STAGES.map((s) => s.id).concat(['Standalone']);
+    order.forEach((stName) => {
+      const grp = entries.filter((e) => e.stage === stName).sort((a, b) => b.importedAt - a.importedAt);
+      if (!grp.length) return;
+      const stObj = STAGES.find((s) => s.id === stName);
+      const col = stObj ? stObj.color : '#8b93a7';
+      libBodyHtml += `<div class="th-group-lbl"><span class="th-group-dot" style="background:${col}"></span><span>${esc(stName)} (${grp.length})</span></div><div class="th-lib-list">${grp.map(itemHtml).join('')}</div>`;
+    });
+  }
+
+  let workHtml = '';
+  if (!sel) {
+    workHtml = `<div class="th-empty-page">
+      <h3 style="margin:0;font-family:'Orbitron',sans-serif">THUMBNAIL CHECKER</h3>
+      <p>Import a thumbnail here or attach up to 3 versions in any game's Packaging section to test safe margins, duration badges, and YouTube Mobile / Desktop / TV previews.</p>
+      <button type="button" class="btn primary" data-th-import="1">+ IMPORT THUMBNAIL</button>
+    </div>`;
+  } else {
+    const g = sel.game || null;
+    const p = g ? planOf(g) : null;
+    const verTabs = g ? [0, 1, 2].map((i) => {
+      const has = !!safeUrl(p.thumbs[i]);
+      return `<button type="button" class="btn${i === sel.slotIdx ? ' primary' : ''}" data-th-pick="g:${esc(g.id)}:${i}" ${has ? '' : 'disabled'}>V${i + 1}${p.chosenThumb === i ? ' ★' : ''}</button>`;
+    }).join('') : '';
+    const titleChips = g ? p.titles.map((t, i) => ({ t: t.trim(), i })).filter((x) => x.t).map((x) =>
+      `<button type="button" class="tc-tchip" data-tc-t="${esc(x.t)}" title="${esc(x.t)}">T${x.i + 1}: ${esc(x.t)}</button>`
+    ).join('') : '';
+
+    workHtml = `
+      <div class="th-work-head">
+        <div class="row" style="gap:10px;align-items:center">
+          <div class="th-work-title">${esc(sel.label)}${g ? ` · V${sel.slotIdx + 1}` : ''}</div>
+          ${verTabs ? `<div class="row">${verTabs}</div>` : ''}
+        </div>
+        <div class="row">
+          ${g ? `<button type="button" class="btn primary" id="tcWinBtn">${sel.isWinner ? '★ WINNER' : 'SET AS WINNER'}</button><button type="button" class="btn" id="tcOpenGameBtn">Open Game</button>` : `<button type="button" class="btn danger" id="tcDelStandalone">Remove</button>`}
+        </div>
+      </div>
+      <div class="tc-layout">
+        <div class="tc-side">
+          <label>Test title
+            <input id="tcPageTitle" class="field" type="text" value="${esc(tcState.titleText)}" placeholder="Enter video title…">
+          </label>
+          ${titleChips ? `<div id="tcPageTitleChips" class="tc-title-chips">${titleChips}</div>` : ''}
+          <label>Duration badge
+            <select id="tcPageDurType" class="field">
+              <option value="standard" ${tcState.durType === 'standard' ? 'selected' : ''}>Standard (14:25)</option>
+              <option value="long" ${tcState.durType === 'long' ? 'selected' : ''}>Long-form / Supercut (48:15)</option>
+              <option value="live" ${tcState.durType === 'live' ? 'selected' : ''}>LIVE badge</option>
+              <option value="custom" ${tcState.durType === 'custom' ? 'selected' : ''}>Custom text…</option>
+            </select>
+          </label>
+          <input id="tcPageDurCustom" class="field${tcState.durType === 'custom' ? '' : ' hidden'}" type="text" maxlength="15" value="${esc(tcState.durCustom)}" placeholder="Custom badge text (max 15)">
+          <div class="tc-checks">
+            <div class="yt-card-lbl">Active Overlays</div>
+            <label class="inline-check"><input type="checkbox" id="tcPageOvSafe" ${tcState.ovSafe ? 'checked' : ''}> 10% text safe margins</label>
+            <label class="inline-check"><input type="checkbox" id="tcPageOvBadge" ${tcState.ovBadge ? 'checked' : ''}> Duration badge (bottom-right)</label>
+            <label class="inline-check"><input type="checkbox" id="tcPageOvHover" ${tcState.ovHover ? 'checked' : ''}> Desktop hover icons (top-right)</label>
+            <label class="inline-check"><input type="checkbox" id="tcPageOvProg" ${tcState.ovProg ? 'checked' : ''}> Watched progress bar (bottom)</label>
+          </div>
+        </div>
+        <div class="tc-main">
+          <div class="tc-vtabs" role="tablist">
+            <button type="button" class="tc-vtab${tcState.view === 'canvas' ? ' on' : ''}" data-tc-view="canvas">Safe Area</button>
+            <button type="button" class="tc-vtab${tcState.view === 'home' ? ' on' : ''}" data-tc-view="home">Desktop Home</button>
+            <button type="button" class="tc-vtab${tcState.view === 'sidebar' ? ' on' : ''}" data-tc-view="sidebar">Desktop Sidebar</button>
+            <button type="button" class="tc-vtab${tcState.view === 'mobile' ? ' on' : ''}" data-tc-view="mobile">Mobile Feed</button>
+            <button type="button" class="tc-vtab${tcState.view === 'tv' ? ' on' : ''}" data-tc-view="tv">TV Preview</button>
+          </div>
+          <div id="tcPageStage" class="tc-stage"></div>
+        </div>
+      </div>`;
+  }
+
+  root.innerHTML = `<div class="th-page">
+    <aside class="th-lib">
+      <div class="th-lib-head">
+        <h3>Thumbnails (${entries.length})</h3>
+        <button type="button" class="btn" data-th-import="1">+ Import</button>
+      </div>
+      <div class="th-sort">
+        <button type="button" class="${tcState.sort === 'stage' ? 'on' : ''}" data-th-sort="stage">By Stage</button>
+        <button type="button" class="${tcState.sort === 'date' ? 'on' : ''}" data-th-sort="date">By Import Date</button>
+      </div>
+      ${libBodyHtml}
+    </aside>
+    <section class="th-work">${workHtml}</section>
+  </div>`;
+
+  if (sel) renderThumbnailStage(sel);
+
+  // Wire interactions
+  root.querySelectorAll('[data-th-import]').forEach((b) => {
+    b.onclick = () => { thumbPickSlot = -99; $('plThumbFile').value = ''; $('plThumbFile').click(); };
+  });
+  root.querySelectorAll('[data-th-sort]').forEach((b) => {
+    b.onclick = () => { tcState.sort = b.dataset.thSort; renderThumbnailPage(); };
+  });
+  root.querySelectorAll('[data-th-pick]').forEach((b) => {
+    b.onclick = () => {
+      if (b.disabled) return;
+      tcState.selectedKey = b.dataset.thPick;
+      const next = allThumbEntries().find((e) => e.key === tcState.selectedKey);
+      if (next && next.game) {
+        const p = planOf(next.game);
+        tcState.titleText = (p.chosen >= 0 && p.titles[p.chosen]) || p.titles.find(Boolean) || next.game.name || '';
+      } else if (next) {
+        tcState.titleText = next.label || '';
+      }
+      renderThumbnailPage();
+    };
+  });
+  root.querySelectorAll('[data-tc-view]').forEach((b) => {
+    b.onclick = () => {
+      tcState.view = b.dataset.tcView;
+      root.querySelectorAll('[data-tc-view]').forEach((x) => x.classList.toggle('on', x === b));
+      renderThumbnailStage(sel);
+    };
+  });
+  if ($('tcPageTitle')) $('tcPageTitle').oninput = (e) => { tcState.titleText = e.target.value; renderThumbnailStage(sel); };
+  if ($('tcPageTitleChips')) $('tcPageTitleChips').onclick = (e) => {
+    const b = e.target.closest('[data-tc-t]'); if (!b) return;
+    tcState.titleText = b.dataset.tcT; $('tcPageTitle').value = tcState.titleText; renderThumbnailStage(sel);
+  };
+  if ($('tcPageDurType')) $('tcPageDurType').onchange = (e) => {
+    tcState.durType = e.target.value;
+    $('tcPageDurCustom').classList.toggle('hidden', tcState.durType !== 'custom');
+    renderThumbnailStage(sel);
+  };
+  if ($('tcPageDurCustom')) $('tcPageDurCustom').oninput = (e) => { tcState.durCustom = e.target.value; renderThumbnailStage(sel); };
+  if ($('tcPageOvSafe')) $('tcPageOvSafe').onchange = (e) => { tcState.ovSafe = e.target.checked; renderThumbnailStage(sel); };
+  if ($('tcPageOvBadge')) $('tcPageOvBadge').onchange = (e) => { tcState.ovBadge = e.target.checked; renderThumbnailStage(sel); };
+  if ($('tcPageOvHover')) $('tcPageOvHover').onchange = (e) => { tcState.ovHover = e.target.checked; renderThumbnailStage(sel); };
+  if ($('tcPageOvProg')) $('tcPageOvProg').onchange = (e) => { tcState.ovProg = e.target.checked; renderThumbnailStage(sel); };
+  if ($('tcWinBtn') && sel && sel.game) {
+    $('tcWinBtn').onclick = () => {
+      const p = planOf(sel.game);
+      p.chosenThumb = p.chosenThumb === sel.slotIdx ? -1 : sel.slotIdx;
+      sel.game.updatedAt = Date.now();
+      save(true);
+      renderThumbnailPage();
+    };
+  }
+  if ($('tcOpenGameBtn') && sel && sel.game) {
+    $('tcOpenGameBtn').onclick = () => openDetail(sel.game.id);
+  }
+  if ($('tcDelStandalone') && sel && sel.standalone) {
+    $('tcDelStandalone').onclick = () => {
+      state.standaloneThumbs = (state.standaloneThumbs || []).filter((x) => x.id !== sel.standalone.id);
+      tcState.selectedKey = '';
+      save(true);
+      renderThumbnailPage();
+      toast('Standalone thumbnail removed');
+    };
+  }
 }

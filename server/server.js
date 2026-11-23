@@ -110,7 +110,7 @@ function startServer(opts) {
     return true;
   }
 
-  function serveFile(res, file, extraHeaders) {
+  function serveFile(res, file, extraHeaders, startView) {
     fs.stat(file, (err, st) => {
       if (err || !st.isFile()) { res.writeHead(404); return res.end('not found'); }
       const type = MIME[path.extname(file).toLowerCase()] || 'application/octet-stream';
@@ -134,6 +134,7 @@ function startServer(opts) {
             .split('{{VERSION}}').join(require('../package.json').version)
             .split('{{ACCENT}}').join(accent)
             .split('{{THEME}}').join(theme)
+            .split('{{START_VIEW}}').join(escAttr(startView || 'home'))
             .split('{{HITLIST_HIDE}}').join(showHitList ? '' : 'hidden')
             .split('{{CHANNEL}}').join(escAttr(chLabel))
             .split('{{STUDIO_URL}}').join(escAttr(studioUrl))
@@ -165,7 +166,18 @@ function startServer(opts) {
 
     try {
       // ----- pages -----
-      if (p === '/' || p === '/planner') return serveFile(res, path.join(publicDir, 'planner.html'), noStore);
+      if (p === '/' || p === '/planner') {
+        const VALID_VIEWS = ['home', 'board', 'calendar', 'stats', 'journal', 'thumbnail', 'radar'];
+        const qv = url.searchParams.get('view');
+        const st = getSettings();
+        const sp = st.startPage || 'home';
+        if (p === '/' && !qv && sp === 'hitlist' && st.showHitList !== false) {
+          res.writeHead(302, Object.assign({ Location: '/hitlist' }, noStore));
+          return res.end();
+        }
+        const startView = VALID_VIEWS.includes(qv) ? qv : (VALID_VIEWS.includes(sp) ? sp : 'home');
+        return serveFile(res, path.join(publicDir, 'planner.html'), noStore, startView);
+      }
       if (p === '/mobile') return serveFile(res, path.join(publicDir, 'mobile.html'), noStore);
       if (p === '/hitlist') return serveFile(res, path.join(publicDir, 'hitlist.html'), noStore);
 

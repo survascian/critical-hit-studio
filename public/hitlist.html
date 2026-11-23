@@ -473,18 +473,52 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
   .vs-stage.vs-shake, .vs-card, .vs-badge, .vs-crown, .vs-sweep, .vs-spark, .vs-ring, .vs-rays, .vs-ember, .vs-slash { animation: none !important; }
   .vs-sweep, .vs-particles, .vs-slash { display: none !important; }
 }
-/* Collapsible Board Controls sections */
-.bc-sec { background: #101218; border: 1px solid #262a35; border-radius: 12px; overflow: hidden; }
-.bc-sec > summary { list-style: none; cursor: pointer; padding: 11px 13px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #e5e7eb; background: rgba(255,255,255,.02); user-select: none; transition: background .15s, color .15s; }
+/* Hit List header action buttons (explicit sizing — never relies on uncompiled Tailwind utilities) */
+.hl-hbtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 8px; border: 1px solid #2a2f3d; background: #101218; color: #e5e7eb; font: 700 11px/1 'Orbitron', sans-serif; letter-spacing: .06em; white-space: nowrap; cursor: pointer; transition: background .14s, border-color .14s, color .14s; }
+.hl-hbtn:hover { background: #262a35; border-color: #3f4659; color: #fff; }
+.hl-hbtn svg { width: 15px; height: 15px; flex: none; }
+.hl-hbtn .hk { font: 600 10.5px/1 'Rajdhani', monospace; color: #9ca3af; }
+.hl-hbtn-red { background: #e60000; border-color: #e60000; color: #fff; box-shadow: 0 0 16px rgba(230,0,0,.35); }
+.hl-hbtn-red:hover { background: #ff1a1a; border-color: #ff1a1a; }
+.hl-hbtn-red .hk { color: rgba(255,255,255,.8); }
+.hl-hbtn-vs { padding: 0 11px; letter-spacing: .09em; }
+
+/* Collapsible Board Controls sections (explicit, comfortable sizing) */
+#sidebarControls { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 12px; line-height: 1.4; }
+.bc-wrap { display: flex; flex-direction: column; gap: 10px; }
+.bc-top { padding: 2px 2px 4px; }
+.bc-top h2 { margin: 0; font: 800 11px/1.2 'Orbitron', sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #FFC700; }
+.bc-top p { margin: 4px 0 0; font-size: 11.5px; color: #9ca3af; }
+.bc-sec { background: #101218; border: 1px solid #262a35; border-radius: 10px; overflow: hidden; }
+.bc-sec > summary { list-style: none; cursor: pointer; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 700 10.5px/1.2 'Orbitron', sans-serif; letter-spacing: .09em; text-transform: uppercase; color: #e5e7eb; background: rgba(255,255,255,.02); user-select: none; transition: background .15s, color .15s; }
 .bc-sec > summary::-webkit-details-marker { display: none; }
 .bc-sec > summary:hover { background: rgba(255,199,0,.06); color: #FFC700; }
-.bc-sec > summary::after { content: '▸'; font-size: 12px; color: #9ca3af; transition: transform .15s; flex: none; }
+.bc-sec > summary::after { content: '▸'; font-size: 11px; color: #9ca3af; transition: transform .15s; flex: none; }
 .bc-sec[open] > summary { border-bottom: 1px solid #262a35; color: #FFC700; }
 .bc-sec[open] > summary::after { transform: rotate(90deg); color: #FFC700; }
-.bc-body { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
-.bc-card { background: rgba(0,0,0,.32); border: 1px solid rgba(255,255,255,.06); border-radius: 10px; padding: 11px; }
+.bc-body { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.bc-card { background: rgba(0,0,0,.32); border: 1px solid rgba(255,255,255,.07); border-radius: 9px; padding: 10px 11px; display: flex; flex-direction: column; gap: 8px; }
 .bc-card.accent { border-color: rgba(255,199,0,.4); }
-.bc-subhead { font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #d1d5db; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.bc-subhead { font: 700 10px/1.2 'Orbitron', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #d1d5db; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.bc-subhead.gold { color: #FFC700; }
+.bc-hint { font-size: 11px; color: #9ca3af; line-height: 1.38; margin: 0; }
+.bc-sel { width: 100%; background: rgba(0,0,0,.5); border: 1px solid #262a35; border-radius: 7px; padding: 7px 9px; font-size: 12px; color: #f3f4f6; cursor: pointer; }
+.bc-sel:focus { border-color: #FFC700; outline: none; }
+.bc-btn { width: 100%; background: rgba(255,255,255,.05); border: 1px solid #262a35; border-radius: 7px; padding: 6px 9px; font-size: 11.5px; font-weight: 600; color: #e5e7eb; cursor: pointer; transition: background .12s, border-color .12s, color .12s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.bc-btn:hover:not(:disabled) { background: #262a35; border-color: #3f4659; color: #fff; }
+.bc-btn:disabled { opacity: .45; cursor: not-allowed; }
+.bc-btn-gold { background: #FFC700; border-color: #FFC700; color: #0b0c10; font: 700 11px/1.2 'Orbitron', sans-serif; letter-spacing: .05em; padding: 8px 10px; }
+.bc-btn-gold:hover:not(:disabled) { background: #ffd43b; color: #0b0c10; }
+.bc-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.bc-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.bc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; color: #cbd5e1; }
+.bc-range-lbl { display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-bottom: 3px; }
+.bc-badge { font-size: 10.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #FFC700; background: rgba(0,0,0,.45); padding: 1px 7px; border-radius: 5px; border: 1px solid #262a35; }
+.bc-hotkeys { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #9ca3af; }
+.bc-hotkeys li { display: flex; justify-content: space-between; gap: 8px; }
+.bc-hotkeys li span:first-child { color: #FFC700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; }
+.bc-reset { background: none; border: 0; font-size: 11.5px; color: #6b7280; text-decoration: underline; cursor: pointer; padding: 4px 0; text-align: center; width: 100%; }
+.bc-reset:hover { color: #ef4444; }
 </style>
 </head>
 <body class="h-full font-body carbon-bg selection:bg-chlRed selection:text-white flex flex-col overflow-hidden" id="appBody">
@@ -510,17 +544,17 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
         <button onclick="executePreppedEntry()" class="bg-chlYellow text-black font-title font-bold px-2 py-0.5 rounded text-[10px] hover:bg-yellow-400 transition ml-1">INSERT (P)</button>
       </div>
 
-      <button onclick="toggleModal('entryModal')" class="bg-chlRed hover:bg-red-600 text-white font-title font-bold px-3.5 py-2 rounded-lg text-xs transition shadow-glow-red flex items-center gap-1.5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        <span class="lbl-long">PREP ENTRY</span><span class="lbl-short">PREP</span> (I)
+      <button onclick="toggleModal('entryModal')" class="hl-hbtn hl-hbtn-red">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+        <span class="lbl-long">PREP ENTRY</span><span class="lbl-short">PREP</span> <span class="hk">(I)</span>
       </button>
 
-      <button onclick="togglePresentationMode()" class="bg-chlDarkBg hover:bg-chlBorder text-gray-200 border border-chlBorder px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
-        <svg class="w-4 h-4 text-chlYellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-        <span class="lbl-long">RECORD</span><span class="lbl-short">REC</span> <span class="text-[11px] font-mono text-gray-400">(R)</span>
+      <button onclick="togglePresentationMode()" class="hl-hbtn">
+        <svg style="color:#FFC700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        <span class="lbl-long">RECORD</span><span class="lbl-short">REC</span> <span class="hk">(R)</span>
       </button>
 
-      <button id="compareBtn" onclick="openCompareModal()" title="Head-to-Head comparison card" class="bg-chlDarkBg hover:bg-chlBorder text-gray-200 border border-chlBorder px-3 py-2 rounded-lg text-xs font-title font-bold tracking-wider transition">VS</button>
+      <button id="compareBtn" onclick="openCompareModal()" title="Head-to-Head comparison card" class="hl-hbtn hl-hbtn-vs">VS</button>
 
       <a class="sbar-yt {{STUDIO_HIDE}}" href="{{STUDIO_URL}}" target="_blank" rel="noopener" title="Open YouTube Studio" aria-label="Open YouTube Studio"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg></a>
       <a class="sbar-av {{CHANNEL_HIDE}}" href="{{CHANNEL_URL}}" target="_blank" rel="noopener" title="Open YouTube channel ({{CHANNEL}})" aria-label="Open YouTube channel">{{CHANNEL_AVATAR}}</a>
@@ -532,40 +566,40 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
 
     <!-- CONTROL PANEL SIDEBAR -->
     <aside id="sidebarControls" class="w-80 shrink-0 bg-chlPanel/95 border-r border-chlBorder p-4 flex flex-col overflow-y-auto z-30">
-      <div class="space-y-3">
-        <div class="px-1 pb-1">
-          <h2 class="font-title text-xs text-chlYellow tracking-widest uppercase font-bold">Board Controls</h2>
-          <p class="text-[11px] text-gray-400 mt-0.5">Drag tiles live on screen or expand a section below.</p>
+      <div class="bc-wrap">
+        <div class="bc-top">
+          <h2>Board Controls</h2>
+          <p>Drag tiles live on screen or expand a section below.</p>
         </div>
 
         <!-- 1. LAUNCH & QUEUE -->
         <details class="bc-sec" open>
           <summary><span>Launch &amp; Queue</span></summary>
           <div class="bc-body">
-            <div class="bc-card accent space-y-2">
-              <div class="bc-subhead text-chlYellow">
+            <div class="bc-card accent">
+              <div class="bc-subhead gold">
                 <span>Prepped Entry</span>
-                <span class="text-[10px] font-mono text-gray-400">KEY: P</span>
+                <span class="bc-badge">KEY: P</span>
               </div>
-              <div id="preppedStatusContainer" class="text-xs font-mono text-gray-400 italic">No entry prepped. Press 'I' to prep.</div>
-              <button id="preppedTriggerBtn" onclick="executePreppedEntry()" disabled class="w-full bg-chlYellow opacity-50 cursor-not-allowed text-black font-title font-bold text-xs py-2 px-3 rounded-lg transition mt-1">
+              <div id="preppedStatusContainer" class="bc-hint" style="font-style:italic">No entry prepped. Press 'I' to prep.</div>
+              <button id="preppedTriggerBtn" onclick="executePreppedEntry()" disabled class="bc-btn bc-btn-gold">
                 INSERT PREPPED ENTRY (P)
               </button>
-              <button id="preppedReturnBtn" onclick="returnPreppedToQueue()" disabled class="w-full bg-black/40 opacity-50 cursor-not-allowed text-gray-300 font-mono text-[11px] py-1.5 px-3 rounded-lg border border-chlBorder transition">
+              <button id="preppedReturnBtn" onclick="returnPreppedToQueue()" disabled class="bc-btn">
                 ↩ Return to Pre-Launch List
               </button>
             </div>
 
-            <div class="bc-card space-y-2.5">
+            <div class="bc-card">
               <div class="bc-subhead">
                 <span>Pre-Launch List</span>
-                <span id="preLaunchCount" class="text-[11px] font-mono text-chlYellow bg-black/40 px-2 py-0.5 rounded border border-chlBorder">0</span>
+                <span id="preLaunchCount" class="bc-badge">0</span>
               </div>
-              <p class="text-[11px] text-gray-400 leading-snug">Entries saved off the board. <span class="text-chlYellow">PREP</span> one to load it for launch.</p>
-              <div id="preLaunchList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-              <div class="grid grid-cols-2 gap-2">
-                <button onclick="toggleModal('entryModal')" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">+ Add Entry</button>
-                <button onclick="prepNextFromQueue()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Prep Next (N)</button>
+              <p class="bc-hint">Entries saved off the board. <span style="color:#FFC700">PREP</span> one to load it for launch.</p>
+              <div id="preLaunchList" class="space-y-2 overflow-y-auto pr-1" style="max-height:220px"></div>
+              <div class="bc-grid2">
+                <button onclick="toggleModal('entryModal')" class="bc-btn">+ Add Entry</button>
+                <button onclick="prepNextFromQueue()" class="bc-btn">Prep Next (N)</button>
               </div>
             </div>
           </div>
@@ -575,14 +609,14 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
         <details class="bc-sec" open>
           <summary><span>Broadcast &amp; Background</span></summary>
           <div class="bc-body">
-            <div class="bc-card space-y-2.5">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Audio SFX</span></div>
-              <button id="sfxMuteBtn" onclick="toggleAudioMute()" class="w-full bg-black/50 hover:bg-chlBorder text-gray-200 border border-chlBorder px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
-                <svg id="sfxIconOn" class="w-4 h-4 text-chlYellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.314M11 5L6 9H2v6h4l5 4V5z"/></svg>
-                <svg id="sfxIconMuted" class="w-4 h-4 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
-                <span id="sfxStatusLabel" class="text-xs font-mono">SFX ON</span>
+              <button id="sfxMuteBtn" onclick="toggleAudioMute()" class="bc-btn">
+                <svg id="sfxIconOn" style="width:15px;height:15px;color:#FFC700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.314M11 5L6 9H2v6h4l5 4V5z"/></svg>
+                <svg id="sfxIconMuted" class="hidden" style="width:15px;height:15px;color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+                <span id="sfxStatusLabel">SFX ON</span>
               </button>
-              <select id="sfxPresetSelect" onchange="changeSfxPreset(this.value)" class="w-full bg-black/50 border border-chlBorder rounded-lg px-3 py-2 text-xs font-mono text-chlYellow focus:outline-none focus:border-chlRed">
+              <select id="sfxPresetSelect" onchange="changeSfxPreset(this.value)" class="bc-sel">
                 <option value="arcade">👾 Retro 8-Bit Arcade (Default)</option>
                 <option value="cyber">⚡ Cyber / Sci-Fi Synth</option>
                 <option value="sticker">🏷️ Slap / Tape Impact</option>
@@ -591,9 +625,9 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
               </select>
             </div>
 
-            <div class="bc-card space-y-2.5">
-              <div class="bc-subhead"><span>Background / Chroma</span><span class="text-[10px] font-mono text-gray-400">KEY: C</span></div>
-              <select id="chromaKeySelect" onchange="changeChromaMode(this.value)" class="chroma-sel w-full bg-black/50 hover:bg-chlBorder text-gray-200 border border-chlBorder px-3 py-2 rounded-lg text-xs font-mono transition cursor-pointer focus:outline-none focus:border-chlYellow">
+            <div class="bc-card">
+              <div class="bc-subhead"><span>Background / Chroma</span><span class="bc-badge">KEY: C</span></div>
+              <select id="chromaKeySelect" onchange="changeChromaMode(this.value)" class="chroma-sel bc-sel">
                 <option value="none">Default Carbon BG</option>
                 <option value="transparent">◻️ Transparent (alpha)</option>
                 <option value="green">🟩 Pure Green (#00FF00)</option>
@@ -606,35 +640,33 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
               <input type="file" id="bgFileInput" accept="image/*" class="hidden" onchange="handleBgImageUpload(event)">
             </div>
 
-            <div id="customChromaControls" class="bc-card space-y-2.5 hidden">
+            <div id="customChromaControls" class="bc-card hidden">
               <div class="bc-subhead">
                 <span>Custom BG Transform</span>
-                <button onclick="resetCustomBgTransform()" class="text-[10px] text-gray-400 hover:text-chlYellow font-mono underline">Reset</button>
+                <button onclick="resetCustomBgTransform()" style="background:none;border:0;color:#9ca3af;font-size:11px;text-decoration:underline;cursor:pointer">Reset</button>
               </div>
-              <div class="space-y-2.5 text-xs">
-                <div>
-                  <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Scale:</span><span id="customBgScaleVal">100%</span></div>
-                  <input type="range" id="customBgScaleRange" min="10" max="300" value="100" class="w-full accent-chlYellow" oninput="setSetting('bgScale', +this.value)">
-                </div>
-                <div>
-                  <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Offset X:</span><span id="customBgXVal">0px</span></div>
-                  <input type="range" id="customBgXRange" min="-1000" max="1000" value="0" class="w-full accent-chlYellow" oninput="setSetting('bgX', +this.value)">
-                </div>
-                <div>
-                  <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Offset Y:</span><span id="customBgYVal">0px</span></div>
-                  <input type="range" id="customBgYRange" min="-1000" max="1000" value="0" class="w-full accent-chlYellow" oninput="setSetting('bgY', +this.value)">
-                </div>
+              <div>
+                <div class="bc-range-lbl"><span>Scale</span><span id="customBgScaleVal">100%</span></div>
+                <input type="range" id="customBgScaleRange" min="10" max="300" value="100" class="w-full accent-chlYellow" oninput="setSetting('bgScale', +this.value)">
+              </div>
+              <div>
+                <div class="bc-range-lbl"><span>Offset X</span><span id="customBgXVal">0px</span></div>
+                <input type="range" id="customBgXRange" min="-1000" max="1000" value="0" class="w-full accent-chlYellow" oninput="setSetting('bgX', +this.value)">
+              </div>
+              <div>
+                <div class="bc-range-lbl"><span>Offset Y</span><span id="customBgYVal">0px</span></div>
+                <input type="range" id="customBgYRange" min="-1000" max="1000" value="0" class="w-full accent-chlYellow" oninput="setSetting('bgY', +this.value)">
               </div>
             </div>
 
-            <div class="bc-card space-y-2.5">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Clean Display Link (OBS)</span></div>
-              <p class="text-[11px] text-gray-400 leading-snug">Use as an OBS Browser Source (untick "Local file"). Mute SFX here to avoid doubled audio. Add <span class="text-chlYellow">&amp;debug=1</span> for a status badge.</p>
-              <div id="syncStatus" class="text-[11px] font-mono leading-snug text-gray-400">Checking relay…</div>
-              <input id="displayUrlInput" readonly class="w-full bg-black/50 border border-chlBorder rounded-lg px-2 py-1.5 text-[10px] font-mono text-chlYellow">
-              <div class="grid grid-cols-2 gap-2">
-                <button onclick="copyDisplayUrl()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Copy URL</button>
-                <button onclick="openDisplayWindow()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Open Window</button>
+              <p class="bc-hint">Use as an OBS Browser Source (untick "Local file"). Mute SFX here to avoid doubled audio. Add <span style="color:#FFC700">&amp;debug=1</span> for a status badge.</p>
+              <div id="syncStatus" class="bc-hint" style="font-family:ui-monospace,monospace">Checking relay…</div>
+              <input id="displayUrlInput" readonly class="bc-sel" style="font-size:10.5px;color:#FFC700;font-family:ui-monospace,monospace">
+              <div class="bc-grid2">
+                <button onclick="copyDisplayUrl()" class="bc-btn">Copy URL</button>
+                <button onclick="openDisplayWindow()" class="bc-btn">Open Window</button>
               </div>
             </div>
           </div>
@@ -644,47 +676,47 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
         <details class="bc-sec">
           <summary><span>Navigation &amp; View</span></summary>
           <div class="bc-body">
-            <div class="bc-card space-y-2.5">
+            <div class="bc-card">
               <div class="bc-subhead">
                 <span>Scroll Navigation</span>
-                <span id="totalCountBadge" class="text-[11px] font-mono text-chlYellow bg-black/40 px-2 py-0.5 rounded border border-chlBorder">10 Games</span>
+                <span id="totalCountBadge" class="bc-badge">10 Games</span>
               </div>
-              <div class="flex gap-2">
-                <input id="scrollRankInput" type="number" min="1" value="1" placeholder="Rank" onkeydown="if(event.key==='Enter'){scrollToRankInput();this.blur();}" class="w-20 bg-black/50 border border-chlBorder rounded-lg px-3 py-1.5 text-sm font-title font-bold text-chlYellow text-center">
-                <button onclick="scrollToRankInput()" class="flex-1 bg-chlYellow hover:bg-yellow-400 text-black font-title font-bold text-xs py-1.5 px-3 rounded-lg transition">SCROLL (S)</button>
+              <div style="display:flex;gap:6px">
+                <input id="scrollRankInput" type="number" min="1" value="1" placeholder="Rank" onkeydown="if(event.key==='Enter'){scrollToRankInput();this.blur();}" class="bc-sel" style="width:68px;text-align:center;font-weight:700;color:#FFC700">
+                <button onclick="scrollToRankInput()" class="bc-btn bc-btn-gold" style="flex:1">SCROLL (S)</button>
               </div>
-              <div class="grid grid-cols-2 gap-2">
-                <button onclick="stepRank(-1)" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">▲ Prev (↑)</button>
-                <button onclick="stepRank(1)" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">▼ Next (↓)</button>
-                <button onclick="scrollToTop()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Top #1</button>
-                <button onclick="scrollToBottom()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Bottom End</button>
+              <div class="bc-grid2">
+                <button onclick="stepRank(-1)" class="bc-btn">▲ Prev (↑)</button>
+                <button onclick="stepRank(1)" class="bc-btn">▼ Next (↓)</button>
+                <button onclick="scrollToTop()" class="bc-btn">Top #1</button>
+                <button onclick="scrollToBottom()" class="bc-btn">Bottom End</button>
               </div>
-              <button onclick="clearHighlight(true)" class="w-full bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Clear Highlight (H)</button>
+              <button onclick="clearHighlight(true)" class="bc-btn">Clear Highlight (H)</button>
             </div>
 
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead">
                 <span>Cinematic View Scale</span>
-                <span id="zoomScaleVal" class="text-[11px] font-mono text-chlYellow">100%</span>
+                <span id="zoomScaleVal" class="bc-badge">100%</span>
               </div>
               <input type="range" id="zoomRangeInput" min="35" max="200" value="100" step="1" oninput="setSetting('zoom', +this.value)" class="w-full accent-chlYellow cursor-pointer">
-              <div class="grid grid-cols-3 gap-2 pt-1">
-                <button onclick="stepZoom(-15)" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono hover:text-chlYellow transition">- Out</button>
-                <button onclick="resetZoom()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono hover:text-white transition">Reset</button>
-                <button onclick="stepZoom(15)" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono hover:text-chlYellow transition">+ In</button>
+              <div class="bc-grid3">
+                <button onclick="stepZoom(-15)" class="bc-btn">- Out</button>
+                <button onclick="resetZoom()" class="bc-btn">Reset</button>
+                <button onclick="stepZoom(15)" class="bc-btn">+ In</button>
               </div>
             </div>
 
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead">
                 <span>List X-Axis Offset</span>
-                <div class="flex items-center gap-2">
-                  <span id="boardXOffsetVal" class="text-[11px] font-mono text-chlYellow">0px</span>
-                  <button onclick="setSetting('xOffset', 0)" class="text-[10px] text-gray-400 hover:text-chlYellow font-mono underline">Reset</button>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span id="boardXOffsetVal" class="bc-badge">0px</span>
+                  <button onclick="setSetting('xOffset', 0)" style="background:none;border:0;color:#9ca3af;font-size:11px;text-decoration:underline;cursor:pointer">Reset</button>
                 </div>
               </div>
               <input type="range" id="boardXOffsetRange" min="-2000" max="2000" value="0" step="5" oninput="setSetting('xOffset', +this.value)" class="w-full accent-chlYellow cursor-pointer">
-              <div class="flex items-center justify-between pt-1 text-xs text-gray-400 font-mono">
+              <div class="bc-row">
                 <label for="allowOverflowToggle" class="cursor-pointer select-none">Allow sideways overflow</label>
                 <input type="checkbox" id="allowOverflowToggle" onchange="setSetting('allowOverflow', this.checked)" class="accent-chlYellow cursor-pointer">
               </div>
@@ -696,24 +728,24 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
         <details class="bc-sec">
           <summary><span>Appearance &amp; Style</span></summary>
           <div class="bc-body">
-            <div class="bc-card space-y-2.5">
+            <div class="bc-card">
               <div class="bc-subhead">
                 <span>Highlight Color</span>
-                <span class="text-[10px] font-mono text-gray-400">AUTO-CONTRAST</span>
+                <span class="bc-badge">AUTO</span>
               </div>
-              <div class="flex items-center gap-3">
-                <input type="color" id="highlightColorInput" value="#FFC700" oninput="setSetting('highlight', this.value)" class="w-9 h-9 rounded cursor-pointer bg-transparent border border-chlBorder">
-                <span id="highlightColorHex" class="font-mono text-xs text-chlYellow">#FFC700</span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <input type="color" id="highlightColorInput" value="#FFC700" oninput="setSetting('highlight', this.value)" style="width:34px;height:34px;border-radius:6px;cursor:pointer;background:transparent;border:1px solid #262a35">
+                <span id="highlightColorHex" class="bc-badge">#FFC700</span>
               </div>
-              <div class="text-xs">
-                <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Auto-clear highlight:</span><span id="holdVal">Off</span></div>
+              <div>
+                <div class="bc-range-lbl"><span>Auto-clear highlight</span><span id="holdVal">Off</span></div>
                 <input type="range" id="holdRange" min="0" max="30" value="0" step="1" class="w-full accent-chlYellow" oninput="setSetting('holdSec', +this.value)">
               </div>
             </div>
 
-            <div class="bc-card space-y-2.5">
-              <div class="bc-subhead"><span>Entry Font Style</span><span class="text-[10px] font-mono text-gray-400">GLOBAL</span></div>
-              <select id="fontFamilySelect" onchange="setSetting('font', this.value)" class="w-full bg-black/50 border border-chlBorder rounded-lg px-3 py-2 text-xs font-mono text-chlYellow focus:outline-none focus:border-chlRed">
+            <div class="bc-card">
+              <div class="bc-subhead"><span>Entry Font Style</span><span class="bc-badge">GLOBAL</span></div>
+              <select id="fontFamilySelect" onchange="setSetting('font', this.value)" class="bc-sel">
                 <option value="Orbitron">Orbitron (Sci-Fi / Modern)</option>
                 <option value="Rajdhani">Rajdhani (Clean / Tech)</option>
                 <option value="Teko">Teko (Tall / Condensed)</option>
@@ -726,57 +758,57 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
                 <option value="Exo 2">Exo 2 (Thin / Tech)</option>
                 <option value="Barlow Condensed">Barlow Condensed (Thin / Tall)</option>
               </select>
-              <div class="text-xs">
-                <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Pill / score / dev text size:</span><span id="tagSizeVal">14px</span></div>
+              <div>
+                <div class="bc-range-lbl"><span>Pill / score / dev text size</span><span id="tagSizeVal">14px</span></div>
                 <input type="range" id="tagSizeRange" min="10" max="28" value="14" step="1" class="w-full accent-chlYellow" oninput="setSetting('tagSize', +this.value)">
               </div>
             </div>
 
-            <div class="bc-card space-y-2.5">
-              <div class="bc-subhead"><span>Tag Pills</span><span class="text-[10px] font-mono text-gray-400">PLATFORM · YEAR</span></div>
-              <div id="pillPreview" class="flex flex-wrap gap-2 bg-black/50 border border-chlBorder rounded-lg p-2.5"></div>
-              <div class="text-xs">
-                <div class="text-gray-400 mb-1 font-mono">Pill style</div>
-                <select id="pillStyleSelect" onchange="setSetting('pillStyle', this.value)" class="w-full bg-black/50 border border-chlBorder rounded-lg px-3 py-2 text-xs font-mono text-chlYellow focus:outline-none focus:border-chlRed">
+            <div class="bc-card">
+              <div class="bc-subhead"><span>Tag Pills</span><span class="bc-badge">PLATFORM · YEAR</span></div>
+              <div id="pillPreview" style="display:flex;flex-wrap:wrap;gap:6px;background:rgba(0,0,0,.45);border:1px solid #262a35;border-radius:7px;padding:8px"></div>
+              <div>
+                <div class="bc-range-lbl"><span>Pill style</span></div>
+                <select id="pillStyleSelect" onchange="setSetting('pillStyle', this.value)" class="bc-sel">
                   <option value="solid">Solid fill (most visible)</option>
                   <option value="outline">Outline glow</option>
                   <option value="soft">Soft tint</option>
                   <option value="square">Square tag</option>
                 </select>
               </div>
-              <div class="text-xs">
-                <div class="text-gray-400 mb-1 font-mono">Platform label</div>
-                <select id="pillLabelSelect" onchange="setSetting('pillLabel', this.value)" class="w-full bg-black/50 border border-chlBorder rounded-lg px-3 py-2 text-xs font-mono text-chlYellow focus:outline-none focus:border-chlRed">
+              <div>
+                <div class="bc-range-lbl"><span>Platform label</span></div>
+                <select id="pillLabelSelect" onchange="setSetting('pillLabel', this.value)" class="bc-sel">
                   <option value="short">Short (PS5, SWITCH)</option>
                   <option value="full">Full (PlayStation 5, Nintendo Switch)</option>
                 </select>
               </div>
             </div>
 
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Awards</span></div>
-              <div class="flex items-center justify-between gap-3 text-xs text-gray-400 font-mono">
+              <div class="bc-row">
                 <label for="awardStyleSelect" class="select-none">Default look</label>
-                <select id="awardStyleSelect" onchange="setSetting('awardStyle', this.value)" class="bg-chlPanel border border-chlBorder rounded px-2 py-1 text-white"></select>
+                <select id="awardStyleSelect" onchange="setSetting('awardStyle', this.value)" class="bc-sel" style="width:auto;padding:4px 8px"></select>
               </div>
-              <div class="flex items-center justify-between text-xs text-gray-400 font-mono">
+              <div class="bc-row">
                 <label for="awardHoldToggle" class="cursor-pointer select-none">Hold awards until popped (A)</label>
                 <input type="checkbox" id="awardHoldToggle" onchange="setSetting('awardHold', this.checked)" class="accent-chlYellow cursor-pointer">
               </div>
-              <p class="text-[10px] text-gray-500 leading-snug">When held, entries land without awards; press A to pop them in.</p>
+              <p class="bc-hint">When held, entries land without awards; press A to pop them in.</p>
             </div>
 
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Glanceability</span></div>
-              <div class="flex items-center justify-between text-xs text-gray-400 font-mono">
+              <div class="bc-row">
                 <label for="tierToggle" class="cursor-pointer select-none">Score tier color strip</label>
                 <input type="checkbox" id="tierToggle" onchange="setSetting('tierAccents', this.checked)" class="accent-chlYellow cursor-pointer">
               </div>
-              <div class="flex items-center justify-between text-xs text-gray-400 font-mono">
+              <div class="bc-row">
                 <label for="newBadgeToggle" class="cursor-pointer select-none">"NEW" badge on latest</label>
                 <input type="checkbox" id="newBadgeToggle" onchange="setSetting('showNew', this.checked)" class="accent-chlYellow cursor-pointer">
               </div>
-              <p class="text-[10px] text-gray-500 leading-snug">Gold 9.5+, green 8.5+, cyan 7.5+, orange 6+, red below.</p>
+              <p class="bc-hint">Gold 9.5+, green 8.5+, cyan 7.5+, orange 6+, red below.</p>
             </div>
           </div>
         </details>
@@ -785,9 +817,9 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
         <details class="bc-sec">
           <summary><span>Animations &amp; Timing</span></summary>
           <div class="bc-body">
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead"><span>New Entry Animation</span></div>
-              <select id="entryAnimationSelect" onchange="setSetting('entryAnim', this.value)" class="w-full bg-black/50 border border-chlBorder rounded-lg px-3 py-2 text-xs font-mono text-chlYellow focus:outline-none focus:border-chlRed">
+              <select id="entryAnimationSelect" onchange="setSetting('entryAnim', this.value)" class="bc-sel">
                 <option value="animate-glitch-pop">👾 Glitch Pop (Default)</option>
                 <option value="animate-tape-rollout">🎞️ Unroll Like Tape</option>
                 <option value="animate-sticker-slap">🏷️ Sticker Slap On</option>
@@ -800,9 +832,9 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
               </select>
             </div>
 
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Number Shift Animation</span></div>
-              <select id="numberShiftAnimationSelect" onchange="setSetting('numAnim', this.value)" class="w-full bg-black/50 border border-chlBorder rounded-lg px-3 py-2 text-xs font-mono text-chlYellow focus:outline-none focus:border-chlRed">
+              <select id="numberShiftAnimationSelect" onchange="setSetting('numAnim', this.value)" class="bc-sel">
                 <option value="animate-num-flip">🔄 Retro Number Flip</option>
                 <option value="animate-num-slide">↕️ Counter Pop &amp; Slide</option>
                 <option value="animate-num-glow">✨ Glow Pulse Flash</option>
@@ -815,14 +847,14 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
               </select>
             </div>
 
-            <div class="bc-card space-y-2.5">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Insert Timing</span></div>
-              <div class="text-xs">
-                <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Scroll-to-slot time:</span><span id="scrollDurVal">2.2s</span></div>
+              <div>
+                <div class="bc-range-lbl"><span>Scroll-to-slot time</span><span id="scrollDurVal">2.2s</span></div>
                 <input type="range" id="scrollDurRange" min="300" max="6000" value="2200" step="100" class="w-full accent-chlYellow" oninput="setSetting('scrollDur', +this.value)">
               </div>
-              <div class="text-xs">
-                <div class="flex justify-between text-gray-400 mb-1 font-mono"><span>Pause before insert:</span><span id="pauseVal">1.2s</span></div>
+              <div>
+                <div class="bc-range-lbl"><span>Pause before insert</span><span id="pauseVal">1.2s</span></div>
                 <input type="range" id="pauseRange" min="0" max="4000" value="1200" step="100" class="w-full accent-chlYellow" oninput="setSetting('pauseMs', +this.value)">
               </div>
             </div>
@@ -833,47 +865,47 @@ body.display-mode .vs-dock, body.presentation-mode .vs-dock { display: none !imp
         <details class="bc-sec">
           <summary><span>Data &amp; Hotkeys</span></summary>
           <div class="bc-body">
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Backup &amp; Undo</span></div>
-              <button id="undoBtn" onclick="undo()" class="w-full bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono disabled:opacity-40 disabled:cursor-not-allowed">↶ Undo (Z)</button>
-              <div class="grid grid-cols-2 gap-2">
-                <button onclick="exportData()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Export JSON</button>
-                <button onclick="document.getElementById('importFileInput').click()" class="bg-black/40 hover:bg-chlBorder text-xs text-gray-300 py-1.5 px-2 rounded-lg border border-chlBorder font-mono">Import JSON</button>
+              <button id="undoBtn" onclick="undo()" class="bc-btn">↶ Undo (Z)</button>
+              <div class="bc-grid2">
+                <button onclick="exportData()" class="bc-btn">Export JSON</button>
+                <button onclick="document.getElementById('importFileInput').click()" class="bc-btn">Import JSON</button>
               </div>
               <input type="file" id="importFileInput" accept="application/json,.json" class="hidden" onchange="importData(event)">
             </div>
 
-            <div class="bc-card space-y-2">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Sample Quick Insert</span></div>
-              <button onclick="prepGame({title:'Palworld', dev:'Pocketpair', score:'World Tree Defeated (9/10)', targetRank:1})" class="w-full bg-black/40 hover:bg-chlRed/20 hover:border-chlRed border border-chlBorder p-2.5 rounded-lg text-left transition group flex items-center justify-between">
+              <button onclick="prepGame({title:'Palworld', dev:'Pocketpair', score:'World Tree Defeated (9/10)', targetRank:1})" class="bc-btn" style="justify-content:space-between;padding:8px 10px;text-align:left">
                 <div>
-                  <div class="font-title text-xs text-white group-hover:text-chlYellow transition">Prep Palworld at #1</div>
-                  <div class="text-[10px] text-gray-400 font-mono">Press 'P' to trigger animation</div>
+                  <div style="font-weight:700;color:#fff">Prep Palworld at #1</div>
+                  <div style="font-size:10.5px;color:#9ca3af">Press 'P' to trigger animation</div>
                 </div>
-                <span class="font-title text-chlRed font-bold text-base">+</span>
+                <span style="color:#e60000;font-weight:800;font-size:15px">+</span>
               </button>
             </div>
 
-            <div class="bc-card space-y-2 text-xs text-gray-400">
+            <div class="bc-card">
               <div class="bc-subhead"><span>Broadcast Hotkeys</span></div>
-              <ul class="space-y-1 font-mono text-[11px] text-gray-400">
-                <li class="flex justify-between"><span class="text-chlYellow">P</span> <span>Trigger Prepped Entry</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">I</span> <span>Open Prep Modal</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">N</span> <span>Prep Next from Pre-Launch</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">↑ / ↓</span> <span>Step Rank Up / Down</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">← / →</span> <span>Pan List (Shift = faster)</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">A</span> <span>Pop Awards In</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">S</span> <span>Scroll to Target Rank</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">[ / ]</span> <span>Zoom Out / Zoom In</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">R</span> <span>Record Mode</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">C</span> <span>Cycle Background</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">H</span> <span>Clear Highlight</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">Z / Ctrl+Z</span> <span>Undo</span></li>
-                <li class="flex justify-between"><span class="text-chlYellow">Esc</span> <span>Close Dialogs</span></li>
+              <ul class="bc-hotkeys">
+                <li><span>P</span><span>Trigger Prepped Entry</span></li>
+                <li><span>I</span><span>Open Prep Modal</span></li>
+                <li><span>N</span><span>Prep Next from Pre-Launch</span></li>
+                <li><span>↑ / ↓</span><span>Step Rank Up / Down</span></li>
+                <li><span>← / →</span><span>Pan List (Shift = faster)</span></li>
+                <li><span>A</span><span>Pop Awards In</span></li>
+                <li><span>S</span><span>Scroll to Target Rank</span></li>
+                <li><span>[ / ]</span><span>Zoom Out / Zoom In</span></li>
+                <li><span>R</span><span>Record Mode</span></li>
+                <li><span>C</span><span>Cycle Background</span></li>
+                <li><span>H</span><span>Clear Highlight</span></li>
+                <li><span>Z / Ctrl+Z</span><span>Undo</span></li>
+                <li><span>Esc</span><span>Close Dialogs</span></li>
               </ul>
             </div>
 
-            <button onclick="resetDefaultList()" class="text-xs text-gray-500 hover:text-chlRed underline transition text-center w-full py-1.5">
+            <button onclick="resetDefaultList()" class="bc-reset">
               Reset to Default List
             </button>
           </div>

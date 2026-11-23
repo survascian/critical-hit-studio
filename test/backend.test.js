@@ -114,6 +114,9 @@ const fake = require('./fake-igdb');
   ok('startPage ignores invalid page', r.body.startPage === 'board', JSON.stringify(r.body));
   r = await j('/api/igdb/radar');
   ok('igdb radar returns upcoming & trending arrays', r.status === 200 && Array.isArray(r.body.upcoming) && r.body.upcoming.length > 0 && Array.isArray(r.body.trending) && r.body.trending.length > 0, JSON.stringify(r.body));
+  await put('/api/settings', { startPage: 'home' });
+  const homeHtml = await (await fetch(base + '/')).text();
+  ok('root HTML injects data-view="home" before first paint', homeHtml.includes('data-view="home"'));
 
   // token reuse: only one token request for many calls
   const tokenCalls = F.log().filter((l) => l.includes('/oauth2/token')).length;

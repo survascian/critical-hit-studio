@@ -2595,7 +2595,14 @@ function renderHome() {
 }
 
 // ------------------------------------------------------------------ RADAR Page (Upcoming Hype & Trending Recent via IGDB)
-const radarState = { tab: 'upcoming', data: null, loading: false, error: '' };
+const radarState = {
+  tab: 'upcoming',
+  sort: (() => { try { const v = localStorage.getItem('chl_radar_sort'); return ['month', 'date', 'hype'].includes(v) ? v : 'month'; } catch (e) { return 'month'; } })(),
+  size: (() => { try { const v = localStorage.getItem('chl_radar_size'); return ['s', 'm', 'l'].includes(v) ? v : 'm'; } catch (e) { return 'm'; } })(),
+  data: null,
+  loading: false,
+  error: ''
+};
 
 async function loadRadar(force) {
   if (radarState.loading) return;
@@ -2637,6 +2644,12 @@ function radarDateLabel(iso) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+function radarMonthLabel(ym) {
+  if (!ym || ym === 'TBA') return 'Release Date TBA';
+  const d = new Date(ym + '-01T00:00:00');
+  return isNaN(d) ? ym : d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+}
+
 function renderRadar() {
   const root = $('radarView');
   if (!root) return;
@@ -2654,42 +2667,77 @@ function renderRadar() {
     return;
   }
 
-  const list = radarState.data ? (radarState.tab === 'trending' ? radarState.data.trending : radarState.data.upcoming) || [] : [];
+  const rawList = radarState.data ? ((radarState.tab === 'trending' ? radarState.data.trending : radarState.data.upcoming) || []).slice() : [];
+  const dir = radarState.tab === 'trending' ? -1 : 1; // upcoming: soonest first; trending: newest first
+  const byDate = (a, b) => {
+    if (!a.releaseDate && !b.releaseDate) return (b.hypes || 0) - (a.hypes || 0);
+    if (!a.releaseDate) return 1;
+    if (!b.releaseDate) return -1;
+    const c = a.releaseDate.localeCompare(b.releaseDate) * dir;
+    return c !== 0 ? c : (b.hypes || 0) - (a.hypes || 0);
+  };
+  const byHype = (a, b) => (b.hypes || 0) - (a.hypes || 0);
+
+  const renderCard = (item) => {
+    const existing = state.games.find((g) => g.igdbId && g.igdbId === item.igdbId);
+    const dLbl = radarDateLabel(item.releaseDate);
+    const isSoon = dLbl === 'TODAY' || dLbl.startsWith('IN ');
+    const hypePill = item.hypes ? `<span class="radar-pill hype">🔥 ${item.hypes}</span>` : (item.rating ? `<span class="radar-pill">${item.rating}%</span>` : '');
+    const dev = (item.developers && item.developers[0]) || (item.genres && item.genres[0]) || '';
+    const plats = (item.platforms || []).slice(0, 3).join(' · ');
+    const artStyle = safeUrl(item.coverUrl) ? `style="background-image:${cssUrl(item.coverUrl)}"` : '';
+    const actions = existing
+      ? `<button type="button" class="radar-tracked" data-rad-open="${esc(existing.id)}">ON BOARD (${esc(existing.stage.toUpperCase())})</button>`
+      : `<button type="button" class="btn" data-rad-add="${item.igdbId}" data-rad-stage="Backlogged">+ Backlog</button><button type="button" class="btn primary" data-rad-add="${item.igdbId}" data-rad-stage="Planned">+ Planned</button>`;
+    return `<article class="radar-card">
+      <div class="radar-art${safeUrl(item.coverUrl) ? '' : ' none'}" ${artStyle}>
+        ${safeUrl(item.coverUrl) ? '' : esc((item.name || '?')[0].toUpperCase())}
+        <div class="radar-badge-top">
+          <span class="radar-pill${isSoon ? ' soon' : ''}">${esc(dLbl)}</span>
+          ${hypePill}
+        </div>
+      </div>
+      <div class="radar-body">
+        <div class="radar-title" title="${esc(item.name)}">${esc(item.name)}</div>
+        <div class="radar-sub">${esc(dev || 'TBA')}</div>
+        ${plats ? `<div class="radar-sub small">${esc(plats)}</div>` : ''}
+        <div class="radar-actions">${actions}</div>
+      </div>
+    </article>`;
+  };
+
   let bodyHtml = '';
   if (radarState.loading && !radarState.data) {
     bodyHtml = '<div class="radar-empty"><p>Scanning IGDB for hyped releases…</p></div>';
   } else if (radarState.error && !radarState.data) {
     bodyHtml = `<div class="radar-empty"><p class="err">${esc(radarState.error)}</p><button type="button" class="btn" id="radarRetryBtn">Try again</button></div>`;
-  } else if (!list.length) {
+  } else if (!rawList.length) {
     bodyHtml = '<div class="radar-empty"><p>No games returned for this window. Try refreshing.</p></div>';
+  } else if (radarState.sort === 'month') {
+    const groups = new Map();
+    rawList.sort(byDate).forEach((item) => {
+      const key = item.releaseDate ? item.releaseDate.slice(0, 7) : 'TBA';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+    const keys = [...groups.keys()].sort((a, b) => {
+      if (a === 'TBA') return 1;
+      if (b === 'TBA') return -1;
+      return a.localeCompare(b) * dir;
+    });
+    bodyHtml = keys.map((k) => {
+      const items = groups.get(k);
+      return `<section class="radar-month-sec">
+        <div class="radar-month-head">
+          <h3>${esc(radarMonthLabel(k))}</h3>
+          <span>${items.length} ${items.length === 1 ? 'game' : 'games'}</span>
+        </div>
+        <div class="radar-grid sz-${radarState.size}">${items.map(renderCard).join('')}</div>
+      </section>`;
+    }).join('');
   } else {
-    bodyHtml = '<div class="radar-grid">' + list.map((item) => {
-      const existing = state.games.find((g) => g.igdbId && g.igdbId === item.igdbId);
-      const dLbl = radarDateLabel(item.releaseDate);
-      const isSoon = dLbl === 'TODAY' || dLbl.startsWith('IN ');
-      const hypePill = item.hypes ? `<span class="radar-pill hype">🔥 ${item.hypes}</span>` : (item.rating ? `<span class="radar-pill">${item.rating}%</span>` : '');
-      const dev = (item.developers && item.developers[0]) || (item.genres && item.genres[0]) || '';
-      const plats = (item.platforms || []).slice(0, 3).join(' · ');
-      const artStyle = safeUrl(item.coverUrl) ? `style="background-image:${cssUrl(item.coverUrl)}"` : '';
-      const actions = existing
-        ? `<button type="button" class="radar-tracked" data-rad-open="${esc(existing.id)}">ON BOARD (${esc(existing.stage.toUpperCase())})</button>`
-        : `<button type="button" class="btn" data-rad-add="${item.igdbId}" data-rad-stage="Backlogged">+ Backlog</button><button type="button" class="btn primary" data-rad-add="${item.igdbId}" data-rad-stage="Planned">+ Planned</button>`;
-      return `<article class="radar-card">
-        <div class="radar-art${safeUrl(item.coverUrl) ? '' : ' none'}" ${artStyle}>
-          ${safeUrl(item.coverUrl) ? '' : esc((item.name || '?')[0].toUpperCase())}
-          <div class="radar-badge-top">
-            <span class="radar-pill${isSoon ? ' soon' : ''}">${esc(dLbl)}</span>
-            ${hypePill}
-          </div>
-        </div>
-        <div class="radar-body">
-          <div class="radar-title" title="${esc(item.name)}">${esc(item.name)}</div>
-          <div class="radar-sub">${esc(dev || 'TBA')}</div>
-          ${plats ? `<div class="radar-sub small">${esc(plats)}</div>` : ''}
-          <div class="radar-actions">${actions}</div>
-        </div>
-      </article>`;
-    }).join('') + '</div>';
+    rawList.sort(radarState.sort === 'date' ? byDate : byHype);
+    bodyHtml = `<div class="radar-grid sz-${radarState.size}">${rawList.map(renderCard).join('')}</div>`;
   }
 
   root.innerHTML = `<div class="radar-page">
@@ -2701,8 +2749,17 @@ function renderRadar() {
           <button type="button" class="${radarState.tab === 'trending' ? 'on' : ''}" data-rad-tab="trending">TRENDING RECENT</button>
         </div>
       </div>
-      <div class="row" style="margin:0">
-        <span class="muted small">${radarState.tab === 'upcoming' ? 'Most anticipated releases in the next 4 months' : 'Most hyped games released in the last 45 days'}</span>
+      <div class="radar-head-right">
+        <div class="seg" role="group" aria-label="Sort Radar">
+          <button type="button" class="${radarState.sort === 'month' ? 'on' : ''}" data-rad-sort="month">BY MONTH</button>
+          <button type="button" class="${radarState.sort === 'date' ? 'on' : ''}" data-rad-sort="date">BY DATE</button>
+          <button type="button" class="${radarState.sort === 'hype' ? 'on' : ''}" data-rad-sort="hype">BY HYPE</button>
+        </div>
+        <div class="seg" role="group" aria-label="Poster size">
+          <button type="button" class="${radarState.size === 's' ? 'on' : ''}" data-rad-size="s" title="Small posters">S</button>
+          <button type="button" class="${radarState.size === 'm' ? 'on' : ''}" data-rad-size="m" title="Medium posters">M</button>
+          <button type="button" class="${radarState.size === 'l' ? 'on' : ''}" data-rad-size="l" title="Large posters">L</button>
+        </div>
         <button type="button" class="btn" id="radarRefreshBtn" ${radarState.loading ? 'disabled' : ''}>${radarState.loading ? 'Scanning…' : '↻ Refresh'}</button>
       </div>
     </div>
@@ -2713,6 +2770,20 @@ function renderRadar() {
   if ($('radarRetryBtn')) $('radarRetryBtn').onclick = () => loadRadar(true);
   root.querySelectorAll('[data-rad-tab]').forEach((b) => {
     b.onclick = () => { radarState.tab = b.dataset.radTab; renderRadar(); };
+  });
+  root.querySelectorAll('[data-rad-sort]').forEach((b) => {
+    b.onclick = () => {
+      radarState.sort = b.dataset.radSort;
+      try { localStorage.setItem('chl_radar_sort', radarState.sort); } catch (e) {}
+      renderRadar();
+    };
+  });
+  root.querySelectorAll('[data-rad-size]').forEach((b) => {
+    b.onclick = () => {
+      radarState.size = b.dataset.radSize;
+      try { localStorage.setItem('chl_radar_size', radarState.size); } catch (e) {}
+      renderRadar();
+    };
   });
   root.querySelectorAll('[data-rad-open]').forEach((b) => {
     b.onclick = () => openDetail(b.dataset.radOpen);

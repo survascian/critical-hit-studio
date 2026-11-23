@@ -6,6 +6,15 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.3.1',
+      title: 'Hit List Sizing Fix, Instant Home Launch & Radar Sorting/Resizing',
+      items: [
+        'Fixed squeezed Hit List header buttons (such as PREP ENTRY) and oversized/cramped Board Controls sidebar typography with explicit, clean sizing.',
+        'Eliminated the sub-second board/header flash on startup by injecting the startup view server-side before the first paint (and redirecting straight to Hit List when configured as your start page).',
+        'Upgraded Game Radar with By Month (grouped monthly sections), By Date, and By Hype sorting, plus S / M / L poster size controls.'
+      ]
+    },
+    {
       version: '2.3.0',
       title: 'Home Landing Page, Game Radar, Hit List Sidebar & Scratchpad Polish',
       items: [

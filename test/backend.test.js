@@ -103,6 +103,18 @@ const fake = require('./fake-igdb');
   ok('updater semver compare works', upd.compareSemver('2.2.0', '2.1.0') === 1 && upd.compareSemver('2.2.0', '2.2.0') === 0 && upd.compareSemver('2.1.9', '2.2.0') === -1);
   ok('updater download URL & filename allowlist', upd.isAllowedDownloadUrl('https://github.com/survascian/critical-hit-studio/releases/download/v2.2.0/Critical-Hit-Studio-2.2.0-win-setup.exe') && !upd.isAllowedDownloadUrl('https://evil.com/x.exe') && !!upd.safeInstallerName('Critical-Hit-Studio-2.2.0-win-setup.exe') && !upd.safeInstallerName('../evil.exe'));
 
+  // v2.3: startPage setting & IGDB Radar
+  r = await j('/api/settings');
+  ok('startPage defaults to home', r.body.startPage === 'home', JSON.stringify(r.body));
+  await put('/api/settings', { startPage: 'board' });
+  r = await j('/api/settings');
+  ok('startPage persists valid page', r.body.startPage === 'board', JSON.stringify(r.body));
+  await put('/api/settings', { startPage: 'invalid_page' });
+  r = await j('/api/settings');
+  ok('startPage ignores invalid page', r.body.startPage === 'board', JSON.stringify(r.body));
+  r = await j('/api/igdb/radar');
+  ok('igdb radar returns upcoming & trending arrays', r.status === 200 && Array.isArray(r.body.upcoming) && r.body.upcoming.length > 0 && Array.isArray(r.body.trending) && r.body.trending.length > 0, JSON.stringify(r.body));
+
   // token reuse: only one token request for many calls
   const tokenCalls = F.log().filter((l) => l.includes('/oauth2/token')).length;
   console.log('token requests so far:', tokenCalls);

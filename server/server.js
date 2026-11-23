@@ -49,6 +49,8 @@ function startServer(opts) {
     for (const res of sseClients) { try { res.write(line); } catch (e) { sseClients.delete(res); } }
   }
 
+  let radarCache = null;
+
   // ---------- helpers ----------
   function readBody(req, limit) {
     return new Promise((resolve, reject) => {
@@ -264,9 +266,10 @@ function startServer(opts) {
 
       // ----- settings (the secret is write-only) -----
       if (p === '/api/settings') {
+        const VALID_START = ['home', 'board', 'calendar', 'stats', 'journal', 'thumbnail', 'radar', 'hitlist'];
         if (req.method === 'GET') {
           const s = getSettings();
-          return sendJson(res, 200, { igdbClientId: s.igdbClientId || '', igdbHasSecret: !!s.igdbClientSecret, igdbConfigured: !!(s.igdbClientId && s.igdbClientSecret), youtubeHasKey: !!s.youtubeApiKey, youtubeChannel: s.youtubeChannel || null, sgdbHasKey: !!s.sgdbApiKey, theme: ['default', 'isac', 'discord'].includes(s.theme) ? s.theme : 'default', accentColor: s.accentColor || '#e60000', showHitList: s.showHitList !== false, useScores: !!s.useScores });
+          return sendJson(res, 200, { igdbClientId: s.igdbClientId || '', igdbHasSecret: !!s.igdbClientSecret, igdbConfigured: !!(s.igdbClientId && s.igdbClientSecret), youtubeHasKey: !!s.youtubeApiKey, youtubeChannel: s.youtubeChannel || null, sgdbHasKey: !!s.sgdbApiKey, theme: ['default', 'isac', 'discord'].includes(s.theme) ? s.theme : 'default', accentColor: s.accentColor || '#e60000', showHitList: s.showHitList !== false, useScores: !!s.useScores, startPage: VALID_START.includes(s.startPage) ? s.startPage : 'home' });
         }
         if (req.method === 'PUT') {
           const b = JSON.parse((await readBody(req, 100 * 1024)).toString('utf8'));
@@ -297,8 +300,10 @@ function startServer(opts) {
           if (typeof b.accentColor === 'string' && /^#[0-9a-f]{6}$/i.test(b.accentColor.trim())) s.accentColor = b.accentColor.trim();
           if (typeof b.showHitList === 'boolean') s.showHitList = b.showHitList;
           if (typeof b.useScores === 'boolean') s.useScores = b.useScores;
+          if (typeof b.startPage === 'string' && VALID_START.includes(b.startPage)) s.startPage = b.startPage;
           writeJsonAtomic(settingsFile, s, 0o600);
           igdb.reset();
+          radarCache = null;
           return sendJson(res, 200, { ok: true, igdbConfigured: !!(s.igdbClientId && s.igdbClientSecret) });
         }
       }
@@ -346,6 +351,15 @@ function startServer(opts) {
 
       // ----- IGDB -----
       if (p === '/api/igdb/test' && req.method === 'POST') return sendJson(res, 200, { steps: await igdb.test() });
+      if (p === '/api/igdb/radar' && req.method === 'GET') {
+        const force = url.searchParams.get('force') === '1';
+        if (!force && radarCache && (Date.now() - radarCache.fetchedAt) < 15 * 60 * 1000) {
+          return sendJson(res, 200, radarCache);
+        }
+        const data = await igdb.radar();
+        radarCache = data;
+        return sendJson(res, 200, data);
+      }
       if (p === '/api/igdb/search' && req.method === 'GET') {
         const q = (url.searchParams.get('q') || '').trim();
         if (q.length < 2) return sendJson(res, 200, { results: [] });

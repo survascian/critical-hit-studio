@@ -144,6 +144,31 @@ class IgdbClient {
     return { game, ttb, warnings };
   }
 
+  // Upcoming hype (next ~120 days) and trending recent releases (last ~45 days)
+  async radar() {
+    const now = Math.floor(Date.now() / 1000);
+    const fields = 'name,slug,first_release_date,cover.image_id,involved_companies.developer,involved_companies.company.name,platforms.name,genres.name,hypes,total_rating';
+    const mapRow = (g) => {
+      const n = normalizeGame(g);
+      return {
+        igdbId: n.igdbId,
+        name: n.name,
+        releaseDate: n.releaseDate,
+        developers: n.developers,
+        genres: n.genres,
+        platforms: n.platforms,
+        hypes: n.hypes,
+        rating: n.rating,
+        coverUrl: n.coverId ? imageUrl(n.coverId, 't_cover_big') : null
+      };
+    };
+    const upRows = await this.query('games',
+      `fields ${fields}; where first_release_date >= ${now} & first_release_date <= ${now + 120 * 86400} & hypes != null & version_parent = null; sort hypes desc; limit 24;`);
+    const trRows = await this.query('games',
+      `fields ${fields}; where first_release_date >= ${now - 45 * 86400} & first_release_date <= ${now} & (hypes != null | total_rating_count != null) & version_parent = null; sort hypes desc; limit 24;`);
+    return { upcoming: (upRows || []).map(mapRow), trending: (trRows || []).map(mapRow), fetchedAt: Date.now() };
+  }
+
   // Step-by-step diagnostic so a failure points at the exact piece that is wrong
   async test() {
     const steps = [];

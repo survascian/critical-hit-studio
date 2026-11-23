@@ -32,13 +32,14 @@
 </head>
 <body>
   <header class="sbar topbar">
-    <div class="sbar-id"><img class="sbar-logo" src="/icon-72.png" width="36" height="36" alt=""><div class="sbar-idtext"><div class="sbar-brand brand"><span class="sb-long">CRITICAL <span class="hit">HIT</span> STUDIO</span><span class="sb-short">C<span class="hit">H</span>S</span></div><div class="sbar-sub"><span class="sbar-ver" data-v="{{VERSION}}"></span><span class="sbar-ch" id="sbarCh" data-ch="{{CHANNEL}}"></span></div></div></div>
+    <div class="sbar-id" id="brandHomeBtn" role="button" tabindex="0" title="Return to Home" style="cursor:pointer"><img class="sbar-logo" src="/icon-72.png" width="36" height="36" alt=""><div class="sbar-idtext"><div class="sbar-brand brand"><span class="sb-long">CRITICAL <span class="hit">HIT</span> STUDIO</span><span class="sb-short">C<span class="hit">H</span>S</span></div><div class="sbar-sub"><span class="sbar-ver" data-v="{{VERSION}}"></span><span class="sbar-ch" id="sbarCh" data-ch="{{CHANNEL}}"></span></div></div></div>
     <nav class="snav" id="viewTabs" role="tablist" aria-label="Sections">
       <button class="snav-item vt active" data-view="board" role="tab">BOARD</button>
       <button class="snav-item vt" data-view="calendar" role="tab">CALENDAR</button>
       <button class="snav-item vt" data-view="stats" role="tab">STATS</button>
       <button class="snav-item vt" data-view="journal" role="tab">JOURNAL</button>
       <button class="snav-item vt" data-view="thumbnail" role="tab">THUMBNAIL</button>
+      <button class="snav-item vt" data-view="radar" role="tab">RADAR</button>
       <a class="snav-item {{HITLIST_HIDE}}" id="navHitList" href="/hitlist">HIT LIST</a>
     </nav>
     <div class="sbar-right topbar-right">
@@ -62,11 +63,13 @@
     </div>
   </div>
   <main id="boardWrap">
+    <div id="homeView" class="home-view hidden"></div>
     <div id="board" class="board"></div>
     <div id="calView" class="view-pane hidden"></div>
     <div id="statsView" class="view-pane hidden"></div>
     <div id="journalView" class="view-pane hidden"></div>
     <div id="thumbView" class="view-pane hidden"></div>
+    <div id="radarView" class="view-pane hidden"></div>
     <div id="emptyState" class="empty hidden">
       <h2>Your board is empty</h2>
       <p>Search IGDB for a game to add it as a card, then drag it through the stages as you work on it.</p>
@@ -325,6 +328,20 @@
               </div>
               <div class="row" id="accentRowWrap">
                 <label>Vanilla accent colour<div class="accent-row"><input id="setAccent" type="color" value="#e60000"><button id="setAccentReset" class="btn" type="button">Reset red</button></div></label>
+              </div>
+              <div class="row">
+                <label style="min-width:240px">Open on launch
+                  <select id="setStartPage" class="field">
+                    <option value="home">Home (Landing Page)</option>
+                    <option value="board">Board</option>
+                    <option value="calendar">Calendar</option>
+                    <option value="stats">Stats</option>
+                    <option value="journal">Journal</option>
+                    <option value="thumbnail">Thumbnail Checker</option>
+                    <option value="radar">Radar</option>
+                    <option value="hitlist">Critical Hit List</option>
+                  </select>
+                </label>
               </div>
               <div class="set-checks">
                 <label class="inline-check"><input type="checkbox" id="setShowHitList" checked> Show the Critical Hit List tab</label>

@@ -40,7 +40,7 @@ const cssUrl = (u) => (safeUrl(u) ? `url('${safeUrl(u).replace(/['"<>\s]/g, (c) 
 
 let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null, standaloneThumbs: [] };
 const PL = CHL_PLAN;   // formats, scratchpad, recap, stuck/forecast, upload buffer (plan.js)
-let appSettings = { igdbConfigured: false, igdbClientId: '', igdbHasSecret: false, youtubeHasKey: false, theme: 'default', accentColor: '#e60000', showHitList: true, useScores: false };
+let appSettings = { igdbConfigured: false, igdbClientId: '', igdbHasSecret: false, youtubeHasKey: false, theme: 'default', accentColor: '#e60000', showHitList: true, useScores: false, startPage: 'home' };
 const DEFAULT_OWNERSHIPS = [{ id: 'owned', label: 'Owned', color: '#2ECC71' }, { id: 'shanks', label: 'Shanks', color: '#FB923C' }];
 const formatsOf = () => PL.normalizeFormats(state.formats);
 const formatById = (id) => PL.formatOf(id, formatsOf());
@@ -1220,22 +1220,26 @@ $('dVideoPick').addEventListener('change', async () => {
   if (await loadVideoStats(g, true) && openId === g.id) renderVideo(g);
 });
 
-// ------------------------------------------------------------------ views: board / calendar / stats / journal / thumbnail
+// ------------------------------------------------------------------ views: home / board / calendar / stats / journal / thumbnail / radar
 function renderBoard() {
   document.querySelectorAll('#viewTabs .vt').forEach((b) => { const on = b.dataset.view === view; b.classList.toggle('active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  $('homeView').classList.toggle('hidden', view !== 'home');
   $('board').classList.toggle('hidden', view !== 'board');
   $('calView').classList.toggle('hidden', view !== 'calendar');
   $('statsView').classList.toggle('hidden', view !== 'stats');
   $('journalView').classList.toggle('hidden', view !== 'journal');
   $('thumbView').classList.toggle('hidden', view !== 'thumbnail');
+  $('radarView').classList.toggle('hidden', view !== 'radar');
   document.body.dataset.view = view;
   renderPipeBar();
   if (view === 'board') renderBoardView();
   else {
     $('emptyState').classList.add('hidden');
-    if (view === 'calendar') renderCalendar();
+    if (view === 'home') renderHome();
+    else if (view === 'calendar') renderCalendar();
     else if (view === 'journal') renderJournal();
     else if (view === 'thumbnail') renderThumbnailPage();
+    else if (view === 'radar') renderRadar();
     else renderStats();
   }
 }
@@ -1244,6 +1248,14 @@ document.getElementById('viewTabs').addEventListener('click', (e) => {
   view = b.dataset.view; try { localStorage.setItem('chl_view', view); } catch (x) { /* ignore */ }
   renderBoard();
 });
+{
+  const goHome = () => { view = 'home'; renderBoard(); };
+  const hb = $('brandHomeBtn');
+  if (hb) {
+    hb.addEventListener('click', goHome);
+    hb.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goHome(); } });
+  }
+}
 
 let calMonth = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })();
 const calDateOf = (g) => g.dueDate || (g.stage === 'Published' ? g.publishedAt : '') || '';
@@ -1704,7 +1716,8 @@ $('brandSave').onclick = async () => {
       theme: appSettings.theme || 'default',
       accentColor: $('setAccent').value || '#e60000',
       showHitList: !!$('setShowHitList').checked,
-      useScores: !!$('setUseScores').checked
+      useScores: !!$('setUseScores').checked,
+      startPage: ($('setStartPage') && $('setStartPage').value) || 'home'
     });
     await loadSettings(); toast('Appearance saved');
   } catch (e) { toast(e.message); }
@@ -1753,6 +1766,7 @@ $('reopenWizardBtn').onclick = () => { closeModal('settingsModal'); openWizard()
 function openSettings(tab) {
   setSettingsTab(typeof tab === 'string' ? tab : settingsTab);
   $('setAccent').value = appSettings.accentColor || '#e60000';
+  if ($('setStartPage')) $('setStartPage').value = appSettings.startPage || 'home';
   $('setShowHitList').checked = appSettings.showHitList !== false;
   $('setUseScores').checked = !!appSettings.useScores;
   renderFormatSettings(); renderOwnershipSettings();
@@ -1926,8 +1940,20 @@ document.addEventListener('keydown', (e) => {
 });
 
 (async function init() {
-  try { hideArchived = localStorage.getItem('chl_hide_archived') === '1'; $('hideArchived').checked = hideArchived; simpleBoard = localStorage.getItem('chl_simple_board') === '1'; $('simpleBoard').checked = simpleBoard; document.body.classList.toggle('simple-board', simpleBoard); const v = localStorage.getItem('chl_view'); if (['board', 'calendar', 'stats', 'journal', 'thumbnail'].includes(v)) view = v; } catch (e) { /* ignore */ }
-  { const qv = new URLSearchParams(location.search).get('view'); if (['board', 'calendar', 'stats', 'journal', 'thumbnail'].includes(qv)) { view = qv; try { localStorage.setItem('chl_view', qv); } catch (e) { /* ignore */ } } }   // links from the Hit List page
+  try { hideArchived = localStorage.getItem('chl_hide_archived') === '1'; $('hideArchived').checked = hideArchived; simpleBoard = localStorage.getItem('chl_simple_board') === '1'; $('simpleBoard').checked = simpleBoard; document.body.classList.toggle('simple-board', simpleBoard); } catch (e) { /* ignore */ }
+  const qv = new URLSearchParams(location.search).get('view');
+  const VALID_VIEWS = ['home', 'board', 'calendar', 'stats', 'journal', 'thumbnail', 'radar'];
+  await loadSettings();
+  if (VALID_VIEWS.includes(qv)) {
+    view = qv;
+  } else {
+    const sp = appSettings.startPage || 'home';
+    if (sp === 'hitlist' && appSettings.showHitList !== false) {
+      location.replace('/hitlist');
+      return;
+    }
+    view = VALID_VIEWS.includes(sp) ? sp : 'home';
+  }
   try {
     const doc = await api('/api/planner');
     let migrated = false;
@@ -1952,7 +1978,6 @@ document.addEventListener('keydown', (e) => {
     if (migrated) save(true);
   } catch (e) { setStatus('error', 'Could not load your board: ' + e.message); toast('Could not load your board. Changes will NOT be saved until the app is restarted.'); }
   renderBoard();
-  await loadSettings();
   try { if (loaded && state.games.length === 0 && !localStorage.getItem('chl_wiz_done')) openWizard(); } catch (e) {}
   api('/api/info').then((i) => { $('verLine').textContent = 'Critical Hit Studio v' + i.version + '.'; }).catch(() => {});
   renderChangelog();
@@ -2455,4 +2480,244 @@ function renderThumbnailPage() {
       toast('Standalone thumbnail removed');
     };
   }
+}
+
+// ------------------------------------------------------------------ Full-Screen Home / Landing Page
+function renderHome() {
+  const root = $('homeView');
+  if (!root) return;
+  const FOCUS_STAGES = [
+    { id: 'Recording', color: '#e60000', empty: 'Nothing recording right now' },
+    { id: 'Writing',   color: '#ffc700', empty: 'No scripts in progress' },
+    { id: 'Editing',   color: '#b36bff', empty: 'Nothing on the timeline' }
+  ];
+  const activeCount = FOCUS_STAGES.reduce((n, st) => n + state.games.filter((g) => g.stage === st.id).length, 0);
+  const totalGames = state.games.filter((g) => !ARCHIVED.includes(g.stage)).length;
+  const thumbCount = allThumbEntries().length;
+  const journalCount = (state.journal || []).length;
+  const chHandle = appSettings.youtubeChannel && appSettings.youtubeChannel.handle ? appSettings.youtubeChannel.handle + ' · ' : '';
+  const todayStr = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const renderCard = (g, stageColor) => {
+    const fmts = PL.gameFormats(g).map((fid) => formatById(fid)).filter(Boolean);
+    const fmtHtml = fmts.map((f) => `<span class="chip fmt" style="--fc:${esc(f.color)}">${esc(f.short)}</span>`).join('');
+    const partHtml = g.part > 0 ? `<span class="chip part">PT ${g.part}</span>` : '';
+    const dueHtml = g.dueDate ? `<span class="chip due">${esc(g.dueDate)}</span>` : '';
+    const coverStyle = safeUrl(g.cover) ? `style="background-image:${cssUrl(g.cover)}"` : '';
+    const coverText = safeUrl(g.cover) ? '' : esc((g.name || '?')[0].toUpperCase());
+    return `<button type="button" class="home-game" data-home-game="${esc(g.id)}" style="--stage:${stageColor}">
+      <div class="home-game-cover" ${coverStyle}>${coverText}</div>
+      <div class="home-game-info">
+        <div class="home-game-title">${esc(g.name || 'Untitled')}</div>
+        <div class="home-game-meta">${fmtHtml}${partHtml}${dueHtml || `<span class="muted small">${esc((g.developers || [])[0] || g.stage)}</span>`}</div>
+      </div>
+    </button>`;
+  };
+
+  const colsHtml = FOCUS_STAGES.map((st) => {
+    const items = state.games.filter((g) => g.stage === st.id);
+    return `<section class="home-col" style="--stage:${st.color}">
+      <div class="home-col-head">
+        <h3>${st.id}</h3>
+        <span class="home-col-cnt">${items.length}</span>
+      </div>
+      <div class="home-col-list">
+        ${items.length ? items.map((g) => renderCard(g, st.color)).join('') : `<div class="home-empty-col"><span>${st.empty}</span><button type="button" class="link small" data-home-add="${st.id}">+ Add to ${st.id}</button></div>`}
+      </div>
+    </section>`;
+  }).join('');
+
+  const tiles = [
+    { view: 'board', label: 'Board', sub: `${totalGames} active`, color: '#4da3ff', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="15" rx="1"/></svg>' },
+    { view: 'calendar', label: 'Calendar', sub: 'Schedule', color: '#22d3ee', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
+    { view: 'stats', label: 'Stats', sub: 'Recaps & pace', color: '#2ecc71', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
+    { view: 'journal', label: 'Journal', sub: `${journalCount} ${journalCount === 1 ? 'note' : 'notes'}`, color: '#ffc700', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>' },
+    { view: 'thumbnail', label: 'Thumbnail', sub: `${thumbCount} saved`, color: '#b36bff', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' },
+    { view: 'radar', label: 'Radar', sub: 'Upcoming hype', color: '#ff7a59', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="12" x2="19" y2="5"/></svg>' }
+  ];
+  if (appSettings.showHitList !== false) {
+    tiles.push({ href: '/hitlist', label: 'Hit List', sub: 'Live rankings', color: '#e60000', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>' });
+  }
+
+  const dockHtml = tiles.map((t) => {
+    const inner = `<div class="home-tile-ico">${t.icon}</div><div class="home-tile-lbl">${t.label}</div><div class="home-tile-sub">${t.sub}</div>`;
+    if (t.href) return `<a class="home-tile" href="${t.href}" style="--tile-c:${t.color}">${inner}</a>`;
+    return `<button type="button" class="home-tile" data-home-nav="${t.view}" style="--tile-c:${t.color}">${inner}</button>`;
+  }).join('');
+
+  root.innerHTML = `<div class="home-inner">
+    <div class="home-top">
+      <div class="home-brand">
+        <img src="/icon-72.png" alt="">
+        <div>
+          <div class="home-brand-title">CRITICAL <span class="hit">HIT</span> STUDIO</div>
+          <div class="home-brand-sub">${esc(chHandle + todayStr)}</div>
+        </div>
+      </div>
+      <div class="home-actions">
+        <button type="button" class="btn primary" id="homeAddBtn">+ ADD GAME</button>
+        <button type="button" class="btn icon" id="homeSettingsBtn" title="Settings" aria-label="Settings">⚙</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="home-sec-head">
+        <h2>In Production Right Now</h2>
+        <span>${activeCount} active ${activeCount === 1 ? 'video' : 'videos'} across Recording, Writing &amp; Editing</span>
+      </div>
+      <div class="home-stages">${colsHtml}</div>
+    </div>
+
+    <div>
+      <div class="home-sec-head">
+        <h2>Workspace</h2>
+        <span>Choose a tool to jump in</span>
+      </div>
+      <div class="home-dock">${dockHtml}</div>
+    </div>
+  </div>`;
+
+  $('homeAddBtn').onclick = () => openAdd('Backlogged');
+  $('homeSettingsBtn').onclick = () => openSettings();
+  root.querySelectorAll('[data-home-game]').forEach((b) => {
+    b.onclick = () => openDetail(b.dataset.homeGame);
+  });
+  root.querySelectorAll('[data-home-add]').forEach((b) => {
+    b.onclick = () => openAdd(b.dataset.homeAdd);
+  });
+  root.querySelectorAll('[data-home-nav]').forEach((b) => {
+    b.onclick = () => {
+      view = b.dataset.homeNav;
+      try { localStorage.setItem('chl_view', view); } catch (x) { /* ignore */ }
+      renderBoard();
+    };
+  });
+}
+
+// ------------------------------------------------------------------ RADAR Page (Upcoming Hype & Trending Recent via IGDB)
+const radarState = { tab: 'upcoming', data: null, loading: false, error: '' };
+
+async function loadRadar(force) {
+  if (radarState.loading) return;
+  radarState.loading = true;
+  radarState.error = '';
+  renderRadar();
+  try {
+    radarState.data = await api('/api/igdb/radar' + (force ? '?force=1' : ''));
+  } catch (e) {
+    radarState.error = e.message || 'Could not load Radar from IGDB.';
+  }
+  radarState.loading = false;
+  if (view === 'radar') renderRadar();
+}
+
+async function addFromRadar(igdbId, stage, btn) {
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const d = await api('/api/igdb/game/' + igdbId);
+    const g = gameFromIgdb(d, { id: uid(), name: d.game.name, stage, playedOn: '', hoursPlayed: 0, hype: 0, sentToHitList: false, createdAt: Date.now() });
+    const only = igdbPlatformIds(g); if (only.length === 1) g.playedOn = only[0];
+    initGame(g); state.games.unshift(g);
+    save(true);
+    toast(`Added "${g.name}" to ${stage}`);
+    renderRadar();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = orig;
+    toast(e.message || 'Could not add game');
+  }
+}
+
+function radarDateLabel(iso) {
+  if (!iso) return 'TBA';
+  const diff = Math.round((new Date(iso + 'T00:00:00') - new Date(todayIso() + 'T00:00:00')) / 86400000);
+  if (diff === 0) return 'TODAY';
+  if (diff > 0 && diff <= 30) return `IN ${diff}D`;
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function renderRadar() {
+  const root = $('radarView');
+  if (!root) return;
+  if (!appSettings.igdbConfigured) {
+    root.innerHTML = `<div class="radar-page"><div class="radar-empty">
+      <h3>IGDB is required for Radar</h3>
+      <p>Connect your free Twitch / IGDB credentials in Settings to see the most hyped upcoming releases and trending recent games.</p>
+      <button type="button" class="btn primary" id="radarSetupBtn">Open IGDB Settings</button>
+    </div></div>`;
+    $('radarSetupBtn').onclick = () => openSettings('igdb');
+    return;
+  }
+  if (!radarState.data && !radarState.loading && !radarState.error) {
+    loadRadar(false);
+    return;
+  }
+
+  const list = radarState.data ? (radarState.tab === 'trending' ? radarState.data.trending : radarState.data.upcoming) || [] : [];
+  let bodyHtml = '';
+  if (radarState.loading && !radarState.data) {
+    bodyHtml = '<div class="radar-empty"><p>Scanning IGDB for hyped releases…</p></div>';
+  } else if (radarState.error && !radarState.data) {
+    bodyHtml = `<div class="radar-empty"><p class="err">${esc(radarState.error)}</p><button type="button" class="btn" id="radarRetryBtn">Try again</button></div>`;
+  } else if (!list.length) {
+    bodyHtml = '<div class="radar-empty"><p>No games returned for this window. Try refreshing.</p></div>';
+  } else {
+    bodyHtml = '<div class="radar-grid">' + list.map((item) => {
+      const existing = state.games.find((g) => g.igdbId && g.igdbId === item.igdbId);
+      const dLbl = radarDateLabel(item.releaseDate);
+      const isSoon = dLbl === 'TODAY' || dLbl.startsWith('IN ');
+      const hypePill = item.hypes ? `<span class="radar-pill hype">🔥 ${item.hypes}</span>` : (item.rating ? `<span class="radar-pill">${item.rating}%</span>` : '');
+      const dev = (item.developers && item.developers[0]) || (item.genres && item.genres[0]) || '';
+      const plats = (item.platforms || []).slice(0, 3).join(' · ');
+      const artStyle = safeUrl(item.coverUrl) ? `style="background-image:${cssUrl(item.coverUrl)}"` : '';
+      const actions = existing
+        ? `<button type="button" class="radar-tracked" data-rad-open="${esc(existing.id)}">ON BOARD (${esc(existing.stage.toUpperCase())})</button>`
+        : `<button type="button" class="btn" data-rad-add="${item.igdbId}" data-rad-stage="Backlogged">+ Backlog</button><button type="button" class="btn primary" data-rad-add="${item.igdbId}" data-rad-stage="Planned">+ Planned</button>`;
+      return `<article class="radar-card">
+        <div class="radar-art${safeUrl(item.coverUrl) ? '' : ' none'}" ${artStyle}>
+          ${safeUrl(item.coverUrl) ? '' : esc((item.name || '?')[0].toUpperCase())}
+          <div class="radar-badge-top">
+            <span class="radar-pill${isSoon ? ' soon' : ''}">${esc(dLbl)}</span>
+            ${hypePill}
+          </div>
+        </div>
+        <div class="radar-body">
+          <div class="radar-title" title="${esc(item.name)}">${esc(item.name)}</div>
+          <div class="radar-sub">${esc(dev || 'TBA')}</div>
+          ${plats ? `<div class="radar-sub small">${esc(plats)}</div>` : ''}
+          <div class="radar-actions">${actions}</div>
+        </div>
+      </article>`;
+    }).join('') + '</div>';
+  }
+
+  root.innerHTML = `<div class="radar-page">
+    <div class="radar-head">
+      <div class="radar-head-left">
+        <h2>Game Radar</h2>
+        <div class="seg" role="tablist">
+          <button type="button" class="${radarState.tab === 'upcoming' ? 'on' : ''}" data-rad-tab="upcoming">UPCOMING HYPE</button>
+          <button type="button" class="${radarState.tab === 'trending' ? 'on' : ''}" data-rad-tab="trending">TRENDING RECENT</button>
+        </div>
+      </div>
+      <div class="row" style="margin:0">
+        <span class="muted small">${radarState.tab === 'upcoming' ? 'Most anticipated releases in the next 4 months' : 'Most hyped games released in the last 45 days'}</span>
+        <button type="button" class="btn" id="radarRefreshBtn" ${radarState.loading ? 'disabled' : ''}>${radarState.loading ? 'Scanning…' : '↻ Refresh'}</button>
+      </div>
+    </div>
+    ${bodyHtml}
+  </div>`;
+
+  if ($('radarRefreshBtn')) $('radarRefreshBtn').onclick = () => loadRadar(true);
+  if ($('radarRetryBtn')) $('radarRetryBtn').onclick = () => loadRadar(true);
+  root.querySelectorAll('[data-rad-tab]').forEach((b) => {
+    b.onclick = () => { radarState.tab = b.dataset.radTab; renderRadar(); };
+  });
+  root.querySelectorAll('[data-rad-open]').forEach((b) => {
+    b.onclick = () => openDetail(b.dataset.radOpen);
+  });
+  root.querySelectorAll('[data-rad-add]').forEach((b) => {
+    b.onclick = () => addFromRadar(+b.dataset.radAdd, b.dataset.radStage, b);
+  });
 }

@@ -43,6 +43,7 @@ function start(port, creds) {
         if (process.env.FAKE_NO_THEMES && body.includes('themes.name')) return json(400, { message: 'Invalid field themes.name' });
         const w = /where id = (\d+)/.exec(body);
         if (w) return json(200, GAMES.filter((g) => g.id === +w[1]).map((g) => { if (!body.includes('themes.name')) { const c = { ...g }; delete c.themes; return c; } return g; }));   // only return themes when they were asked for
+        if (body.includes('sort hypes desc')) return json(200, GAMES.filter((g) => typeof g.hypes === 'number').sort((a, b) => b.hypes - a.hypes));
         return json(200, []);
       }
       if (url.pathname === '/v4/game_time_to_beats') {

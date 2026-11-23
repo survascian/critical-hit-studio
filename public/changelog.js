@@ -6,6 +6,17 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.3.0',
+      title: 'Home Landing Page, Game Radar, Hit List Sidebar & Scratchpad Polish',
+      items: [
+        'Added a full-screen Home landing page on launch (with no top header clutter) highlighting your active videos in Recording, Writing, and Editing, plus large hoverable workspace tiles below for Board, Calendar, Stats, Journal, Thumbnail, Radar, and Hit List.',
+        'Added "Open on launch" in Settings → Appearance so you can start on Home or jump straight into any page (Board, Calendar, Stats, Journal, Thumbnail, Radar, or Hit List). Clicking the Cr logo returns to Home anytime.',
+        'Added the RADAR page powered by your existing IGDB connection: browse the most hyped upcoming releases (next 4 months) and trending recent releases (last 45 days), with one-click + Backlog and + Planned imports.',
+        'De-cluttered the Hit List header bar by moving SFX Mute and Background/Chroma controls into the sidebar, and reorganized Board Controls into 6 clean, collapsible sections.',
+        'Fixed the Scratchpad font inside the Game Editor to a calm, comfortable note-taking font (13.5px Inter/system sans, normal weight, relaxed line height).'
+      ]
+    },
+    {
       version: '2.2.3',
       title: 'Visual Polish & Redesigned Cr App Icon',
       items: [

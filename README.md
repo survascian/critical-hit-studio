@@ -12,6 +12,8 @@
   <a href="https://github.com/survascian/critical-hit-studio/releases/latest"><strong>Download Latest Release (Windows &amp; Android)</strong></a>
 </p>
 
+> **Disclaimer:** This Application was Vibecoded through Gemini, then Claude, then Gemini Antigravity. The only thing that I created was a few logos, everything else was AI-generated. I want to be very clear I have zero coding experience.
+
 > Built by a solo gaming creator to stay organized without drowning in busywork, bloated templates, or subscriptions.
 
 <p align="center">

@@ -6,6 +6,17 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   return [
     {
+      version: '2.4.0',
+      title: 'A/B Thumbnail Compare, Radar Calendar Reminders, Ctrl+K Palette, OLED Theme & Mobile Parity',
+      items: [
+        'Thumbnail Checker: Added A/B Feed Compare view (compare V1/V2/V3 side-by-side in a mock YouTube Home grid), YouTube Light/Dark Mode toggle, and Grayscale + Squint Blur readability checks.',
+        'Game Radar: Added Platform filter pills (PC, PlayStation, Xbox, Switch), Time Window toggle (30D / 4 MO / 1 YR), Quick Peek preview modal with IGDB summary, and one-click 📅 Add to Calendar to track specific game release dates directly on your Calendar.',
+        'Home & Daily Flow: Added live checklist progress bars and target-date countdown badges to Home cards, a Global Command Palette (Ctrl+K) to jump to any game or page instantly, and Related Parts / Formats quick-switcher chips inside the Game Editor.',
+        'Themes & Backup: Added the new OLED Black theme (true pitch-black canvas) and one-click Full Studio Backup Export / Restore in Settings → Data & Backup.',
+        'Mobile Companion App: Added the Home spotlight (Recording / Writing / Editing with checklist progress) and Radar tab (live IGDB upcoming hype on Wi-Fi + synced Calendar release reminders on the go).'
+      ]
+    },
+    {
       version: '2.3.1',
       title: 'Hit List Sizing Fix, Instant Home Launch & Radar Sorting/Resizing',
       items: [

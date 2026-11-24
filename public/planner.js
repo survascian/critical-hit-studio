@@ -38,7 +38,7 @@ const safeUrl = (u) => (/^(\/media\/|https?:\/\/)/.test(u || '') ? u : '');
 // single quotes: the result is placed inside double-quoted style="" attributes
 const cssUrl = (u) => (safeUrl(u) ? `url('${safeUrl(u).replace(/['"<>\s]/g, (c) => encodeURIComponent(c))}')` : 'none');
 
-let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null, standaloneThumbs: [] };
+let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null, standaloneThumbs: [], releaseWatches: [] };
 const PL = CHL_PLAN;   // formats, scratchpad, recap, stuck/forecast, upload buffer (plan.js)
 let appSettings = { igdbConfigured: false, igdbClientId: '', igdbHasSecret: false, youtubeHasKey: false, theme: 'default', accentColor: '#e60000', showHitList: true, useScores: false, startPage: 'home' };
 const DEFAULT_OWNERSHIPS = [{ id: 'owned', label: 'Owned', color: '#2ECC71' }, { id: 'shanks', label: 'Shanks', color: '#FB923C' }];
@@ -111,8 +111,8 @@ $('confirmYes').onclick = () => { closeModal('confirmModal'); const cb = confirm
 function openModal(id) { $(id).classList.remove('hidden'); }
 function closeModal(id) { $(id).classList.add('hidden'); if (id === 'detailModal') { openId = null; renderBoard(); } }
 function closeTopModal() {
-  for (const id of ['confirmModal', 'wizardModal', 'artModal', 'sendModal', 'settingsModal', 'addModal', 'detailModal']) {
-    if (!$(id).classList.contains('hidden')) { closeModal(id); return true; }
+  for (const id of ['confirmModal', 'cmdModal', 'radarPeekModal', 'wizardModal', 'artModal', 'sendModal', 'settingsModal', 'addModal', 'detailModal']) {
+    if ($(id) && !$(id).classList.contains('hidden')) { closeModal(id); return true; }
   }
   return false;
 }
@@ -567,6 +567,7 @@ function openDetail(id) {
   $('dScoreWrap').classList.toggle('hidden', !appSettings.useScores);
   $('dScore').value = g.myScore == null ? '' : g.myScore; $('dDue').value = g.dueDate || '';
   $('dPart').value = g.part > 0 ? g.part : '';
+  renderSiblings(g);
   renderDetailFormats(g); renderGcal(g);
   $('dSend').classList.toggle('hidden', appSettings.showHitList === false);
   renderGenreSug(g); renderChecks(g); renderLaunch(g); renderArt(g);
@@ -1265,7 +1266,10 @@ function renderCalendar() {
   const days = new Date(y, m + 1, 0).getDate();
   const cells = Math.ceil((lead + days) / 7) * 7;
   const byDate = {};
-  state.games.filter((g) => !ARCHIVED.includes(g.stage)).forEach((g) => { const d = calDateOf(g); if (d) (byDate[d] = byDate[d] || []).push(g); });
+  state.games.filter((g) => !ARCHIVED.includes(g.stage)).forEach((g) => { const d = calDateOf(g); if (d) (byDate[d] = byDate[d] || []).push({ kind: 'game', g }); });
+  (Array.isArray(state.releaseWatches) ? state.releaseWatches : []).forEach((w) => {
+    if (w && w.releaseDate) (byDate[w.releaseDate] = byDate[w.releaseDate] || []).push({ kind: 'rel', w });
+  });
   const today = todayIso();
   let html = `<div class="cal-head"><button class="btn" id="calPrev" aria-label="Previous month">‹</button><h3>${esc(first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }))}</h3><button class="btn" id="calNext" aria-label="Next month">›</button><button class="btn" id="calToday">Today</button><button class="btn" id="calExport" title="Download your dates as a calendar file Google Calendar can import">⇪ Google Calendar</button><span class="muted small cal-hint">Drag a game onto a day to set its date</span></div><div class="cal-grid">` +
     ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => `<div class="cal-dow">${d}</div>`).join('');
@@ -1273,10 +1277,16 @@ function renderCalendar() {
     const dn = i - lead + 1; const inMonth = dn >= 1 && dn <= days;
     if (!inMonth) { html += '<div class="cal-cell off"></div>'; continue; }
     const iso = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(dn).padStart(2, '0');
-    const gs = byDate[iso] || [];
+    const items = byDate[iso] || [];
     html += `<div class="cal-cell${iso === today ? ' today' : ''}${PL.isSlot(iso, cadenceOf().days) ? ' slot' : ''}" data-date="${iso}"><div class="cal-num">${dn}${PL.isSlot(iso, cadenceOf().days) ? '<span class="cal-slot" title="Upload day">UPLOAD</span>' : ''}</div>` +
-      gs.slice(0, 3).map((g) => `<button class="cal-item${!DONE_STAGES.includes(g.stage) && iso < today ? ' over' : ''}" data-id="${esc(g.id)}" style="--stage:${(STAGES.find((s) => s.id === g.stage) || STAGES[0]).color}" title="${esc(g.name)} · ${esc(g.stage)}">${esc(g.name)}</button>`).join('') +
-      (gs.length > 3 ? `<div class="cal-more muted small">+${gs.length - 3} more</div>` : '') + '</div>';
+      items.slice(0, 3).map((it) => {
+        if (it.kind === 'rel') {
+          return `<button class="cal-item cal-rel" data-rel-id="${esc(it.w.igdbId)}" title="Tracked release: ${esc(it.w.name)} (${esc(iso)})">📅 ${esc(it.w.name)}</button>`;
+        }
+        const g = it.g;
+        return `<button class="cal-item${!DONE_STAGES.includes(g.stage) && iso < today ? ' over' : ''}" data-id="${esc(g.id)}" style="--stage:${(STAGES.find((s) => s.id === g.stage) || STAGES[0]).color}" title="${esc(g.name)} · ${esc(g.stage)}">${esc(g.name)}</button>`;
+      }).join('') +
+      (items.length > 3 ? `<div class="cal-more muted small">+${items.length - 3} more</div>` : '') + '</div>';
   }
   html += '</div>';
   const unsched = state.games.filter((g) => !DONE_STAGES.includes(g.stage) && g.stage !== 'Backlogged' && !g.dueDate);
@@ -1287,6 +1297,13 @@ function renderCalendar() {
   $('calExport').onclick = exportIcs;
   $('calToday').onclick = () => { const d = new Date(); calMonth = { y: d.getFullYear(), m: d.getMonth() }; renderCalendar(); };
   box.querySelectorAll('[data-id]').forEach((b) => { b.onclick = () => openDetail(b.dataset.id); });
+  box.querySelectorAll('[data-rel-id]').forEach((b) => {
+    b.onclick = () => {
+      const id = +b.dataset.relId;
+      const w = (state.releaseWatches || []).find((x) => x.igdbId === id);
+      if (w) openRadarPeek(w);
+    };
+  });
   wireCalendarDnD(box);
 }
 
@@ -1881,9 +1898,44 @@ $('impFile').onchange = async (e) => {
     const doc = JSON.parse(await f.text());
     if (!doc || !Array.isArray(doc.games)) throw new Error('not a planner backup');
     confirmBox(`Replace the board with ${doc.games.length} games from this file? Your current board will be overwritten (a daily backup is kept).`, 'REPLACE', () => {
-      state = { version: 1, games: doc.games, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null }; save(true); renderBoard(); closeModal('settingsModal'); toast(`Imported ${doc.games.length} games`);
+      state = { version: 1, games: doc.games, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null, standaloneThumbs: Array.isArray(doc.standaloneThumbs) ? doc.standaloneThumbs : [], releaseWatches: Array.isArray(doc.releaseWatches) ? doc.releaseWatches : [] }; save(true); renderBoard(); closeModal('settingsModal'); toast(`Imported ${doc.games.length} games`);
     });
   } catch (err) { toast('Import failed: ' + err.message); }
+};
+if ($('studioExpBtn')) $('studioExpBtn').onclick = () => {
+  const bundle = {
+    studioBackupVersion: 1,
+    exportedAt: new Date().toISOString(),
+    planner: state,
+    preferences: {
+      theme: appSettings.theme || 'default',
+      accentColor: appSettings.accentColor || '#e60000',
+      showHitList: appSettings.showHitList !== false,
+      useScores: !!appSettings.useScores,
+      startPage: appSettings.startPage || 'home'
+    }
+  };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' }));
+  a.download = `critical-hit-studio-backup-${todayIso()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Full Studio Backup downloaded');
+};
+if ($('studioImpBtn')) $('studioImpBtn').onclick = () => $('studioImpFile').click();
+if ($('studioImpFile')) $('studioImpFile').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const raw = JSON.parse(await f.text());
+    const doc = (raw && raw.planner && Array.isArray(raw.planner.games)) ? raw.planner : (raw && Array.isArray(raw.games) ? raw : null);
+    if (!doc) throw new Error('Not a valid Studio Backup file');
+    const prefs = raw && raw.preferences && typeof raw.preferences === 'object' ? raw.preferences : null;
+    confirmBox(`Restore ${doc.games.length} games${prefs ? ' and your appearance/startup preferences' : ''} from this backup?`, 'RESTORE', async () => {
+      state = { version: 1, games: doc.games, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null, standaloneThumbs: Array.isArray(doc.standaloneThumbs) ? doc.standaloneThumbs : [], releaseWatches: Array.isArray(doc.releaseWatches) ? doc.releaseWatches : [] };
+      if (prefs) { try { await putJson('/api/settings', prefs); await loadSettings(); } catch (err) { /* best effort */ } }
+      save(true); renderBoard(); closeModal('settingsModal');
+      toast(`Restored ${doc.games.length} games from Studio Backup`);
+    });
+  } catch (err) { toast('Restore failed: ' + err.message); }
 };
 
 // ------------------------------------------------------------------ wiring / keyboard / init
@@ -1930,6 +1982,7 @@ $('hideArchived').addEventListener('change', () => { hideArchived = $('hideArchi
 $('simpleBoard').addEventListener('change', () => { simpleBoard = $('simpleBoard').checked; document.body.classList.toggle('simple-board', simpleBoard); try { localStorage.setItem('chl_simple_board', simpleBoard ? '1' : '0'); } catch (e) { /* ignore */ } renderBoard(); });
 
 document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmdPalette(); return; }
   if (e.key === 'Escape') { if (closeTopModal()) e.preventDefault(); else if (document.activeElement === $('filterInput')) { $('filterInput').value = ''; renderBoard(); } return; }
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const a = document.activeElement; const typing = a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT');
@@ -1957,7 +2010,7 @@ document.addEventListener('keydown', (e) => {
   try {
     const doc = await api('/api/planner');
     let migrated = false;
-    state = { version: 1, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null, standaloneThumbs: Array.isArray(doc.standaloneThumbs) ? doc.standaloneThumbs : [], games: (doc.games || []).map((g) => {
+    state = { version: 1, templates: doc.templates || null, display: doc.display || null, cadence: doc.cadence || null, journal: (Array.isArray(doc.journal) ? doc.journal : []).map(PL.normJournal), formats: doc.formats || null, ownerships: doc.ownerships || null, standaloneThumbs: Array.isArray(doc.standaloneThumbs) ? doc.standaloneThumbs : [], releaseWatches: Array.isArray(doc.releaseWatches) ? doc.releaseWatches : [], games: (doc.games || []).map((g) => {
       const game = Object.assign({ stage: 'Backlogged', developers: [], genres: [], platforms: [], publishers: [], hype: 0, hoursPlayed: 0 }, g);
       // "Played on" used to be free text; it is now one of the platform ids. Convert old values once.
       if (game.playedOn && !P.byId(game.playedOn)) {
@@ -2218,7 +2271,8 @@ function tcBadgeTextOf() {
 
 function tcImgBoxHtml(src, allowHover) {
   const b = tcBadgeTextOf();
-  return `<div class="tc-imgbox">
+  const fCls = (tcState.ovGray ? ' f-gray' : '') + (tcState.ovBlur ? ' f-blur' : '');
+  return `<div class="tc-imgbox${fCls}">
     <img src="${esc(src)}" alt="Thumbnail preview">
     ${tcState.ovSafe ? '<div class="tc-safe"></div>' : ''}
     ${(allowHover && tcState.ovHover) ? '<div class="tc-hover-acts"><span class="tc-hover-ic" title="Watch Later">🕒</span><span class="tc-hover-ic" title="Add to queue">☰</span></div>' : ''}
@@ -2230,6 +2284,7 @@ function tcImgBoxHtml(src, allowHover) {
 function renderThumbnailStage(sel) {
   const stage = $('tcPageStage');
   if (!stage || !sel) return;
+  stage.classList.toggle('yt-light', tcState.ytMode === 'light' && tcState.view !== 'tv');
   const title = (tcState.titleText || '').trim() || (sel.game ? sel.game.name : sel.label) || 'Untitled Video';
   const ch = appSettings.youtubeChannel;
   const chName = (ch && (ch.title || ch.handle)) || 'Your Channel';
@@ -2239,6 +2294,43 @@ function renderThumbnailStage(sel) {
 
   if (tcState.view === 'canvas') {
     stage.innerHTML = `<div class="tc-canvas-wrap">${tcImgBoxHtml(sel.src, true)}</div>`;
+  } else if (tcState.view === 'ab') {
+    const versions = [];
+    if (sel.game) {
+      const p = planOf(sel.game);
+      p.thumbs.forEach((src, i) => {
+        if (safeUrl(src)) versions.push({ slotIdx: i, src: safeUrl(src), label: `VERSION ${i + 1}`, isWinner: p.chosenThumb === i });
+      });
+    } else {
+      versions.push({ slotIdx: -1, src: sel.src, label: 'SELECTED', isWinner: false });
+    }
+    const ghostCard = `<div class="tc-ab-card tc-ab-ghost"><div class="yt-card"><div class="tc-ab-ghost-box"></div><div class="yt-card-meta"><div class="yt-card-av" style="background:#3f3f46"></div><div class="yt-card-txt" style="flex:1"><div class="tc-ghost-line" style="width:88%"></div><div class="tc-ghost-line" style="width:55%"></div></div></div></div></div>`;
+    const cards = versions.map((v) => `<div class="tc-ab-card">
+      <div class="tc-ab-tag"><span>${v.label}${v.isWinner ? ' ★ WINNER' : ''}</span>${sel.game ? `<button type="button" class="link small" data-tc-abwin="${v.slotIdx}">${v.isWinner ? 'Winner' : 'Pick winner'}</button>` : ''}</div>
+      <div class="yt-card">
+        ${tcImgBoxHtml(v.src, true)}
+        <div class="yt-card-meta">
+          <div class="yt-card-av">${avHtml}</div>
+          <div class="yt-card-txt">
+            <div class="yt-card-t">${esc(title)}</div>
+            <div class="yt-card-s">${esc(chName)} · 45K views · 3 hours ago</div>
+          </div>
+        </div>
+      </div>
+    </div>`);
+    const fillers = Math.max(1, 3 - (cards.length % 3 || 3));
+    stage.innerHTML = `<div class="tc-ab-grid">${cards.join('')}${ghostCard.repeat(fillers)}</div>`;
+    stage.querySelectorAll('[data-tc-abwin]').forEach((b) => {
+      b.onclick = () => {
+        if (!sel.game) return;
+        const p = planOf(sel.game);
+        const idx = +b.dataset.tcAbwin;
+        p.chosenThumb = p.chosenThumb === idx ? -1 : idx;
+        sel.game.updatedAt = Date.now();
+        save(true);
+        renderThumbnailPage();
+      };
+    });
   } else if (tcState.view === 'home') {
     stage.innerHTML = `<div class="yt-card">
       ${tcImgBoxHtml(sel.src, true)}
@@ -2379,16 +2471,26 @@ function renderThumbnailPage() {
           </label>
           <input id="tcPageDurCustom" class="field${tcState.durType === 'custom' ? '' : ' hidden'}" type="text" maxlength="15" value="${esc(tcState.durCustom)}" placeholder="Custom badge text (max 15)">
           <div class="tc-checks">
-            <div class="yt-card-lbl">Active Overlays</div>
+            <div class="yt-card-lbl">YouTube Theme</div>
+            <div class="seg" role="group" aria-label="YouTube appearance">
+              <button type="button" class="${tcState.ytMode !== 'light' ? 'on' : ''}" data-tc-ytmode="dark">DARK MODE</button>
+              <button type="button" class="${tcState.ytMode === 'light' ? 'on' : ''}" data-tc-ytmode="light">LIGHT MODE</button>
+            </div>
+          </div>
+          <div class="tc-checks">
+            <div class="yt-card-lbl">Active Overlays &amp; Checks</div>
             <label class="inline-check"><input type="checkbox" id="tcPageOvSafe" ${tcState.ovSafe ? 'checked' : ''}> 10% text safe margins</label>
             <label class="inline-check"><input type="checkbox" id="tcPageOvBadge" ${tcState.ovBadge ? 'checked' : ''}> Duration badge (bottom-right)</label>
             <label class="inline-check"><input type="checkbox" id="tcPageOvHover" ${tcState.ovHover ? 'checked' : ''}> Desktop hover icons (top-right)</label>
             <label class="inline-check"><input type="checkbox" id="tcPageOvProg" ${tcState.ovProg ? 'checked' : ''}> Watched progress bar (bottom)</label>
+            <label class="inline-check"><input type="checkbox" id="tcPageOvGray" ${tcState.ovGray ? 'checked' : ''}> Grayscale contrast check</label>
+            <label class="inline-check"><input type="checkbox" id="tcPageOvBlur" ${tcState.ovBlur ? 'checked' : ''}> Squint / blur readability test</label>
           </div>
         </div>
         <div class="tc-main">
           <div class="tc-vtabs" role="tablist">
             <button type="button" class="tc-vtab${tcState.view === 'canvas' ? ' on' : ''}" data-tc-view="canvas">Safe Area</button>
+            <button type="button" class="tc-vtab${tcState.view === 'ab' ? ' on' : ''}" data-tc-view="ab">A/B Feed Compare</button>
             <button type="button" class="tc-vtab${tcState.view === 'home' ? ' on' : ''}" data-tc-view="home">Desktop Home</button>
             <button type="button" class="tc-vtab${tcState.view === 'sidebar' ? ' on' : ''}" data-tc-view="sidebar">Desktop Sidebar</button>
             <button type="button" class="tc-vtab${tcState.view === 'mobile' ? ' on' : ''}" data-tc-view="mobile">Mobile Feed</button>
@@ -2459,6 +2561,15 @@ function renderThumbnailPage() {
   if ($('tcPageOvBadge')) $('tcPageOvBadge').onchange = (e) => { tcState.ovBadge = e.target.checked; renderThumbnailStage(sel); };
   if ($('tcPageOvHover')) $('tcPageOvHover').onchange = (e) => { tcState.ovHover = e.target.checked; renderThumbnailStage(sel); };
   if ($('tcPageOvProg')) $('tcPageOvProg').onchange = (e) => { tcState.ovProg = e.target.checked; renderThumbnailStage(sel); };
+  if ($('tcPageOvGray')) $('tcPageOvGray').onchange = (e) => { tcState.ovGray = e.target.checked; renderThumbnailStage(sel); };
+  if ($('tcPageOvBlur')) $('tcPageOvBlur').onchange = (e) => { tcState.ovBlur = e.target.checked; renderThumbnailStage(sel); };
+  root.querySelectorAll('[data-tc-ytmode]').forEach((b) => {
+    b.onclick = () => {
+      tcState.ytMode = b.dataset.tcYtmode;
+      root.querySelectorAll('[data-tc-ytmode]').forEach((x) => x.classList.toggle('on', x === b));
+      renderThumbnailStage(sel);
+    };
+  });
   if ($('tcWinBtn') && sel && sel.game) {
     $('tcWinBtn').onclick = () => {
       const p = planOf(sel.game);
@@ -2502,7 +2613,16 @@ function renderHome() {
     const fmts = PL.gameFormats(g).map((fid) => formatById(fid)).filter(Boolean);
     const fmtHtml = fmts.map((f) => `<span class="chip fmt" style="--fc:${esc(f.color)}">${esc(f.short)}</span>`).join('');
     const partHtml = g.part > 0 ? `<span class="chip part">PT ${g.part}</span>` : '';
-    const dueHtml = g.dueDate ? `<span class="chip due">${esc(g.dueDate)}</span>` : '';
+    let dueHtml = '';
+    if (g.dueDate) {
+      const diff = Math.round((new Date(g.dueDate + 'T00:00:00') - new Date(todayIso() + 'T00:00:00')) / 86400000);
+      const cls = diff < 0 ? ' late' : (diff <= 3 ? ' soon' : '');
+      const lbl = diff === 0 ? 'TODAY' : (diff > 0 ? `IN ${diff}D` : `${Math.abs(diff)}D LATE`);
+      dueHtml = `<span class="chip due${cls}" title="Target date: ${esc(g.dueDate)}">${lbl}</span>`;
+    }
+    const list = (g.checks && Array.isArray(g.checks[g.stage])) ? g.checks[g.stage] : [];
+    const doneN = list.filter((x) => x.d).length;
+    const progHtml = list.length ? `<div class="home-prog-wrap"><div class="home-prog"><div class="home-prog-fill" style="width:${Math.round((doneN / list.length) * 100)}%"></div></div><span class="home-prog-txt">${doneN}/${list.length}</span></div>` : '';
     const coverStyle = safeUrl(g.cover) ? `style="background-image:${cssUrl(g.cover)}"` : '';
     const coverText = safeUrl(g.cover) ? '' : esc((g.name || '?')[0].toUpperCase());
     return `<button type="button" class="home-game" data-home-game="${esc(g.id)}" style="--stage:${stageColor}">
@@ -2510,6 +2630,7 @@ function renderHome() {
       <div class="home-game-info">
         <div class="home-game-title">${esc(g.name || 'Untitled')}</div>
         <div class="home-game-meta">${fmtHtml}${partHtml}${dueHtml || `<span class="muted small">${esc((g.developers || [])[0] || g.stage)}</span>`}</div>
+        ${progHtml}
       </div>
     </button>`;
   };
@@ -2555,6 +2676,7 @@ function renderHome() {
         </div>
       </div>
       <div class="home-actions">
+        <button type="button" class="btn" id="homeCmdBtn" title="Quick jump (Ctrl+K)">Search <kbd>Ctrl+K</kbd></button>
         <button type="button" class="btn primary" id="homeAddBtn">+ ADD GAME</button>
         <button type="button" class="btn icon" id="homeSettingsBtn" title="Settings" aria-label="Settings">⚙</button>
       </div>
@@ -2578,6 +2700,7 @@ function renderHome() {
   </div>`;
 
   $('homeAddBtn').onclick = () => openAdd('Backlogged');
+  if ($('homeCmdBtn')) $('homeCmdBtn').onclick = () => openCmdPalette();
   $('homeSettingsBtn').onclick = () => openSettings();
   root.querySelectorAll('[data-home-game]').forEach((b) => {
     b.onclick = () => openDetail(b.dataset.homeGame);
@@ -2594,15 +2717,98 @@ function renderHome() {
   });
 }
 
-// ------------------------------------------------------------------ RADAR Page (Upcoming Hype & Trending Recent via IGDB)
+// ------------------------------------------------------------------ RADAR Page (Upcoming Hype, Filters, Quick Peek & Add to Calendar)
+const RADAR_PLAT_FILTERS = [
+  { id: 'all', label: 'All Platforms', match: () => true },
+  { id: 'pc', label: 'PC', match: (ps) => ps.some((p) => /pc|windows|mac|linux|steam/i.test(p)) },
+  { id: 'ps', label: 'PlayStation', match: (ps) => ps.some((p) => /playstation|ps[45]/i.test(p)) },
+  { id: 'xbox', label: 'Xbox', match: (ps) => ps.some((p) => /xbox/i.test(p)) },
+  { id: 'switch', label: 'Switch', match: (ps) => ps.some((p) => /switch|nintendo/i.test(p)) }
+];
+
 const radarState = {
   tab: 'upcoming',
+  days: (() => { try { const v = +localStorage.getItem('chl_radar_days'); return [30, 120, 365].includes(v) ? v : 120; } catch (e) { return 120; } })(),
+  plat: (() => { try { const v = localStorage.getItem('chl_radar_plat'); return RADAR_PLAT_FILTERS.some((x) => x.id === v) ? v : 'all'; } catch (e) { return 'all'; } })(),
   sort: (() => { try { const v = localStorage.getItem('chl_radar_sort'); return ['month', 'date', 'hype'].includes(v) ? v : 'month'; } catch (e) { return 'month'; } })(),
   size: (() => { try { const v = localStorage.getItem('chl_radar_size'); return ['s', 'm', 'l'].includes(v) ? v : 'm'; } catch (e) { return 'm'; } })(),
   data: null,
+  loadedDays: 0,
   loading: false,
   error: ''
 };
+
+function isReleaseWatched(igdbId) {
+  return (Array.isArray(state.releaseWatches) ? state.releaseWatches : []).some((w) => w && w.igdbId === igdbId);
+}
+
+function toggleReleaseWatch(item) {
+  if (!item || !item.igdbId) return;
+  if (!item.releaseDate) { toast('This game has no release date yet.'); return; }
+  state.releaseWatches = Array.isArray(state.releaseWatches) ? state.releaseWatches : [];
+  const idx = state.releaseWatches.findIndex((w) => w && w.igdbId === item.igdbId);
+  if (idx >= 0) {
+    state.releaseWatches.splice(idx, 1);
+    save(true);
+    toast(`Removed "${item.name}" release from Calendar`);
+  } else {
+    state.releaseWatches.push({
+      igdbId: item.igdbId,
+      name: item.name || 'Untitled',
+      releaseDate: item.releaseDate,
+      coverUrl: item.coverUrl || '',
+      developers: Array.isArray(item.developers) ? item.developers.slice(0, 2) : [],
+      genres: Array.isArray(item.genres) ? item.genres.slice(0, 3) : [],
+      platforms: Array.isArray(item.platforms) ? item.platforms.slice(0, 5) : [],
+      summary: item.summary || '',
+      hypes: item.hypes || null
+    });
+    save(true);
+    toast(`Added "${item.name}" (${item.releaseDate}) to Calendar`, { label: 'View Calendar', fn: () => { view = 'calendar'; renderBoard(); } });
+  }
+  if (view === 'radar') renderRadar();
+  if (view === 'calendar') renderCalendar();
+}
+
+function openRadarPeek(item) {
+  const box = $('radarPeekBody');
+  if (!box || !item) return;
+  const existing = state.games.find((g) => g.igdbId && g.igdbId === item.igdbId);
+  const watched = isReleaseWatched(item.igdbId);
+  const artStyle = safeUrl(item.coverUrl) ? `style="background-image:${cssUrl(item.coverUrl)}"` : '';
+  const dLbl = item.releaseDate ? `${item.releaseDate} (${radarDateLabel(item.releaseDate)})` : 'TBA';
+  const chips = [
+    ...(item.genres || []).slice(0, 3).map((x) => `<span class="chip">${esc(x)}</span>`),
+    ...(item.platforms || []).slice(0, 4).map((x) => `<span class="chip">${esc(x)}</span>`)
+  ].join('');
+  box.innerHTML = `
+    <div class="sheet-head"><h3>${esc(item.name || 'Game')}</h3><button class="x" data-close>✕</button></div>
+    <div class="radar-peek">
+      <div class="radar-peek-art" ${artStyle}></div>
+      <div class="radar-peek-info">
+        <div class="chips">
+          <span class="chip up">Release: ${esc(dLbl)}</span>
+          ${item.hypes ? `<span class="chip hype">🔥 ${item.hypes} hype</span>` : ''}
+          ${item.rating ? `<span class="chip">${item.rating}% IGDB</span>` : ''}
+        </div>
+        ${(item.developers && item.developers.length) ? `<div class="muted small">Studio: <b>${esc(item.developers.join(', '))}</b></div>` : ''}
+        ${chips ? `<div class="chips">${chips}</div>` : ''}
+        <p class="radar-peek-sum">${esc(item.summary || 'No summary provided by IGDB yet.')}</p>
+        <div class="row" style="margin-top:auto">
+          ${existing
+            ? `<button type="button" class="btn primary" id="peekOpenBoard">Open on Board (${esc(existing.stage)})</button>`
+            : `<button type="button" class="btn" id="peekAddBacklog">+ Backlogged</button><button type="button" class="btn primary" id="peekAddPlanned">+ Planned</button>`}
+          ${item.releaseDate ? `<button type="button" class="btn${watched ? ' primary' : ''}" id="peekCalBtn">${watched ? '📅 On Calendar ✓' : '📅 Add Release to Calendar'}</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  box.querySelector('[data-close]').onclick = () => closeModal('radarPeekModal');
+  if ($('peekOpenBoard')) $('peekOpenBoard').onclick = () => { closeModal('radarPeekModal'); openDetail(existing.id); };
+  if ($('peekAddBacklog')) $('peekAddBacklog').onclick = async (e) => { await addFromRadar(item.igdbId, 'Backlogged', e.currentTarget); closeModal('radarPeekModal'); };
+  if ($('peekAddPlanned')) $('peekAddPlanned').onclick = async (e) => { await addFromRadar(item.igdbId, 'Planned', e.currentTarget); closeModal('radarPeekModal'); };
+  if ($('peekCalBtn')) $('peekCalBtn').onclick = () => { toggleReleaseWatch(item); openRadarPeek(item); };
+  openModal('radarPeekModal');
+}
 
 async function loadRadar(force) {
   if (radarState.loading) return;
@@ -2610,7 +2816,8 @@ async function loadRadar(force) {
   radarState.error = '';
   renderRadar();
   try {
-    radarState.data = await api('/api/igdb/radar' + (force ? '?force=1' : ''));
+    radarState.data = await api(`/api/igdb/radar?days=${radarState.days}${force ? '&force=1' : ''}`);
+    radarState.loadedDays = radarState.days;
   } catch (e) {
     radarState.error = e.message || 'Could not load Radar from IGDB.';
   }
@@ -2628,7 +2835,7 @@ async function addFromRadar(igdbId, stage, btn) {
     initGame(g); state.games.unshift(g);
     save(true);
     toast(`Added "${g.name}" to ${stage}`);
-    renderRadar();
+    if (view === 'radar') renderRadar();
   } catch (e) {
     btn.disabled = false; btn.textContent = orig;
     toast(e.message || 'Could not add game');
@@ -2659,16 +2866,19 @@ function renderRadar() {
       <p>Connect your free Twitch / IGDB credentials in Settings to see the most hyped upcoming releases and trending recent games.</p>
       <button type="button" class="btn primary" id="radarSetupBtn">Open IGDB Settings</button>
     </div></div>`;
-    $('radarSetupBtn').onclick = () => openSettings('igdb');
+    $('radarSetupBtn').onclick = () => openSettings('connections');
     return;
   }
-  if (!radarState.data && !radarState.loading && !radarState.error) {
+  if ((!radarState.data || radarState.loadedDays !== radarState.days) && !radarState.loading && !radarState.error) {
     loadRadar(false);
     return;
   }
 
-  const rawList = radarState.data ? ((radarState.tab === 'trending' ? radarState.data.trending : radarState.data.upcoming) || []).slice() : [];
-  const dir = radarState.tab === 'trending' ? -1 : 1; // upcoming: soonest first; trending: newest first
+  const platRule = RADAR_PLAT_FILTERS.find((x) => x.id === radarState.plat) || RADAR_PLAT_FILTERS[0];
+  const sourceList = radarState.data ? ((radarState.tab === 'trending' ? radarState.data.trending : radarState.data.upcoming) || []) : [];
+  const rawList = sourceList.filter((it) => platRule.match(it.platforms || [])).slice();
+  const byIgdbId = new Map(sourceList.map((it) => [it.igdbId, it]));
+  const dir = radarState.tab === 'trending' ? -1 : 1;
   const byDate = (a, b) => {
     if (!a.releaseDate && !b.releaseDate) return (b.hypes || 0) - (a.hypes || 0);
     if (!a.releaseDate) return 1;
@@ -2680,25 +2890,29 @@ function renderRadar() {
 
   const renderCard = (item) => {
     const existing = state.games.find((g) => g.igdbId && g.igdbId === item.igdbId);
+    const watched = isReleaseWatched(item.igdbId);
     const dLbl = radarDateLabel(item.releaseDate);
     const isSoon = dLbl === 'TODAY' || dLbl.startsWith('IN ');
     const hypePill = item.hypes ? `<span class="radar-pill hype">🔥 ${item.hypes}</span>` : (item.rating ? `<span class="radar-pill">${item.rating}%</span>` : '');
     const dev = (item.developers && item.developers[0]) || (item.genres && item.genres[0]) || '';
     const plats = (item.platforms || []).slice(0, 3).join(' · ');
     const artStyle = safeUrl(item.coverUrl) ? `style="background-image:${cssUrl(item.coverUrl)}"` : '';
+    const calBtn = item.releaseDate ? `<button type="button" class="btn radar-cal-btn${watched ? ' on' : ''}" data-rad-cal="${item.igdbId}" title="${watched ? 'Remove release from Calendar' : 'Add release date to Calendar'}">${watched ? '📅✓' : '📅'}</button>` : '';
     const actions = existing
-      ? `<button type="button" class="radar-tracked" data-rad-open="${esc(existing.id)}">ON BOARD (${esc(existing.stage.toUpperCase())})</button>`
-      : `<button type="button" class="btn" data-rad-add="${item.igdbId}" data-rad-stage="Backlogged">+ Backlog</button><button type="button" class="btn primary" data-rad-add="${item.igdbId}" data-rad-stage="Planned">+ Planned</button>`;
+      ? `<button type="button" class="radar-tracked" data-rad-open="${esc(existing.id)}">ON BOARD (${esc(existing.stage.toUpperCase())})</button>${calBtn}`
+      : `<button type="button" class="btn" data-rad-add="${item.igdbId}" data-rad-stage="Backlogged">+ Backlog</button><button type="button" class="btn primary" data-rad-add="${item.igdbId}" data-rad-stage="Planned">+ Planned</button>${calBtn}`;
     return `<article class="radar-card">
-      <div class="radar-art${safeUrl(item.coverUrl) ? '' : ' none'}" ${artStyle}>
-        ${safeUrl(item.coverUrl) ? '' : esc((item.name || '?')[0].toUpperCase())}
-        <div class="radar-badge-top">
-          <span class="radar-pill${isSoon ? ' soon' : ''}">${esc(dLbl)}</span>
-          ${hypePill}
+      <button type="button" class="radar-art-btn" data-rad-peek="${item.igdbId}" title="Click for details">
+        <div class="radar-art${safeUrl(item.coverUrl) ? '' : ' none'}" ${artStyle}>
+          ${safeUrl(item.coverUrl) ? '' : esc((item.name || '?')[0].toUpperCase())}
+          <div class="radar-badge-top">
+            <span class="radar-pill${isSoon ? ' soon' : ''}">${esc(dLbl)}</span>
+            ${hypePill}
+          </div>
         </div>
-      </div>
+      </button>
       <div class="radar-body">
-        <div class="radar-title" title="${esc(item.name)}">${esc(item.name)}</div>
+        <button type="button" class="radar-title-btn" data-rad-peek="${item.igdbId}"><div class="radar-title" title="${esc(item.name)}">${esc(item.name)}</div></button>
         <div class="radar-sub">${esc(dev || 'TBA')}</div>
         ${plats ? `<div class="radar-sub small">${esc(plats)}</div>` : ''}
         <div class="radar-actions">${actions}</div>
@@ -2712,7 +2926,7 @@ function renderRadar() {
   } else if (radarState.error && !radarState.data) {
     bodyHtml = `<div class="radar-empty"><p class="err">${esc(radarState.error)}</p><button type="button" class="btn" id="radarRetryBtn">Try again</button></div>`;
   } else if (!rawList.length) {
-    bodyHtml = '<div class="radar-empty"><p>No games returned for this window. Try refreshing.</p></div>';
+    bodyHtml = '<div class="radar-empty"><p>No games match this platform filter / window.</p></div>';
   } else if (radarState.sort === 'month') {
     const groups = new Map();
     rawList.sort(byDate).forEach((item) => {
@@ -2748,6 +2962,11 @@ function renderRadar() {
           <button type="button" class="${radarState.tab === 'upcoming' ? 'on' : ''}" data-rad-tab="upcoming">UPCOMING HYPE</button>
           <button type="button" class="${radarState.tab === 'trending' ? 'on' : ''}" data-rad-tab="trending">TRENDING RECENT</button>
         </div>
+        ${radarState.tab === 'upcoming' ? `<div class="seg" role="group" aria-label="Time window">
+          <button type="button" class="${radarState.days === 30 ? 'on' : ''}" data-rad-days="30">30D</button>
+          <button type="button" class="${radarState.days === 120 ? 'on' : ''}" data-rad-days="120">4 MO</button>
+          <button type="button" class="${radarState.days === 365 ? 'on' : ''}" data-rad-days="365">1 YR</button>
+        </div>` : ''}
       </div>
       <div class="radar-head-right">
         <div class="seg" role="group" aria-label="Sort Radar">
@@ -2763,6 +2982,10 @@ function renderRadar() {
         <button type="button" class="btn" id="radarRefreshBtn" ${radarState.loading ? 'disabled' : ''}>${radarState.loading ? 'Scanning…' : '↻ Refresh'}</button>
       </div>
     </div>
+    <div class="radar-filters">
+      ${RADAR_PLAT_FILTERS.map((f) => `<button type="button" class="qpill${radarState.plat === f.id ? ' on' : ''}" data-rad-plat="${f.id}">${esc(f.label)}</button>`).join('')}
+      <span class="muted small" style="margin-left:auto">Click any poster to peek · 📅 tracks release on Calendar</span>
+    </div>
     ${bodyHtml}
   </div>`;
 
@@ -2770,6 +2993,20 @@ function renderRadar() {
   if ($('radarRetryBtn')) $('radarRetryBtn').onclick = () => loadRadar(true);
   root.querySelectorAll('[data-rad-tab]').forEach((b) => {
     b.onclick = () => { radarState.tab = b.dataset.radTab; renderRadar(); };
+  });
+  root.querySelectorAll('[data-rad-days]').forEach((b) => {
+    b.onclick = () => {
+      radarState.days = +b.dataset.radDays;
+      try { localStorage.setItem('chl_radar_days', String(radarState.days)); } catch (e) {}
+      loadRadar(false);
+    };
+  });
+  root.querySelectorAll('[data-rad-plat]').forEach((b) => {
+    b.onclick = () => {
+      radarState.plat = b.dataset.radPlat;
+      try { localStorage.setItem('chl_radar_plat', radarState.plat); } catch (e) {}
+      renderRadar();
+    };
   });
   root.querySelectorAll('[data-rad-sort]').forEach((b) => {
     b.onclick = () => {
@@ -2790,5 +3027,84 @@ function renderRadar() {
   });
   root.querySelectorAll('[data-rad-add]').forEach((b) => {
     b.onclick = () => addFromRadar(+b.dataset.radAdd, b.dataset.radStage, b);
+  });
+  root.querySelectorAll('[data-rad-cal]').forEach((b) => {
+    b.onclick = () => { const it = byIgdbId.get(+b.dataset.radCal); if (it) toggleReleaseWatch(it); };
+  });
+  root.querySelectorAll('[data-rad-peek]').forEach((b) => {
+    b.onclick = () => { const it = byIgdbId.get(+b.dataset.radPeek); if (it) openRadarPeek(it); };
+  });
+}
+
+// ------------------------------------------------------------------ Sibling / Part Links inside Game Editor
+function renderSiblings(g) {
+  const bar = $('dSiblings');
+  if (!bar) return;
+  const norm = (s) => String(s || '').trim().toLowerCase();
+  const sibs = state.games.filter((x) => {
+    if (g.igdbId && x.igdbId && x.igdbId === g.igdbId) return true;
+    return norm(x.name) && norm(x.name) === norm(g.name);
+  }).sort((a, b) => (a.part || 0) - (b.part || 0));
+  if (sibs.length < 2) { bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+  bar.classList.remove('hidden');
+  bar.innerHTML = `<span class="sib-lbl">Related Parts / Formats</span>` + sibs.map((x) => {
+    const st = STAGES.find((s) => s.id === x.stage) || STAGES[0];
+    const fmts = PL.gameFormats(x).map((fid) => (formatById(fid) || {}).short || fid.toUpperCase()).join('/');
+    const lbl = [x.part > 0 ? `PT ${x.part}` : '', fmts, x.stage].filter(Boolean).join(' · ');
+    return `<button type="button" class="sib-chip${x.id === g.id ? ' cur' : ''}" data-sib-id="${esc(x.id)}" ${x.id === g.id ? 'disabled' : ''}><span class="sib-dot" style="background:${st.color}"></span>${esc(lbl || x.name)}</button>`;
+  }).join('');
+  bar.querySelectorAll('[data-sib-id]').forEach((b) => {
+    b.onclick = () => { if (b.dataset.sibId !== openId) openDetail(b.dataset.sibId); };
+  });
+}
+
+// ------------------------------------------------------------------ Global Command Palette (Ctrl+K)
+let cmdIdx = 0, cmdItems = [];
+function openCmdPalette() {
+  openModal('cmdModal');
+  const inp = $('cmdInput');
+  inp.value = '';
+  cmdIdx = 0;
+  renderCmdList('');
+  setTimeout(() => inp.focus(), 10);
+}
+function renderCmdList(q) {
+  const s = (q || '').trim().toLowerCase();
+  const nav = [
+    { label: 'Go to Home', sub: 'Page', run: () => { view = 'home'; renderBoard(); } },
+    { label: 'Go to Board', sub: 'Page', run: () => { view = 'board'; renderBoard(); } },
+    { label: 'Go to Calendar', sub: 'Page', run: () => { view = 'calendar'; renderBoard(); } },
+    { label: 'Go to Stats', sub: 'Page', run: () => { view = 'stats'; renderBoard(); } },
+    { label: 'Go to Journal', sub: 'Page', run: () => { view = 'journal'; renderBoard(); } },
+    { label: 'Go to Thumbnail Checker', sub: 'Page', run: () => { view = 'thumbnail'; renderBoard(); } },
+    { label: 'Go to Game Radar', sub: 'Page', run: () => { view = 'radar'; renderBoard(); } },
+    ...(appSettings.showHitList !== false ? [{ label: 'Go to Critical Hit List', sub: 'Page', run: () => { location.href = '/hitlist'; } }] : []),
+    { label: '+ Add New Game', sub: 'Action', run: () => openAdd('Backlogged') },
+    { label: 'Open Settings', sub: 'Action', run: () => openSettings() }
+  ];
+  const games = state.games.map((g) => ({
+    label: g.name + (g.part > 0 ? ` (PT ${g.part})` : ''),
+    sub: g.stage,
+    color: (STAGES.find((x) => x.id === g.stage) || STAGES[0]).color,
+    run: () => openDetail(g.id)
+  }));
+  const all = s ? [...games, ...nav].filter((x) => x.label.toLowerCase().includes(s) || x.sub.toLowerCase().includes(s)) : [...nav.slice(0, 8), ...games.slice(0, 8)];
+  cmdItems = all.slice(0, 14);
+  if (cmdIdx >= cmdItems.length) cmdIdx = 0;
+  const list = $('cmdList');
+  list.innerHTML = cmdItems.length ? cmdItems.map((it, i) => `<button type="button" class="cmd-item${i === cmdIdx ? ' on' : ''}" data-cmd-i="${i}">
+    <span class="cmd-item-l">${it.color ? `<span class="sib-dot" style="background:${it.color}"></span>` : ''}<span class="cmd-item-t">${esc(it.label)}</span></span>
+    <span class="cmd-item-s">${esc(it.sub)}</span>
+  </button>`).join('') : '<div class="muted small" style="padding:14px;text-align:center">No matching games or commands.</div>';
+  list.querySelectorAll('[data-cmd-i]').forEach((b) => {
+    b.onclick = () => { const it = cmdItems[+b.dataset.cmdI]; closeModal('cmdModal'); if (it) it.run(); };
+  });
+}
+if ($('cmdInput')) {
+  $('cmdInput').addEventListener('input', (e) => { cmdIdx = 0; renderCmdList(e.target.value); });
+  $('cmdInput').addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (cmdItems.length) { cmdIdx = (cmdIdx + 1) % cmdItems.length; renderCmdList($('cmdInput').value); } }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (cmdItems.length) { cmdIdx = (cmdIdx - 1 + cmdItems.length) % cmdItems.length; renderCmdList($('cmdInput').value); } }
+    else if (e.key === 'Enter') { e.preventDefault(); const it = cmdItems[cmdIdx]; closeModal('cmdModal'); if (it) it.run(); }
   });
 }

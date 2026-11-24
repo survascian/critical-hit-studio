@@ -49,7 +49,7 @@ function startServer(opts) {
     for (const res of sseClients) { try { res.write(line); } catch (e) { sseClients.delete(res); } }
   }
 
-  let radarCache = null;
+  const radarCache = new Map();
 
   // ---------- helpers ----------
   function readBody(req, limit) {
@@ -122,7 +122,7 @@ function startServer(opts) {
           const ch = st.youtubeChannel || null;
           const escAttr = (v) => String(v || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
           const accent = /^#[0-9a-f]{6}$/i.test(st.accentColor || '') ? st.accentColor : '#e60000';
-          const theme = ['default', 'isac', 'discord'].includes(st.theme) ? st.theme : 'default';
+          const theme = ['default', 'isac', 'discord', 'oled'].includes(st.theme) ? st.theme : 'default';
           const showHitList = st.showHitList !== false;
           const chLabel = (ch && (ch.handle || ch.title)) || '';
           const studioUrl = ch && ch.id ? 'https://studio.youtube.com/channel/' + encodeURIComponent(ch.id) : (chLabel ? 'https://studio.youtube.com/' : '');
@@ -281,7 +281,7 @@ function startServer(opts) {
         const VALID_START = ['home', 'board', 'calendar', 'stats', 'journal', 'thumbnail', 'radar', 'hitlist'];
         if (req.method === 'GET') {
           const s = getSettings();
-          return sendJson(res, 200, { igdbClientId: s.igdbClientId || '', igdbHasSecret: !!s.igdbClientSecret, igdbConfigured: !!(s.igdbClientId && s.igdbClientSecret), youtubeHasKey: !!s.youtubeApiKey, youtubeChannel: s.youtubeChannel || null, sgdbHasKey: !!s.sgdbApiKey, theme: ['default', 'isac', 'discord'].includes(s.theme) ? s.theme : 'default', accentColor: s.accentColor || '#e60000', showHitList: s.showHitList !== false, useScores: !!s.useScores, startPage: VALID_START.includes(s.startPage) ? s.startPage : 'home' });
+          return sendJson(res, 200, { igdbClientId: s.igdbClientId || '', igdbHasSecret: !!s.igdbClientSecret, igdbConfigured: !!(s.igdbClientId && s.igdbClientSecret), youtubeHasKey: !!s.youtubeApiKey, youtubeChannel: s.youtubeChannel || null, sgdbHasKey: !!s.sgdbApiKey, theme: ['default', 'isac', 'discord', 'oled'].includes(s.theme) ? s.theme : 'default', accentColor: s.accentColor || '#e60000', showHitList: s.showHitList !== false, useScores: !!s.useScores, startPage: VALID_START.includes(s.startPage) ? s.startPage : 'home' });
         }
         if (req.method === 'PUT') {
           const b = JSON.parse((await readBody(req, 100 * 1024)).toString('utf8'));
@@ -308,14 +308,14 @@ function startServer(opts) {
               s.youtubeChannel = { id, handle, title, avatar: av, uploadsId: up, subscribers: num(c.subscribers), views: num(c.views), videos: num(c.videos), fetchedAt: num(c.fetchedAt) };
             }
           }
-          if (typeof b.theme === 'string' && ['default', 'isac', 'discord'].includes(b.theme)) s.theme = b.theme;
+          if (typeof b.theme === 'string' && ['default', 'isac', 'discord', 'oled'].includes(b.theme)) s.theme = b.theme;
           if (typeof b.accentColor === 'string' && /^#[0-9a-f]{6}$/i.test(b.accentColor.trim())) s.accentColor = b.accentColor.trim();
           if (typeof b.showHitList === 'boolean') s.showHitList = b.showHitList;
           if (typeof b.useScores === 'boolean') s.useScores = b.useScores;
           if (typeof b.startPage === 'string' && VALID_START.includes(b.startPage)) s.startPage = b.startPage;
           writeJsonAtomic(settingsFile, s, 0o600);
           igdb.reset();
-          radarCache = null;
+          radarCache.clear();
           return sendJson(res, 200, { ok: true, igdbConfigured: !!(s.igdbClientId && s.igdbClientSecret) });
         }
       }
@@ -365,11 +365,14 @@ function startServer(opts) {
       if (p === '/api/igdb/test' && req.method === 'POST') return sendJson(res, 200, { steps: await igdb.test() });
       if (p === '/api/igdb/radar' && req.method === 'GET') {
         const force = url.searchParams.get('force') === '1';
-        if (!force && radarCache && (Date.now() - radarCache.fetchedAt) < 15 * 60 * 1000) {
-          return sendJson(res, 200, radarCache);
+        const rawDays = parseInt(url.searchParams.get('days') || '120', 10);
+        const days = [30, 120, 365].includes(rawDays) ? rawDays : 120;
+        const cached = radarCache.get(days);
+        if (!force && cached && (Date.now() - cached.fetchedAt) < 15 * 60 * 1000) {
+          return sendJson(res, 200, cached);
         }
-        const data = await igdb.radar();
-        radarCache = data;
+        const data = await igdb.radar(days);
+        radarCache.set(days, data);
         return sendJson(res, 200, data);
       }
       if (p === '/api/igdb/search' && req.method === 'GET') {

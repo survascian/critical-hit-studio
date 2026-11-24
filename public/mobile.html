@@ -28,8 +28,13 @@
 
 <main class="mmain">
 
+  <!-- ==================== HOME VIEW ==================== -->
+  <section id="viewHome" class="mview">
+    <div id="homeContent" class="mhome-wrap"></div>
+  </section>
+
   <!-- ==================== BOARD VIEW ==================== -->
-  <section id="viewBoard" class="mview">
+  <section id="viewBoard" class="mview hidden">
     <div id="stagePills" class="stage-pills" role="tablist" aria-label="Stages"></div>
 
     <div class="board-controls">
@@ -71,6 +76,11 @@
     <div id="journalList" class="journal-list"></div>
   </section>
 
+  <!-- ==================== RADAR VIEW ==================== -->
+  <section id="viewRadar" class="mview hidden">
+    <div id="radarContent" class="mradar-wrap"></div>
+  </section>
+
   <!-- ==================== STATS VIEW ==================== -->
   <section id="viewStats" class="mview hidden">
     <div id="statsContent" class="stats-wrap"></div>
@@ -85,21 +95,25 @@
 
 <!-- Bottom Navigation -->
 <nav class="bnav" aria-label="Primary">
-  <button type="button" class="bnav-btn active" data-tab="board">
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="4" width="5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="17" y="4" width="4" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+  <button type="button" class="bnav-btn active" data-tab="home">
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span>Home</span>
+  </button>
+  <button type="button" class="bnav-btn" data-tab="board">
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="4" width="5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="17" y="4" width="4" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
     <span>Board</span>
   </button>
+  <button type="button" class="bnav-btn" data-tab="radar">
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 12l6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <span>Radar</span>
+  </button>
   <button type="button" class="bnav-btn" data-tab="calendar">
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     <span>Calendar</span>
   </button>
   <button type="button" class="bnav-btn" data-tab="journal">
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h7M8 13h7M8 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 9h7M8 13h7M8 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     <span>Journal</span>
-  </button>
-  <button type="button" class="bnav-btn" data-tab="stats">
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 20V11M10 20V5M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    <span>Stats</span>
   </button>
 </nav>
 

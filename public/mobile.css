@@ -497,3 +497,24 @@ body {
   padding: 5px 10px; font-family: inherit; font-size: 12px; font-weight: 700;
   text-transform: uppercase; cursor: pointer; flex-shrink: 0;
 }
+
+/* ---------- v2.4: Mobile Home & Radar ---------- */
+.mhome-wrap, .mradar-wrap { display: flex; flex-direction: column; gap: 14px; }
+.mhome-sec { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--stage); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 9px; }
+.mhome-head { display: flex; align-items: center; justify-content: space-between; font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--stage); }
+.mhome-cnt { background: var(--panel2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; font-size: 11px; color: var(--muted); }
+.mhome-quick { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.mhome-qbtn { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; color: var(--ink); font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-align: left; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.mhome-prog { height: 4px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; margin-top: 4px; }
+.mhome-prog-fill { height: 100%; background: var(--stage); border-radius: 99px; }
+.mradar-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.mradar-card { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; overflow: hidden; display: flex; flex-direction: column; }
+.mradar-art { aspect-ratio: 3 / 4; background: var(--panel2) center/cover no-repeat; position: relative; }
+.mradar-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mradar-badge { position: absolute; top: 6px; left: 6px; background: rgba(11,12,16,.84); border: 1px solid rgba(255,199,0,.5); color: #ffc700; border-radius: 5px; padding: 2px 6px; font: 700 10px 'Orbitron', sans-serif; }
+.mradar-body { padding: 8px 9px 9px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.mradar-title { font-weight: 700; font-size: 14px; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mradar-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mradar-acts { display: flex; gap: 5px; margin-top: auto; padding-top: 5px; }
+.mradar-btn { flex: 1; border: 1px solid var(--line2); background: var(--panel2); color: var(--ink); border-radius: 7px; padding: 6px; font: 700 11px 'Orbitron', sans-serif; cursor: pointer; }
+.mradar-btn.pri { background: var(--accent); border-color: var(--accent); color: #fff; }

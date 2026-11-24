@@ -118,6 +118,13 @@ const fake = require('./fake-igdb');
   const homeHtml = await (await fetch(base + '/')).text();
   ok('root HTML injects data-view="home" before first paint', homeHtml.includes('data-view="home"'));
 
+  // v2.4: OLED theme & Radar time window + summary
+  await put('/api/settings', { theme: 'oled' });
+  r = await j('/api/settings');
+  ok('oled theme persists', r.body.theme === 'oled', JSON.stringify(r.body));
+  r = await j('/api/igdb/radar?days=365');
+  ok('igdb radar supports 365d window & includes summary', r.status === 200 && r.body.days === 365 && typeof r.body.upcoming[0].summary === 'string', JSON.stringify(r.body));
+
   // token reuse: only one token request for many calls
   const tokenCalls = F.log().filter((l) => l.includes('/oauth2/token')).length;
   console.log('token requests so far:', tokenCalls);

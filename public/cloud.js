@@ -59,7 +59,8 @@
       ownerships: rem.ownerships || loc.ownerships || null,
       templates: rem.templates || loc.templates || null,
       display: loc.display || rem.display || null,
-      cadence: rem.cadence || loc.cadence || null
+      cadence: rem.cadence || loc.cadence || null,
+      releaseWatches: Array.isArray(rem.releaseWatches) ? rem.releaseWatches : (Array.isArray(loc.releaseWatches) ? loc.releaseWatches : [])
     });
   }
 

@@ -108,6 +108,7 @@
         <div class="seg" role="group" aria-label="Editor detail level"><button type="button" id="dModeSimple" class="on" title="Title, stage, script and game details">SIMPLE</button><button type="button" id="dModeAdv" title="Scratchpad, packaging, checklist, publishing, artwork and IGDB info">ADVANCED</button></div>
         <button class="x" data-close>✕</button></div>
       <div class="d-body">
+        <div id="dSiblings" class="sib-bar hidden"></div>
         <section class="dcard d-essentials">
           <div class="grid3">
             <label class="g-title">Title<input id="dName" class="field"></label>
@@ -325,6 +326,14 @@
                   <b>Discord</b>
                   <small>Clean dark grey &amp; Blurple surfaces</small>
                 </button>
+                <button type="button" class="theme-card" data-theme-pick="oled">
+                  <div class="theme-prev" style="background:#000000;border-color:#222222">
+                    <div class="theme-prev-bar" style="background:linear-gradient(90deg,#e60000,#ffc700)"></div>
+                    <div class="theme-prev-dots"><i style="background:#000;border:1px solid #333"></i><i style="background:#e60000"></i><i style="background:#ffc700"></i></div>
+                  </div>
+                  <b>OLED Black</b>
+                  <small>True pitch-black canvas &amp; crisp hairlines</small>
+                </button>
               </div>
               <div class="row" id="accentRowWrap">
                 <label>Vanilla accent colour<div class="accent-row"><input id="setAccent" type="color" value="#e60000"><button id="setAccentReset" class="btn" type="button">Reset red</button></div></label>
@@ -472,8 +481,13 @@
               <p class="muted small" id="cloudMsg"></p>
             </section>
             <section class="set-sec">
-              <h4>Your data</h4>
-              <p class="muted small">Everything is saved automatically on this computer, with a daily backup of the planner. You can also export or restore a JSON copy anytime. <span id="verLine"></span></p>
+              <h4>Your data &amp; Studio Backup</h4>
+              <p class="muted small">Everything is saved automatically on this computer, with a daily backup of the planner. Export a full portable Studio Backup (board, journal, calendar reminders &amp; preferences — no API keys) when moving PCs. <span id="verLine"></span></p>
+              <div class="row">
+                <button id="studioExpBtn" class="btn primary" type="button">Export Full Studio Backup</button>
+                <button id="studioImpBtn" class="btn" type="button">Restore Studio Backup</button>
+                <input type="file" id="studioImpFile" accept="application/json,.json" class="hidden">
+              </div>
               <div class="row">
                 <button id="expBtn" class="btn" type="button">Export planner (JSON)</button>
                 <button id="impBtn" class="btn" type="button">Import planner (JSON)</button>
@@ -552,6 +566,22 @@
         <p class="muted small">Get free credentials at <b>dev.twitch.tv/console</b> (Redirect URL <code>http://localhost</code>).</p>
         <div class="row end"><button class="btn" id="wizBack" type="button">← Back</button><button class="btn primary" id="wizFinish" type="button">FINISH</button></div>
       </div>
+    </div>
+  </div>
+
+  <!-- RADAR QUICK PEEK -->
+  <div id="radarPeekModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Game preview">
+    <div class="sheet wide" id="radarPeekBody"></div>
+  </div>
+
+  <!-- GLOBAL COMMAND PALETTE (Ctrl+K) -->
+  <div id="cmdModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Quick jump">
+    <div class="sheet cmd-sheet">
+      <div class="cmd-head">
+        <input id="cmdInput" class="field" type="search" placeholder="Jump to a game, page, or action… (↑↓ Enter)" autocomplete="off">
+        <button class="x" data-close>✕</button>
+      </div>
+      <div id="cmdList" class="cmd-list"></div>
     </div>
   </div>
 

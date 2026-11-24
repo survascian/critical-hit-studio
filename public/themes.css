@@ -695,9 +695,50 @@ html[data-theme="discord"]:not([data-page="hitlist"]) ::-webkit-scrollbar-thumb:
 
 
 /* ==========================================================================
+   THEME 3: OLED BLACK (True pitch-black canvas, crisp hairlines)
+   ========================================================================== */
+html[data-theme="oled"] .sbar {
+  --sb-line: #1e1e22;
+  --sb-panel2: #0a0a0c;
+  --sb-mute: #8a8f9b;
+  --sb-text: #f5f5f7;
+  --sb-yellow: #ffc700;
+  background: #000000;
+  border-bottom: 1px solid #1e1e22;
+}
+html[data-theme="oled"]:not([data-page="hitlist"]) {
+  background: #000000;
+  --bg: #000000;
+  --panel: #08080a;
+  --panel2: #101014;
+  --line: #202026;
+  --text: #f5f5f7;
+  --mute: #8a8f9b;
+}
+html[data-theme="oled"]:not([data-page="hitlist"]) body {
+  background: #000000;
+  background-image: none;
+}
+html[data-theme="oled"]:not([data-page="hitlist"]) .column,
+html[data-theme="oled"]:not([data-page="hitlist"]) .home-col,
+html[data-theme="oled"]:not([data-page="hitlist"]) .home-tile,
+html[data-theme="oled"]:not([data-page="hitlist"]) .radar-card,
+html[data-theme="oled"]:not([data-page="hitlist"]) .th-lib,
+html[data-theme="oled"]:not([data-page="hitlist"]) .th-work {
+  background: #08080a;
+  border-color: #1f1f25;
+}
+html[data-theme="oled"]:not([data-page="hitlist"]) .card,
+html[data-theme="oled"]:not([data-page="hitlist"]) .home-game,
+html[data-theme="oled"]:not([data-page="hitlist"]) .field {
+  background: #0e0e12;
+  border-color: #222229;
+}
+
+/* ==========================================================================
    SETTINGS: THEME PICKER CARDS
    ========================================================================== */
-.theme-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 0 14px; }
+.theme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0 14px; }
 .theme-card { appearance: none; text-align: left; background: #0f1117; border: 2px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; color: var(--text); display: flex; flex-direction: column; gap: 8px; transition: border-color .15s, transform .15s, box-shadow .15s; }
 .theme-card:hover { border-color: #5a6378; transform: translateY(-2px); }
 .theme-card.on { border-color: var(--yellow); box-shadow: 0 0 0 1px var(--yellow), 0 8px 20px rgba(0, 0, 0, 0.4); }

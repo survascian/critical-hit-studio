@@ -68,14 +68,14 @@ const studioOf = (g) => (g.developers || []).join(', ');
 const compact = (n) => (n == null ? '' : n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K' : String(n));
 const vibrate = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* ignore */ } };
 
-let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null };
+let state = { version: 1, games: [], templates: null, display: null, cadence: null, journal: [], formats: null, ownerships: null, releaseWatches: [] };
 let appSettings = { igdbConfigured: false, accentColor: '#e60000', useScores: false, youtubeChannel: null };
 let loaded = false, dirty = false, saving = false, saveTimer = null, retryTimer = null, skipCloudPush = false;
 const LOCAL_CACHE_KEY = 'chl_mobile_state_v1';
 function cacheLocal() { try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(state)); } catch (e) {} }
 function loadLocalCache() { try { const s = localStorage.getItem(LOCAL_CACHE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
 
-let activeTab = 'board';
+let activeTab = 'home';
 let selectedStage = 'ACTIVE'; // 'ACTIVE' or stage id
 let selectedFormat = '';
 let searchQuery = '';
@@ -916,11 +916,122 @@ function renderStats() {
   };
 }
 
+// ------------------------------------------------------------------ HOME & RADAR (MOBILE v2.4)
+function renderHome() {
+  const root = $('homeContent');
+  if (!root) return;
+  const FOCUS = [
+    { id: 'Recording', color: '#e60000', empty: 'Nothing recording right now' },
+    { id: 'Writing',   color: '#ffc700', empty: 'No scripts in progress' },
+    { id: 'Editing',   color: '#b36bff', empty: 'Nothing on the timeline' }
+  ];
+  let html = FOCUS.map((st) => {
+    const items = (state.games || []).filter((g) => g.stage === st.id);
+    const cards = items.map((g) => {
+      const prog = checkProgress(g, g.stage);
+      const pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+      const due = dueChipHtml(g);
+      return `<div class="gcard" data-mh-id="${esc(g.id)}" style="--stage:${st.color}">
+        <div class="gcover" data-mh-cov="${esc(g.id)}"></div>
+        <div class="gmeta">
+          <div class="gtitle">${esc(g.name || 'Untitled')}</div>
+          <div class="gchips">${due}${prog.total ? `<span class="mchip">${prog.done}/${prog.total}</span>` : `<span class="mchip">${esc(studioOf(g) || st.id)}</span>`}</div>
+          ${prog.total ? `<div class="mhome-prog"><div class="mhome-prog-fill" style="width:${pct}%"></div></div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    return `<section class="mhome-sec" style="--stage:${st.color}">
+      <div class="mhome-head"><span>${st.id}</span><span class="mhome-cnt">${items.length}</span></div>
+      ${cards || `<div class="empty-msg" style="padding:10px 4px">${st.empty}</div>`}
+    </section>`;
+  }).join('');
+
+  const watches = Array.isArray(state.releaseWatches) ? state.releaseWatches.length : 0;
+  html += `<div class="mhome-quick">
+    <button type="button" class="mhome-qbtn" data-mh-tab="stats"><span>📊 Stats</span><span>›</span></button>
+    <button type="button" class="mhome-qbtn" data-mh-tab="radar"><span>📡 Radar${watches ? ` (${watches})` : ''}</span><span>›</span></button>
+  </div>`;
+  root.innerHTML = html;
+
+  root.querySelectorAll('[data-mh-cov]').forEach((el) => {
+    const g = findGame(el.dataset.mhCov);
+    if (g) setCoverEl(el, g);
+  });
+  root.querySelectorAll('[data-mh-id]').forEach((el) => {
+    el.onclick = () => openGameSheet(el.dataset.mhId);
+  });
+  root.querySelectorAll('[data-mh-tab]').forEach((b) => {
+    b.onclick = () => switchTab(b.dataset.mhTab);
+  });
+}
+
+let mRadarData = null, mRadarLoading = false;
+async function renderRadar() {
+  const root = $('radarContent');
+  if (!root) return;
+  const watches = (Array.isArray(state.releaseWatches) ? state.releaseWatches : []).slice().sort((a, b) => String(a.releaseDate || '').localeCompare(String(b.releaseDate || '')));
+  if (hasLocalApi && !mRadarData && !mRadarLoading) {
+    mRadarLoading = true;
+    root.innerHTML = '<div class="empty-msg">Scanning IGDB Radar…</div>';
+    try { mRadarData = await api('/api/igdb/radar'); } catch (e) { mRadarData = { upcoming: [] }; }
+    mRadarLoading = false;
+  }
+  const items = (hasLocalApi && mRadarData && Array.isArray(mRadarData.upcoming) && mRadarData.upcoming.length) ? mRadarData.upcoming : watches;
+  const heading = (hasLocalApi && mRadarData && mRadarData.upcoming && mRadarData.upcoming.length)
+    ? 'Upcoming Hype (IGDB)'
+    : 'Tracked Releases (Synced from PC)';
+
+  if (!items.length) {
+    root.innerHTML = `<div class="empty-msg"><b>${esc(heading)}</b><br><br>No upcoming games tracked yet. Add releases to your Calendar from Radar on PC and they will appear here automatically.</div>`;
+    return;
+  }
+
+  root.innerHTML = `<div class="cal-agenda-head"><span>${esc(heading)}</span><span>${items.length}</span></div>
+    <div class="mradar-grid">${items.map((it) => {
+      const n = daysUntil(it.releaseDate);
+      const badge = n === 0 ? 'TODAY' : (n != null && n > 0 && n <= 30 ? `IN ${n}D` : (it.releaseDate || 'TBA'));
+      const onBoard = (state.games || []).find((g) => g.igdbId && g.igdbId === it.igdbId);
+      return `<div class="mradar-card">
+        <div class="mradar-art">${safeUrl(it.coverUrl) ? `<img src="${esc(it.coverUrl)}" alt="" loading="lazy">` : ''}<span class="mradar-badge">${esc(badge)}</span></div>
+        <div class="mradar-body">
+          <div class="mradar-title">${esc(it.name)}</div>
+          <div class="mradar-sub">${esc((it.developers && it.developers[0]) || it.releaseDate || '')}</div>
+          <div class="mradar-acts">
+            ${onBoard
+              ? `<button type="button" class="mradar-btn" data-mr-open="${esc(onBoard.id)}">ON BOARD</button>`
+              : `<button type="button" class="mradar-btn pri" data-mr-add="${esc(it.igdbId)}">+ Planned</button>`}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+
+  root.querySelectorAll('[data-mr-open]').forEach((b) => { b.onclick = () => openGameSheet(b.dataset.mrOpen); });
+  root.querySelectorAll('[data-mr-add]').forEach((b) => {
+    b.onclick = () => {
+      const it = items.find((x) => String(x.igdbId) === b.dataset.mrAdd);
+      if (!it) return;
+      const g = {
+        id: uid(), igdbId: it.igdbId || null, name: it.name || 'Untitled',
+        developers: it.developers || [], publishers: [], genres: it.genres || [], platforms: it.platforms || [],
+        releaseDate: it.releaseDate || '', stage: 'Planned', playedOn: '', hoursPlayed: 0, hype: 0,
+        cover: '', coverRemote: it.coverUrl || '', banner: '', ttb: null, sentToHitList: false, createdAt: Date.now(), updatedAt: Date.now()
+      };
+      ensureHistory(g); ensureChecks(g, 'Planned');
+      state.games.unshift(g);
+      save(true);
+      toast(`Added "${g.name}" to Planned`);
+      renderRadar();
+    };
+  });
+}
+
 // ------------------------------------------------------------------ TAB NAVIGATION & FAB
 function switchTab(tab) {
   activeTab = tab;
   document.querySelectorAll('.bnav-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  $('viewHome').classList.toggle('hidden', tab !== 'home');
   $('viewBoard').classList.toggle('hidden', tab !== 'board');
+  $('viewRadar').classList.toggle('hidden', tab !== 'radar');
   $('viewCalendar').classList.toggle('hidden', tab !== 'calendar');
   $('viewJournal').classList.toggle('hidden', tab !== 'journal');
   $('viewStats').classList.toggle('hidden', tab !== 'stats');
@@ -936,7 +1047,9 @@ $('fabAdd').addEventListener('click', () => {
 });
 
 function renderAll() {
-  if (activeTab === 'board') renderBoard();
+  if (activeTab === 'home') renderHome();
+  else if (activeTab === 'board') renderBoard();
+  else if (activeTab === 'radar') renderRadar();
   else if (activeTab === 'calendar') renderCalendar();
   else if (activeTab === 'journal') renderJournal();
   else if (activeTab === 'stats') renderStats();

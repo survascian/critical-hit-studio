@@ -719,20 +719,33 @@ html[data-theme="oled"]:not([data-page="hitlist"]) body {
   background: #000000;
   background-image: none;
 }
+html[data-theme="oled"]:not([data-page="hitlist"]) .qbar,
+html[data-theme="oled"]:not([data-page="hitlist"]) .pipebar {
+  background: #000000;
+  border-bottom-color: #1c1c22;
+}
 html[data-theme="oled"]:not([data-page="hitlist"]) .column,
 html[data-theme="oled"]:not([data-page="hitlist"]) .home-col,
 html[data-theme="oled"]:not([data-page="hitlist"]) .home-tile,
 html[data-theme="oled"]:not([data-page="hitlist"]) .radar-card,
 html[data-theme="oled"]:not([data-page="hitlist"]) .th-lib,
-html[data-theme="oled"]:not([data-page="hitlist"]) .th-work {
-  background: #08080a;
-  border-color: #1f1f25;
+html[data-theme="oled"]:not([data-page="hitlist"]) .th-work,
+html[data-theme="oled"]:not([data-page="hitlist"]) .sheet,
+html[data-theme="oled"]:not([data-page="hitlist"]) .stat-card,
+html[data-theme="oled"]:not([data-page="hitlist"]) .jr-edit,
+html[data-theme="oled"]:not([data-page="hitlist"]) .cal-cell {
+  background: #050507;
+  border-color: #1e1e24;
+  box-shadow: none;
 }
 html[data-theme="oled"]:not([data-page="hitlist"]) .card,
 html[data-theme="oled"]:not([data-page="hitlist"]) .home-game,
+html[data-theme="oled"]:not([data-page="hitlist"]) .dcard,
+html[data-theme="oled"]:not([data-page="hitlist"]) .pl,
+html[data-theme="oled"]:not([data-page="hitlist"]) .set-sec,
 html[data-theme="oled"]:not([data-page="hitlist"]) .field {
-  background: #0e0e12;
-  border-color: #222229;
+  background: #0a0a0e;
+  border-color: #202028;
 }
 
 /* ==========================================================================

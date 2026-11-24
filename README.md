@@ -1,8 +1,22 @@
-# Critical Hit Studio
+<p align="center">
+  <img src="build/icon.png" alt="Critical Hit Studio Logo" width="96" height="96">
+</p>
 
-**A production hub built for gaming YouTubers and solo video creators** — combining a distraction-free **Content Planner**, a **Mobile Companion app** with real-time cloud sync, and an **OBS Ranking Overlay** in one lightweight desktop app.
+<h1 align="center">Critical Hit Studio</h1>
+
+<p align="center">
+  <strong>A production hub built for gaming YouTubers and solo video creators</strong> — combining a distraction-free <strong>Content Planner</strong>, <strong>YouTube Thumbnail Checker</strong>, <strong>Game Radar</strong>, <strong>Mobile Companion app</strong> with real-time cloud sync, and an <strong>OBS Ranking Overlay</strong> in one lightweight desktop app.
+</p>
+
+<p align="center">
+  <a href="https://github.com/survascian/critical-hit-studio/releases/latest"><strong>Download Latest Release (Windows &amp; Android)</strong></a>
+</p>
 
 > Built by a solo gaming creator to stay organized without drowning in busywork, bloated templates, or subscriptions.
+
+<p align="center">
+  <img src="docs/screenshots/home.png" alt="Critical Hit Studio — Full-Screen Home Landing Page" width="900">
+</p>
 
 ---
 
@@ -20,26 +34,50 @@ Grab the latest installers directly from the **[Releases](https://github.com/sur
 
 ## What It Does
 
-### 1. Content Planner (Windows Desktop)
-* **9-Stage Production Board:** Track games from `Backlogged` → `Planned` → `Recording` → `Writing` → `Editing` → `Reviewing` → `Published` (plus `Shelved` & `Cancelled`) with drag-and-drop and stage checklists.
-* **Fast Quick-Filters & Simple Mode:** Filter by custom Video Format (`Critical Hit List`, `Critical Bite`, `Supercut`, `Funny Moments` — all editable), Platform, or Series. Toggle **Simple Mode** to strip every card down to poster + title/logo + studio.
-* **Focused Game Editor (Simple / Advanced):**
-  * **Quick-Launch Essentials:** Launch the game (`.lnk`, `.exe`, `steam://`, etc.), open your script (Google Docs *or* local `.docx`/`.md`/`.pdf` file), and jump straight to your project/footage folder.
-  * **Zero-Bloat Ideation:** Optional collapsible **Scratchpad** (+ *Your take* and *Cold open*), **Packaging** (3 title candidates with winner picker + thumbnail idea), and one-click **`JOURNAL IT`**.
+### 1. Full-Screen Home & Content Planner (Windows Desktop)
+
+![Critical Hit Studio — Kanban Content Board](docs/screenshots/board.png)
+
+* **Full-Screen Home Launchpad:** Opens directly onto your active videos in `Recording`, `Writing`, and `Editing` with live checklist progress bars and target-date countdowns, plus a clean icon dock below to jump into any tool (configurable in **Settings → Appearance → Open on launch**).
+* **9-Stage Production Board:** Track games from `Backlogged` → `Planned` → `Recording` → `Writing` → `Editing` → `Reviewing` → `Published` (plus `Shelved` & `Cancelled`) with drag-and-drop, fire hype indicators (`🔥`), and stage checklists.
+* **Multi-Format Cards & Parts:** Tag a game being recorded with multiple formats (e.g., `HIT LIST` + `SUPERCUT`), then **Split** into separate cards or **`+ Add Part`** (`PT 1`, `PT 2`…) with instant switcher links inside the Game Editor.
+* **Focused Game Editor (`Simple` / `Advanced`) & `Ctrl+K` Quick Jump:**
+  * **Quick-Launch Essentials:** Launch the game (`.lnk`, `.exe`, `steam://`), open your script (Google Docs *or* local `.docx`/`.md`/`.pdf`), and open your footage/project folder.
+  * **Zero-Bloat Ideation:** Optional collapsible **Scratchpad**, **Packaging** (3 title candidates with winner picker + up to 3 attached thumbnail versions), and one-click **`JOURNAL IT`**.
   * **Game Details & Artwork:** Pull studio, release date, smart-ordered genres, platforms, and time-to-beat from **IGDB**, and pick custom posters, banners, and transparent logos from **SteamGridDB**.
-* **Calendar, Journal & Stats:**
-  * **Calendar:** Drag-and-drop target dates, upload-day slot highlights, and one-click `.ics` export for Google Calendar.
-  * **Journal:** Standalone dated studio notes linked to your games.
-  * **Stats & Recaps:** Monthly & Year-End Recap cards (published count, hours played, video views, awards, format breakdown, `Copy recap`), pipeline bottleneck charts (*Where the Time Goes*), and YouTube channel snapshot.
-* **Customizable Themes:** Switch live between **Vanilla** (custom accent colour), **ISAC // SHD** (Division 2 frosted-glass HUD), and **Discord** (Dark + Blurple). Optional toggles for the Hit List tab and numeric `/10` scores (off by default).
+* **Calendar, Journal & Stats:** Drag-and-drop target dates, tracked game release reminders, `.ics` Google Calendar export, standalone dated **Journal**, and **Monthly & Year-End Recaps**.
+* **Customizable Themes & Built-In Updater:** Switch live between **Vanilla**, **ISAC // SHD**, **Discord**, and **OLED Black**, with one-click GitHub Releases updates and portable Studio Backups.
 
-### 2. Android Mobile Companion (`.apk`)
-* **Built for phones, not a squished desktop page:** Bottom tab bar (`Board`, `Calendar`, `Journal`, `Stats`), floating `+` button, and a focused mobile Game Sheet (PC-only launchers and OBS controls stay out of the way).
+### 2. Standalone YouTube Thumbnail Checker
+
+![Critical Hit Studio — Standalone Thumbnail Checker](docs/screenshots/thumbnail.png)
+
+* **Full Thumbnail Library:** Browse every thumbnail attached across your board sorted **By Stage** or **By Import Date**, or `+ Import` standalone concepts.
+* **6 Live Preview Modes:** Test **Safe Area (10% margins)**, **A/B Feed Compare** (V1 / V2 / V3 side-by-side in a mock YouTube grid), **Desktop Home**, **Desktop Sidebar (168px)**, **Mobile Feed**, and **TV Preview**.
+* **Real-World Checks:** Toggle **YouTube Dark / Light Mode**, **Duration Badges**, **Desktop Hover Icons**, **Watched Progress Bar**, **Grayscale Contrast**, and **Squint Blur** readability tests.
+
+### 3. Game Radar (Powered by IGDB)
+
+![Critical Hit Studio — Game Radar](docs/screenshots/radar.png)
+
+* **Upcoming Hype & Trending Recent:** Discover the most anticipated releases over the next **30 Days**, **4 Months**, or **1 Year**, grouped **By Month**, **By Date**, or **By Hype** with **S / M / L** poster sizing and platform filters (`PC`, `PlayStation`, `Xbox`, `Switch`).
+* **Quick Peek & Calendar Reminders:** Click any poster to inspect its IGDB summary and release countdown, add directly to **Backlogged** or **Planned**, or tap **`📅`** to pin the game's release date onto your **Calendar**.
+
+### 4. Android Mobile Companion (`.apk`)
+
+<p align="center">
+  <img src="docs/screenshots/mobile.png" alt="Critical Hit Studio — Android Mobile Companion" width="320">
+</p>
+
+* **Built for phones, not a squished desktop page:** Bottom 5-tab bar (`Home`, `Board`, `Radar`, `Calendar`, `Journal`), floating `+` button, and a focused mobile Game Sheet.
 * **Press-and-Hold 8-Icon Stage Mover:** Press and hold any game card (or tap `⇄`) to float it above a 3×3 grid of the other 8 stages around a center `✕` Cancel button — slide your thumb onto a stage and release to move (with haptic feedback and Undo).
-* **Real-Time Cloud Sync (Optional):** Create a free account inside **Settings → Data & Backup → Cloud Sync** on PC and sign in on Android to sync your board, journal, and game posters live in both directions. *(Don't want an account? Skip login — the desktop app works 100% locally.)*
+* **Real-Time Cloud Sync (Optional):** Create a free account inside **Settings → Data & Backup → Cloud Sync** on PC and sign in on Android to sync your board, journal, Calendar release reminders, and posters live in both directions.
 
-### 3. Critical Hit List (OBS Ranking Overlay)
-* **Built-in OBS Overlay:** Control your ranked game list live or recorded straight from the app, synced to OBS in real time.
+### 5. Critical Hit List (OBS Ranking Overlay)
+
+![Critical Hit Studio — Critical Hit List OBS Overlay](docs/screenshots/hitlist.png)
+
+* **Built-in OBS Overlay:** Control your ranked game list live or recorded straight from the app, mirrored to OBS in real time via a clean collapsible **Board Controls** sidebar.
 * **Subjective Awards & Polish:** Uniform 92px rows, custom logo/banner fitting, 3 award styles (*Laurel wreath*, *Medal*, *Neon hex*) with held pop-in animation (`A`), and arrow-key panning.
 * **Head-to-Head (`VS`) Compare Overlay:** Spoiler-free banner + logo showdown with staged intros (`V`) and 3 live-switchable victor animations (`1` / `2`): *Knockout Smash*, *Golden Coronation*, and *Critical Hit Slash*.
 
@@ -87,6 +125,18 @@ No Electron? Run `start-browser-mode.bat` (or `node server/server.js`) to open t
 ---
 
 ## Changelog
+
+### v2.4.0 — A/B Thumbnail Compare, Radar Calendar Reminders, `Ctrl+K`, OLED Black & Mobile Parity
+* **Thumbnail Checker:** Added **A/B Feed Compare** (V1/V2/V3 side-by-side in a mock YouTube Home grid), **YouTube Dark / Light Mode**, and **Grayscale + Squint Blur** readability checks.
+* **Game Radar:** Added platform filters (`PC`, `PlayStation`, `Xbox`, `Switch`), time window toggle (`30D` / `4 MO` / `1 YR`), **Quick Peek** summary modal, and one-click **`📅` Add to Calendar** release reminders.
+* **Home & Daily Flow:** Added live checklist progress bars and countdown badges on Home cards, a **Global Command Palette (`Ctrl+K`)**, and **Related Parts / Formats** quick-switcher chips inside the Game Editor.
+* **Themes, Backup & Mobile:** Added the **OLED Black** theme, one-click **Full Studio Backup Export / Restore**, and brought **Home** and **Radar** to the Android companion app.
+
+### v2.3.0 – v2.3.1 — Home Landing Page, Game Radar & Collapsible Hit List Controls
+* Added the full-screen **Home** landing page (instant zero-flash launch, configurable in **Settings → Appearance → Open on launch**).
+* Added the **RADAR** page powered by IGDB with **By Month**, **By Date**, and **By Hype** sorting and **S / M / L** poster sizing.
+* De-cluttered the **Hit List** header bar and reorganized **Board Controls** into 6 clean collapsible sections.
+* Improved the Game Editor **Scratchpad** to a calm, readable note-taking font.
 
 ### v2.2.3 — Visual Polish & Redesigned Cr App Icon
 * Redesigned the **Cr** app icon in a crisp Adobe Creative Suite style across Windows, top bar, and Android.

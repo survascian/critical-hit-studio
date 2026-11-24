@@ -1644,14 +1644,14 @@ function updateChannelUI() {
   }
 }
 function applyBrandingUI() {
-  const th = ['default', 'isac', 'discord'].includes(appSettings.theme) ? appSettings.theme : 'default';
+  const th = ['default', 'isac', 'discord', 'oled'].includes(appSettings.theme) ? appSettings.theme : 'default';
   document.documentElement.setAttribute('data-theme', th);
-  if (th === 'default' && /^#[0-9a-f]{6}$/i.test(appSettings.accentColor || '')) {
+  if ((th === 'default' || th === 'oled') && /^#[0-9a-f]{6}$/i.test(appSettings.accentColor || '')) {
     document.documentElement.style.setProperty('--red', appSettings.accentColor);
   } else {
     document.documentElement.style.removeProperty('--red');
   }
-  const aw = $('accentRowWrap'); if (aw) aw.classList.toggle('hidden', th !== 'default');
+  const aw = $('accentRowWrap'); if (aw) aw.classList.toggle('hidden', th !== 'default' && th !== 'oled');
   document.querySelectorAll('#themePicker .theme-card').forEach((c) => c.classList.toggle('on', c.dataset.themePick === th));
   const hl = $('navHitList'); if (hl) hl.classList.toggle('hidden', appSettings.showHitList === false);
 }
@@ -1661,7 +1661,8 @@ $('themePicker').addEventListener('click', async (e) => {
   appSettings.theme = th;
   applyBrandingUI();
   renderBoard();
-  try { await putJson('/api/settings', { theme: th }); toast('Theme changed to ' + (th === 'isac' ? 'ISAC // SHD' : th === 'discord' ? 'Discord' : 'Vanilla')); }
+  const names = { isac: 'ISAC // SHD', discord: 'Discord', oled: 'OLED Black', default: 'Vanilla' };
+  try { await putJson('/api/settings', { theme: th }); toast('Theme changed to ' + (names[th] || 'Vanilla')); }
   catch (err) { toast(err.message); }
 });
 function updatePill() {
